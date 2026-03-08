@@ -6,7 +6,7 @@ run_mode="$3"
 
 case "$compilation_mode" in
 debug)
-  elm-review --no-color >&2
+  #elm-review --no-color >&2
   cat
   ;;
 standard)

@@ -1,204 +1,21 @@
-port module OptionsMain exposing (main)
+module NixForge.Create.View exposing (..)
 
-import Browser
-import Browser.Navigation as Nav
-import ConfigDecoder exposing (Config, OptionsFilter, configDecoder)
 import Dict
-import Html exposing (Html, a, br, button, code, div, h2, h5, hr, input, p, pre, small, span, text, textarea)
+import Html exposing (..)
 import Html.Attributes exposing (class, href, placeholder, rows, style, target, value)
 import Html.Events exposing (onClick, onInput)
-import Http
-import OptionsDecoder exposing (Option, OptionsData, optionsDecoder)
-import Url
-import Utils exposing (format)
+import NixForge.Config exposing (..)
+import NixForge.Config.App exposing (..)
+import NixForge.Config.Package exposing (..)
+import NixForge.Create.Model exposing (..)
+import NixForge.Create.Update exposing (..)
+import NixForge.Format exposing (format)
+import NixForge.Option exposing (..)
+import NixForge.Output exposing (..)
 
 
-
--- PORTS
-
-
-port copyToClipboard : String -> Cmd msg
-
-
-
--- MODEL
-
-
-type alias Model =
-    { options : List Option
-    , packagesFilter : OptionsFilter
-    , appsFilter : OptionsFilter
-    , recipeDirPackages : String
-    , recipeDirApps : String
-    , selectedOption : Maybe Option
-    , searchString : String
-    , category : String
-    , packagesSelectedFilter : Maybe String
-    , appsSelectedFilter : Maybe String
-    , showInstructions : Bool
-    , error : Maybe String
-    , navKey : Nav.Key
-    , url : Url.Url
-    }
-
-
-init : () -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
-init _ url key =
-    ( { options = []
-      , packagesFilter = Dict.empty
-      , appsFilter = Dict.empty
-      , recipeDirPackages = ""
-      , recipeDirApps = ""
-      , selectedOption = Nothing
-      , searchString = ""
-      , category = "packages"
-      , packagesSelectedFilter = Nothing
-      , appsSelectedFilter = Nothing
-      , showInstructions = False
-      , error = Nothing
-      , navKey = key
-      , url = url
-      }
-    , Cmd.batch [ getOptions, getConfig ]
-    )
-
-
-
--- UPDATE
-
-
-type Msg
-    = GetOptions (Result Http.Error OptionsData)
-    | GetConfig (Result Http.Error Config)
-    | SelectOption Option
-    | Search String
-    | SelectCategory String
-    | SelectFilter (Maybe String)
-    | CopyCode String
-    | UpdateRecipeValue String
-    | CreateRecipe
-    | LinkClicked Browser.UrlRequest
-    | UrlChanged Url.Url
-
-
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
-    case msg of
-        GetOptions (Ok optionsData) ->
-            let
-                optionsList =
-                    Dict.values optionsData
-                        |> List.sortBy .name
-
-                updatedModel =
-                    { model | options = optionsList, error = Nothing }
-            in
-            ( selectFromUrl updatedModel, Cmd.none )
-
-        GetOptions (Err err) ->
-            ( { model | error = Just (httpErrorToString err) }, Cmd.none )
-
-        GetConfig (Ok config) ->
-            ( { model
-                | packagesFilter = config.packagesFilter
-                , appsFilter = config.appsFilter
-                , recipeDirPackages = config.recipeDirs.packages
-                , recipeDirApps = config.recipeDirs.apps
-              }
-            , Cmd.none
-            )
-
-        GetConfig (Err err) ->
-            ( { model | error = Just (httpErrorToString err) }, Cmd.none )
-
-        SelectOption option ->
-            ( { model | selectedOption = Just option, showInstructions = False }
-            , Nav.pushUrl model.navKey ("#option-" ++ option.name)
-            )
-
-        Search string ->
-            ( { model | searchString = string }, Cmd.none )
-
-        SelectCategory category ->
-            ( { model | category = category, selectedOption = Nothing, showInstructions = False }, Cmd.none )
-
-        SelectFilter filter ->
-            if model.category == "packages" then
-                ( { model | packagesSelectedFilter = filter }, Cmd.none )
-
-            else
-                ( { model | appsSelectedFilter = filter }, Cmd.none )
-
-        CopyCode code ->
-            ( model, copyToClipboard code )
-
-        UpdateRecipeValue value ->
-            case model.selectedOption of
-                Just option ->
-                    let
-                        updatedOption =
-                            { option | value = value }
-
-                        updatedOptions =
-                            List.map
-                                (\opt ->
-                                    if opt.name == option.name then
-                                        updatedOption
-
-                                    else
-                                        opt
-                                )
-                                model.options
-                    in
-                    ( { model | selectedOption = Just updatedOption, options = updatedOptions }, Cmd.none )
-
-                Nothing ->
-                    ( model, Cmd.none )
-
-        CreateRecipe ->
-            ( { model | showInstructions = True, selectedOption = Nothing }, Cmd.none )
-
-        LinkClicked urlRequest ->
-            case urlRequest of
-                Browser.Internal url ->
-                    ( model, Nav.pushUrl model.navKey (Url.toString url) )
-
-                Browser.External href ->
-                    ( model, Nav.load href )
-
-        UrlChanged url ->
-            ( selectFromUrl { model | url = url }, Cmd.none )
-
-
-selectFromUrl : Model -> Model
-selectFromUrl model =
-    case model.url.fragment of
-        Just fragment ->
-            if String.startsWith "option-" fragment then
-                case List.filter (\opt -> opt.name == String.dropLeft 7 fragment) model.options |> List.head of
-                    Just option ->
-                        { model
-                            | selectedOption = Just option
-                            , category = getOptionCategory option
-                            , showInstructions = False
-                        }
-
-                    Nothing ->
-                        model
-
-            else
-                model
-
-        Nothing ->
-            model
-
-
-
--- VIEW
-
-
-view : Model -> Html Msg
-view model =
+viewCreate : ModelCreate -> Html UpdateCreate
+viewCreate model =
     div [ class "container" ]
         [ -- content
           div [ class "row" ]
@@ -206,7 +23,7 @@ view model =
               div [ class "col-lg-6 border bg-light py-3 my-3" ]
                 [ div [ class "d-flex gap-2 align-items-center" ]
                     [ div [ class "flex-grow-1" ] (searchHtml model.searchString)
-                    , button [ class "btn btn-primary", onClick CreateRecipe ] [ text "Create recipe" ]
+                    , button [ class "btn btn-primary", onClick UpdateCreate_Recipe ] [ text "Create recipe" ]
                     ]
                 , div [ class "d-flex btn-group align-items-center my-2" ]
                     (categoryTabsHtml model.category)
@@ -216,17 +33,19 @@ view model =
                     [ hr [] []
                     , div [ class "d-flex flex-wrap gap-2 my-2" ]
                         (optionsFilterHtml
-                            (if model.category == "packages" then
-                                model.packagesSelectedFilter
+                            (case model.category of
+                                OutputCategory_Packages ->
+                                    model.packagesSelectedFilter
 
-                             else
-                                model.appsSelectedFilter
+                                OutputCategory_Applications ->
+                                    model.appsSelectedFilter
                             )
-                            (if model.category == "packages" then
-                                model.packagesFilter
+                            (case model.category of
+                                OutputCategory_Packages ->
+                                    model.packagesFilter
 
-                             else
-                                model.appsFilter
+                                OutputCategory_Applications ->
+                                    model.appsFilter
                             )
                         )
                     ]
@@ -240,24 +59,26 @@ view model =
                         model.selectedOption
                         model.searchString
                         model.category
-                        (if model.category == "packages" then
-                            model.packagesSelectedFilter
+                        (case model.category of
+                            OutputCategory_Packages ->
+                                model.packagesSelectedFilter
 
-                         else
-                            model.appsSelectedFilter
+                            OutputCategory_Applications ->
+                                model.appsSelectedFilter
                         )
-                        (if model.category == "packages" then
-                            model.packagesFilter
+                        (case model.category of
+                            OutputCategory_Packages ->
+                                model.packagesFilter
 
-                         else
-                            model.appsFilter
+                            OutputCategory_Applications ->
+                                model.appsFilter
                         )
                     )
 
                 -- error message
                 , case model.error of
-                    Just errMsg ->
-                        div [ class "alert alert-danger mt-3" ] [ text ("Error: " ++ errMsg) ]
+                    Just errUpdate ->
+                        div [ class "alert alert-danger mt-3" ] [ text ("Error: " ++ errUpdate) ]
 
                     Nothing ->
                         text ""
@@ -280,50 +101,7 @@ view model =
         ]
 
 
-
--- HTTP
-
-
-getOptions : Cmd Msg
-getOptions =
-    Http.get
-        { url = "options.json"
-        , expect = Http.expectJson GetOptions optionsDecoder
-        }
-
-
-getConfig : Cmd Msg
-getConfig =
-    Http.get
-        { url = "forge-config.json"
-        , expect = Http.expectJson GetConfig configDecoder
-        }
-
-
-httpErrorToString : Http.Error -> String
-httpErrorToString err =
-    case err of
-        Http.BadUrl s ->
-            "Bad URL: " ++ s
-
-        Http.Timeout ->
-            "Request timed out"
-
-        Http.NetworkError ->
-            "Network error"
-
-        Http.BadStatus s ->
-            "Bad response: " ++ String.fromInt s
-
-        Http.BadBody s ->
-            "Bad body: " ++ s
-
-
-
--- HTML FUNCTIONS
-
-
-initialInstructionsHtml : Html Msg
+initialInstructionsHtml : Html UpdateCreate
 initialInstructionsHtml =
     div []
         [ h2 [] [ text "NEW RECIPE" ]
@@ -338,10 +116,10 @@ initialInstructionsHtml =
         ]
 
 
-instructionsHtml : String -> String -> String -> List Option -> Html Msg
+instructionsHtml : OutputCategory -> String -> String -> List Option -> Html UpdateCreate
 instructionsHtml category recipeDirPackages recipeDirApps options =
     case category of
-        "packages" ->
+        OutputCategory_Packages ->
             let
                 recipeContent =
                     generateRecipeContent category options
@@ -363,7 +141,7 @@ instructionsHtml category recipeDirPackages recipeDirApps options =
                 , codeBlock (submitPRCmd (newPackageName options))
                 ]
 
-        "apps" ->
+        OutputCategory_Applications ->
             let
                 recipeContent =
                     generateRecipeContent category options
@@ -383,30 +161,25 @@ instructionsHtml category recipeDirPackages recipeDirApps options =
                 , codeBlock (submitPRCmd (newAppName options))
                 ]
 
-        _ ->
-            div [ class "p-3" ]
-                [ p [] [ text "Select a configuration option to view its details." ]
-                ]
 
-
-searchHtml : String -> List (Html Msg)
+searchHtml : String -> List (Html UpdateCreate)
 searchHtml searchString =
     [ input
         [ class "form-control form-control-lg py-2 my-2"
         , placeholder "Search options by name or description..."
         , value searchString
-        , onInput Search
+        , onInput UpdateCreate_Search
         ]
         []
     ]
 
 
-categoryTabsHtml : String -> List (Html Msg)
+categoryTabsHtml : OutputCategory -> List (Html UpdateCreate)
 categoryTabsHtml activeCategory =
     let
         categories =
-            [ ( "packages", "PACKAGES" )
-            , ( "apps", "APPLICATIONS" )
+            [ ( OutputCategory_Packages, "PACKAGES" )
+            , ( OutputCategory_Applications, "APPLICATIONS" )
             ]
 
         buttonItem ( value, label ) =
@@ -420,14 +193,14 @@ categoryTabsHtml activeCategory =
                                 "btn-secondary"
                            )
                     )
-                , onClick (SelectCategory value)
+                , onClick (UpdateCreate_SelectCategory value)
                 ]
                 [ text label ]
     in
     List.map buttonItem categories
 
 
-optionsFilterHtml : Maybe String -> OptionsFilter -> List (Html Msg)
+optionsFilterHtml : Maybe String -> OptionsFilter -> List (Html UpdateCreate)
 optionsFilterHtml activeFilter filters =
     let
         allButton =
@@ -441,7 +214,7 @@ optionsFilterHtml activeFilter filters =
                                 "btn-outline-warning"
                            )
                     )
-                , onClick (SelectFilter Nothing)
+                , onClick (UpdateCreate_SelectFilter Nothing)
                 ]
                 [ text "All" ]
 
@@ -456,7 +229,7 @@ optionsFilterHtml activeFilter filters =
                                 "btn-outline-warning"
                            )
                     )
-                , onClick (SelectFilter (Just optionName))
+                , onClick (UpdateCreate_SelectFilter (Just optionName))
                 ]
                 [ text optionName ]
     in
@@ -484,22 +257,6 @@ cleanOptionName name =
         |> String.replace "apps.*." ""
 
 
-getOptionCategory : Option -> String
-getOptionCategory option =
-    let
-        name =
-            option.name
-    in
-    if String.startsWith "packages" name then
-        "packages"
-
-    else if String.startsWith "apps" name then
-        "apps"
-
-    else
-        "other"
-
-
 optionValue : Option -> String
 optionValue option =
     if String.isEmpty option.value then
@@ -520,10 +277,10 @@ getOptionValue name options =
         |> Maybe.withDefault "no-value"
 
 
-getGroupSortOrder : String -> String -> Int
+getGroupSortOrder : OutputCategory -> String -> Int
 getGroupSortOrder category prefix =
     case category of
-        "packages" ->
+        OutputCategory_Packages ->
             case String.toLower prefix of
                 "source" ->
                     1
@@ -540,7 +297,7 @@ getGroupSortOrder category prefix =
                 _ ->
                     99
 
-        "apps" ->
+        OutputCategory_Applications ->
             case String.toLower prefix of
                 "programs" ->
                     1
@@ -554,11 +311,8 @@ getGroupSortOrder category prefix =
                 _ ->
                     99
 
-        _ ->
-            99
 
-
-optionHtml : Option -> Maybe Option -> Html Msg
+optionHtml : Option -> Maybe Option -> Html UpdateCreate
 optionHtml option selectedOption =
     let
         shortDesc =
@@ -578,7 +332,7 @@ optionHtml option selectedOption =
         [ href ("#option-" ++ option.name)
         , class
             ("list-group-item list-group-item-action flex-column align-items-start" ++ optionActiveState option selectedOption)
-        , onClick (SelectOption option)
+        , onClick (UpdateCreate_SelectOption option)
         ]
         [ div [ class "d-flex w-100 justify-content-between" ]
             [ h5 [ class "mb-1" ] [ text (cleanOptionName option.name) ]
@@ -593,17 +347,13 @@ optionHtml option selectedOption =
         ]
 
 
-optionsHtml : List Option -> Maybe Option -> String -> String -> Maybe String -> OptionsFilter -> List (Html Msg)
+optionsHtml : List Option -> Maybe Option -> String -> OutputCategory -> Maybe String -> OptionsFilter -> List (Html UpdateCreate)
 optionsHtml options selectedOption filter category selectedFilter filters =
     let
         -- Get list of option names for the selected filter
         selectedFilterNames =
-            case selectedFilter of
-                Nothing ->
-                    Nothing
-
-                Just filterName ->
-                    Dict.get filterName filters
+            selectedFilter
+                |> Maybe.andThen (\filterName -> Dict.get filterName filters)
 
         -- Check if option should be included based on selected filter
         matchesFilter option =
@@ -621,7 +371,7 @@ optionsHtml options selectedOption filter category selectedFilter filters =
                         (String.contains (String.toLower filter) (String.toLower option.name)
                             || String.contains (String.toLower filter) (String.toLower option.description)
                         )
-                            && (getOptionCategory option == category)
+                            && (getOptionCategory option == Just category)
                             && (option.name /= "packages")
                             && (option.name /= "apps")
                             && matchesFilter option
@@ -678,14 +428,14 @@ optionsHtml options selectedOption filter category selectedFilter filters =
             ++ List.concatMap renderGroup groupedOptions
 
 
-formatDescription : String -> List (Html Msg)
+formatDescription : String -> List (Html UpdateCreate)
 formatDescription description =
     description
         |> String.lines
         |> List.map (\line -> p [] [ text line ])
 
 
-optionDetailsHtml : Option -> Html Msg
+optionDetailsHtml : Option -> Html UpdateCreate
 optionDetailsHtml option =
     div [ class "p-3" ]
         [ h5 [ class "text-warning" ] [ text (cleanOptionName option.name) ]
@@ -724,7 +474,7 @@ optionDetailsHtml option =
                     else
                         button
                             [ class "btn btn-sm btn-outline-warning"
-                            , onClick (UpdateRecipeValue exampleVal.text)
+                            , onClick (UpdateCreate_RecipeValue exampleVal.text)
                             ]
                             [ text "Copy example" ]
 
@@ -735,19 +485,19 @@ optionDetailsHtml option =
             [ class "form-control text-warning border-secondary"
             , style "background-color" "#2d2d2d"
             , value option.value
-            , onInput UpdateRecipeValue
+            , onInput UpdateCreate_RecipeValue
             , rows 3
             ]
             []
         ]
 
 
-codeBlock : String -> Html Msg
+codeBlock : String -> Html UpdateCreate
 codeBlock content =
     div [ class "position-relative" ]
         [ button
             [ class "btn btn-sm btn-outline-secondary position-absolute top-0 end-0 m-2"
-            , onClick (CopyCode content)
+            , onClick (UpdateCreate_CopyCode content)
             ]
             [ text "Copy" ]
         , pre [ class "bg-dark text-warning p-3 rounded border border-secondary" ]
@@ -759,12 +509,12 @@ codeBlock content =
 -- INSTRUCTIONS FUNCTIONS
 
 
-generateRecipeContent : String -> List Option -> String
+generateRecipeContent : OutputCategory -> List Option -> String
 generateRecipeContent category options =
     let
         filteredOptions =
             options
-                |> List.filter (\opt -> getOptionCategory opt == category && not (String.isEmpty opt.value))
+                |> List.filter (\opt -> getOptionCategory opt == Just category && not (String.isEmpty opt.value))
 
         ( topLevel, specific ) =
             filteredOptions
@@ -861,19 +611,3 @@ submitPRCmd package =
     format """git commit -m "Add new {0} recipe"
 gh pr create
 """ [ package ]
-
-
-
--- MAIN
-
-
-main : Program () Model Msg
-main =
-    Browser.application
-        { init = init
-        , view = \model -> { title = "Nix Forge - recipe builder", body = [ view model ] }
-        , update = update
-        , subscriptions = \_ -> Sub.none
-        , onUrlRequest = LinkClicked
-        , onUrlChange = UrlChanged
-        }
