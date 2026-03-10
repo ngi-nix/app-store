@@ -67,21 +67,21 @@ footerHtml =
                 , target "_blank"
                 ]
                 [ text " and Elm"
-                , text " . "
+                , text ". "
                 ]
             , text "Developed by "
             , a
-                [ href "https://github.com/imincik"
+                [ href "https://nixos.org/community/teams/ngi/"
                 , target "_blank"
                 ]
-                [ text "@imincik." ]
+                [ text "Nix@NGI team." ]
             , text " Contribute or report issues in "
             , a
-                [ href "https://github.com/imincik/nix-forge"
+                [ href "https://github.com/ngi-nix/app-store"
                 , target "_blank"
                 ]
-                [ text "github:imincik/nix-forge" ]
-            , text " ."
+                [ text "github:ngi-nix/app-store" ]
+            , text "."
             ]
         ]
 
