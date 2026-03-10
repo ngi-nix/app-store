@@ -1,5 +1,6 @@
 module NixForge.Select exposing (..)
 
+import Dict
 import Http
 import NixForge.Config exposing (..)
 import NixForge.Config.App exposing (..)
@@ -15,7 +16,7 @@ initSelect _ =
     ( { repositoryUrl = "github:imincik/nix-forge"
       , recipeDirPackages = ""
       , recipeDirApps = ""
-      , apps = []
+      , apps = Dict.empty
       , packages = []
       , selectedOutput = OutputCategory_Packages
       , selectedApp = Nothing

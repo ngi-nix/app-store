@@ -1,6 +1,6 @@
 module NixForge.Select.View.Applications exposing (..)
 
-import Dict
+import Dict exposing (Dict)
 import Html exposing (Html, a, div, h5, p, small, span, text)
 import Html.Attributes exposing (class, href, name)
 import Html.Events exposing (onClick)
@@ -14,10 +14,11 @@ import NixForge.Select.Update exposing (..)
 import NixForge.Select.View.Instructions exposing (..)
 
 
-viewApps : List App -> Maybe App -> String -> List (Html UpdateSelect)
+viewApps : Dict String App -> Maybe App -> String -> List (Html UpdateSelect)
 viewApps apps selectedApp filter =
     apps
-        |> List.filter (\app -> String.contains filter app.name)
+        |> Dict.filter (\name app -> String.contains filter name)
+        |> Dict.values
         |> List.map (\app -> viewApp app selectedApp)
 
 
