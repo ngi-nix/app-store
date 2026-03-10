@@ -1,13 +1,4 @@
-module NixForge.Select.View.Instructions exposing
-    ( appInstructionsHtml
-    , footerHtml
-    , headerHtml
-    , installInstructionsHtml
-    , installNixCmd
-    , packageInstructionsHtml
-    , runPackageContainerCmd
-    , runPackageShellCmd
-    )
+module NixForge.Select.View.Instructions exposing (..)
 
 import Dict
 import Html exposing (Html, a, br, button, code, div, h2, h3, hr, p, pre, span, text)
@@ -15,7 +6,6 @@ import Html.Attributes exposing (class, href, style, target)
 import Html.Events exposing (onClick)
 import Markdown
 import NixForge.Config.App as App exposing (App)
-import NixForge.Config.Package exposing (Package)
 import NixForge.Format exposing (format)
 
 
@@ -120,74 +110,8 @@ installInstructionsHtml onCopy =
     , codeBlock onCopy installNixCmd
     , text "2. Accept binaries pre-built by Nix Forge (optional, highly recommended) "
     , codeBlock onCopy acceptFlakeConfigCmd
-    , p [ style "margin-bottom" "0em" ] [ text "and select a package or application to see the usage instructions." ]
+    , p [ style "margin-bottom" "0em" ] [ text "and select an application to see the usage instructions." ]
     ]
-
-
-runPackageShellCmd : String -> Package -> String
-runPackageShellCmd repositoryUrl pkg =
-    format """nix shell {0}#{1}
-""" [ repositoryUrl, pkg.name ]
-
-
-runPackageContainerCmd : String -> Package -> String
-runPackageContainerCmd repositoryUrl pkg =
-    format """nix build {0}#{1}.image
-
-podman load < ./result
-podman run -it --rm localhost/{1}:{2}
-""" [ repositoryUrl, pkg.name, pkg.version ]
-
-
-enterPackageDevenvCmd : String -> Package -> String
-enterPackageDevenvCmd repositoryUrl pkg =
-    format """nix develop {0}#{1}.devenv
-""" [ repositoryUrl, pkg.name ]
-
-
-packageInstructionsHtml : String -> String -> (String -> msg) -> Maybe Package -> List (Html msg)
-packageInstructionsHtml repositoryUrl recipeDirPackages onCopy maybePkg =
-    case maybePkg of
-        Nothing ->
-            [ text "No package is selected."
-            ]
-
-        Just pkg ->
-            [ h2 [] [ text pkg.name ]
-            , hr [] []
-            , h3 [] [ text "USAGE" ]
-            , p
-                [ style "margin-bottom" "0em"
-                ]
-                [ text "Run package in a shell environment" ]
-            , codeBlock onCopy (runPackageShellCmd repositoryUrl pkg)
-            , p
-                [ style "margin-bottom" "0em"
-                ]
-                [ text "Run package in a container" ]
-            , codeBlock onCopy (runPackageContainerCmd repositoryUrl pkg)
-            , hr [] []
-            , h3 [] [ text "DEVELOPMENT" ]
-            , p
-                [ style "margin-bottom" "0em"
-                ]
-                [ text "Enter development environment (all dependencies included)" ]
-            , codeBlock onCopy (enterPackageDevenvCmd repositoryUrl pkg)
-            , hr [] []
-            , text "Home page: "
-            , a
-                [ href pkg.homePage
-                , target "_blank"
-                ]
-                [ text pkg.homePage ]
-            , br [] []
-            , text "Recipe : "
-            , a
-                [ href (repositoryToGithubUrl repositoryUrl ++ "/blob/master/" ++ recipeDirPackages ++ "/" ++ pkg.name ++ "/recipe.nix")
-                , target "_blank"
-                ]
-                [ text (recipeDirPackages ++ "/" ++ pkg.name ++ "/recipe.nix") ]
-            ]
 
 
 runAppShellCmd : String -> App -> String

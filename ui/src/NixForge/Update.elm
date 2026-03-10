@@ -3,7 +3,6 @@ module NixForge.Update exposing (..)
 import Browser
 import NixForge.Config exposing (..)
 import NixForge.Config.App exposing (..)
-import NixForge.Config.Package exposing (..)
 import NixForge.Model exposing (..)
 import NixForge.Route exposing (..)
 import NixForge.Select exposing (..)
@@ -31,6 +30,9 @@ update upd currentModel =
 
                 Updater_Cmd ( newModel, newCmd ) ->
                     ( Model_Select newModel, Cmd.map Update_Select newCmd )
+
+        ( Update_LinkClicked url, _ ) ->
+            ( currentModel, Cmd.none )
 
         _ ->
             ( currentModel, Cmd.none )

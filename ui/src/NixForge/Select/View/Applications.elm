@@ -2,12 +2,10 @@ module NixForge.Select.View.Applications exposing (..)
 
 import Dict exposing (Dict)
 import Html exposing (Html, a, div, h5, p, small, span, text)
-import Html.Attributes exposing (class, href, name)
+import Html.Attributes exposing (class, href, name, style)
 import Html.Events exposing (onClick)
 import NixForge.Config exposing (..)
 import NixForge.Config.App as App exposing (..)
-import NixForge.Config.Package exposing (..)
-import NixForge.Output exposing (..)
 import NixForge.Route exposing (..)
 import NixForge.Select.Model exposing (..)
 import NixForge.Select.Update exposing (..)
@@ -28,7 +26,8 @@ viewApp app selectedApp =
         [ href ("/app/" ++ App.unAppName app.name)
         , class
             ("list-group-item list-group-item-action flex-column align-items-start" ++ appActiveState app selectedApp)
-        , onClick (UpdateSelect_App app)
+        , style "width" "49%"
+        , onClick (UpdateSelect_Route (Route_Select (RouteSelect_App app.name)))
         ]
         [ div
             [ name ("app-" ++ App.unAppName app.name)

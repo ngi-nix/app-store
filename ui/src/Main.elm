@@ -5,7 +5,6 @@ import Browser.Navigation as Nav
 import Html exposing (Html)
 import NixForge.Config exposing (..)
 import NixForge.Config.App exposing (..)
-import NixForge.Config.Package exposing (..)
 import NixForge.Model exposing (..)
 import NixForge.Route exposing (..)
 import NixForge.Select exposing (..)

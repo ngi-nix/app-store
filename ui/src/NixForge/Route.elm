@@ -2,7 +2,6 @@ module NixForge.Route exposing (..)
 
 import AppUrl exposing (AppUrl)
 import NixForge.Config.App as App
-import NixForge.Config.Package as Package
 
 
 type Updater model cmd
@@ -17,7 +16,7 @@ type Route
 
 type RouteSelect
     = RouteSelect_List
-    | RouteSelect_Package Package.PackageName
+    | RouteSelect_App App.AppName
 
 
 type Slug
@@ -30,10 +29,10 @@ fromAppUrl url =
         [] ->
             Just (Route_Select RouteSelect_List)
 
-        [ "package", pkg ] ->
-            case Package.packageName pkg of
-                Just p ->
-                    Just (Route_Select (RouteSelect_Package p))
+        [ "app", app ] ->
+            case App.appName app of
+                Just name ->
+                    Just (Route_Select (RouteSelect_App name))
 
                 Nothing ->
                     Nothing
@@ -50,8 +49,8 @@ toAppUrl page =
                 RouteSelect_List ->
                     AppUrl.fromPath []
 
-                RouteSelect_Package (Package.PackageName pkg) ->
-                    AppUrl.fromPath [ "package", pkg ]
+                RouteSelect_App (App.AppName name) ->
+                    AppUrl.fromPath [ "app", name ]
 
 
 toString : Route -> String
