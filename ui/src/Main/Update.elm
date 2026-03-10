@@ -2,6 +2,7 @@ module Main.Update exposing (..)
 
 import AppUrl
 import Browser
+import Browser.Navigation as Nav
 import Main.Config exposing (..)
 import Main.Config.App exposing (..)
 import Main.Model exposing (..)
@@ -32,6 +33,11 @@ runUpdater model_ update_ model upd =
             model |> update (Update_Route route_)
 
 
+appendCmd : Cmd cmd -> ( model, Cmd cmd ) -> ( model, Cmd cmd )
+appendCmd next ( m, prev ) =
+    ( m, [ prev, next ] |> Cmd.batch )
+
+
 update : Update -> Model -> ( Model, Cmd Update )
 update upd model =
     case upd of
@@ -43,6 +49,7 @@ update upd model =
                             modelSelect
                                 |> Select.router routeSelect
                                 |> runUpdater Model_Select Update_Select model
+                                |> appendCmd (route |> Route.toString |> Nav.pushUrl modelSelect.modelSelect_navKey)
 
         Update_Select up ->
             case model of

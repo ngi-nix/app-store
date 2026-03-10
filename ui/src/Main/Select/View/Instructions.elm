@@ -34,58 +34,6 @@ codeBlock onCopy content =
         ]
 
 
-headerHtml : Html msg
-headerHtml =
-    p []
-        [ span
-            [ style "margin-right" "10px" ]
-            [ text "[Nix Forge]" ]
-        , span
-            [ class "fs-2 text-secondary" ]
-            [ text "the software distribution system" ]
-        ]
-
-
-footerHtml : Html msg
-footerHtml =
-    p [ class "text-center" ]
-        [ span
-            [ class "text-secondary fs-8" ]
-            [ text "Powered by "
-            , a
-                [ href "https://nixos.org"
-                , target "_blank"
-                ]
-                [ text "Nix," ]
-            , a
-                [ href "https://github.com/NixOS/nixpkgs"
-                , target "_blank"
-                ]
-                [ text " Nixpkgs" ]
-            , a
-                [ href "https://elm-lang.org"
-                , target "_blank"
-                ]
-                [ text " and Elm"
-                , text ". "
-                ]
-            , text "Developed by "
-            , a
-                [ href "https://nixos.org/community/teams/ngi/"
-                , target "_blank"
-                ]
-                [ text "Nix@NGI team." ]
-            , text " Contribute or report issues in "
-            , a
-                [ href "https://github.com/ngi-nix/ngi-nix-forge"
-                , target "_blank"
-                ]
-                [ text "github:ngi-nix/ngi-nix-forge" ]
-            , text "."
-            ]
-        ]
-
-
 installNixCmd : String
 installNixCmd =
     """curl --proto '=https' --tlsv1.2 -sSf \\

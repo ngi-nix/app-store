@@ -1,5 +1,6 @@
 module Main.Select exposing (..)
 
+import Browser.Navigation as Nav
 import Dict
 import Http
 import Main.Config exposing (..)
@@ -9,14 +10,14 @@ import Main.Select.Update exposing (..)
 import Main.Select.View exposing (..)
 
 
-init : () -> ( ModelSelect, Cmd UpdateSelect )
-init _ =
+init : { navKey : Nav.Key } -> ( ModelSelect, Cmd UpdateSelect )
+init { navKey } =
     ( { repositoryUrl = "github:imincik/nix-forge"
       , recipeDirApps = ""
       , apps = Dict.empty
-      , selectedApp = Nothing
-      , searchString = ""
-      , error = Nothing
+      , modelSelect_navKey = navKey
+      , modelSelect_search = ""
+      , modelSelect_focus = ModelSelectFocus_Search
       }
     , httpGetConfig
     )

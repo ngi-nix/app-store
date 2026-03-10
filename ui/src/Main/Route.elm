@@ -1,6 +1,8 @@
 module Main.Route exposing (..)
 
 import AppUrl exposing (AppUrl)
+import Dict
+import List.Extra as List
 import Main.Config.App as App
 
 
@@ -15,7 +17,7 @@ type Route
 
 
 type RouteSelect
-    = RouteSelect_List
+    = RouteSelect_Search String
     | RouteSelect_App App.AppName
 
 
@@ -27,15 +29,23 @@ fromAppUrl : AppUrl -> Maybe Route
 fromAppUrl url =
     case url.path of
         [] ->
-            Just (Route_Select RouteSelect_List)
+            Just (Route_Select (RouteSelect_Search ""))
 
-        [ "app", app ] ->
-            case App.appName app of
-                Just name ->
-                    Just (Route_Select (RouteSelect_App name))
+        [ "app" ] ->
+            case url.queryParameters |> Dict.get "q" |> Maybe.andThen List.uncons of
+                Just ( q, _ ) ->
+                    Just (Route_Select (RouteSelect_Search q))
 
                 Nothing ->
                     Nothing
+
+        [ "app", app ] ->
+            case app |> App.appName of
+                Nothing ->
+                    Nothing
+
+                Just name ->
+                    Just (Route_Select (RouteSelect_App name))
 
         _ ->
             Nothing
@@ -46,11 +56,19 @@ toAppUrl page =
     case page of
         Route_Select rt ->
             case rt of
-                RouteSelect_List ->
-                    AppUrl.fromPath []
+                RouteSelect_Search pattern ->
+                    case pattern of
+                        "" ->
+                            [ "app" ] |> AppUrl.fromPath
+
+                        _ ->
+                            { path = [ "app" ]
+                            , queryParameters = [ ( "q", [ pattern ] ) ] |> Dict.fromList
+                            , fragment = Nothing
+                            }
 
                 RouteSelect_App (App.AppName name) ->
-                    AppUrl.fromPath [ "app", name ]
+                    [ "app", name ] |> AppUrl.fromPath
 
 
 toString : Route -> String

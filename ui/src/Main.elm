@@ -31,7 +31,7 @@ init : () -> Url -> Nav.Key -> ( Model, Cmd Update )
 init inp url navKey =
     let
         ( modelSelect, cmdSelect ) =
-            inp |> Select.init
+            Select.init { navKey = navKey }
     in
     ( Model_Select modelSelect
     , Cmd.batch

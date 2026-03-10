@@ -17,14 +17,13 @@ type UpdateSelect
       -- | Description: an `UpdateSelect` can route
       -- to any other `Route` of the application.
     | UpdateSelect_Route Route
-    | UpdateSelect_Search String
 
 
 updater : UpdateSelect -> ModelSelect -> Updater ModelSelect UpdateSelect
 updater msg model =
     case msg of
         UpdateSelect_App app ->
-            Updater_Model { model | selectedApp = Just app }
+            Updater_Model { model | modelSelect_focus = ModelSelectFocus_App { app = app } }
 
         UpdateSelect_CopyCode code ->
             Updater_Cmd
@@ -38,28 +37,34 @@ updater msg model =
                             | repositoryUrl = config.repositoryUrl
                             , recipeDirApps = config.recipeDirs.apps
                             , apps = config.apps
-                            , error = Nothing
                         }
 
                 Err err ->
                     Updater_Model
-                        { model | error = Just (Http.errorToString err) }
+                        { model | modelSelect_focus = ModelSelectFocus_Error { msg = Http.errorToString err } }
 
         UpdateSelect_Route route ->
             Updater_Route route
-
-        UpdateSelect_Search string ->
-            Updater_Model
-                { model | searchString = string }
 
 
 router : RouteSelect -> ModelSelect -> Updater ModelSelect UpdateSelect
 router rt model =
     case rt of
-        RouteSelect_List ->
+        RouteSelect_Search search ->
             Updater_Model
-                { model | selectedApp = Nothing }
+                { model
+                    | modelSelect_focus = ModelSelectFocus_Search
+                    , modelSelect_search = search
+                }
 
         RouteSelect_App (AppName appName) ->
             Updater_Model
-                { model | selectedApp = model.apps |> Dict.get appName }
+                { model
+                    | modelSelect_focus =
+                        case model.apps |> Dict.get appName of
+                            Just app ->
+                                ModelSelectFocus_App { app = app }
+
+                            Nothing ->
+                                ModelSelectFocus_Error { msg = "No such app: " ++ appName }
+                }
