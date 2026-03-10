@@ -1,13 +1,13 @@
-module NixForge.Select.Update exposing (..)
+module Main.Select.Update exposing (..)
 
 import Dict
 import Http
-import NixForge.Clipboard exposing (copyToClipboard)
-import NixForge.Config exposing (..)
-import NixForge.Config.App exposing (..)
-import NixForge.Http as Http
-import NixForge.Route exposing (..)
-import NixForge.Select.Model exposing (..)
+import Main.Clipboard exposing (copyToClipboard)
+import Main.Config exposing (..)
+import Main.Config.App exposing (..)
+import Main.Http as Http
+import Main.Route exposing (..)
+import Main.Select.Model exposing (..)
 
 
 type UpdateSelect

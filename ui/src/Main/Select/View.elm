@@ -1,15 +1,15 @@
-module NixForge.Select.View exposing (..)
+module Main.Select.View exposing (..)
 
 import Html exposing (Html, button, div, hr, input, text)
 import Html.Attributes exposing (class, placeholder, value)
 import Html.Events exposing (onClick, onInput)
-import NixForge.Config exposing (..)
-import NixForge.Config.App exposing (..)
-import NixForge.Route exposing (..)
-import NixForge.Select.Model exposing (..)
-import NixForge.Select.Update exposing (..)
-import NixForge.Select.View.Applications exposing (..)
-import NixForge.Select.View.Instructions exposing (..)
+import Main.Config exposing (..)
+import Main.Config.App exposing (..)
+import Main.Route exposing (..)
+import Main.Select.Model exposing (..)
+import Main.Select.Update exposing (..)
+import Main.Select.View.Applications exposing (..)
+import Main.Select.View.Instructions exposing (..)
 
 
 viewSelect : ModelSelect -> Html UpdateSelect

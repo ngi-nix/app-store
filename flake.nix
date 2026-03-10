@@ -60,14 +60,16 @@
       # Export flake module for use in other projects
       flake.flakeModules.default = import ./forge/flake-module.nix { inherit inputs; };
 
-      perSystem = { ... }: {
-        forge = {
-          repositoryUrl = "github:imincik/nix-forge";
-          recipeDirs = {
-            packages = "recipes/packages";
-            apps = "recipes/apps";
+      perSystem =
+        { ... }:
+        {
+          forge = {
+            repositoryUrl = "github:imincik/nix-forge";
+            recipeDirs = {
+              packages = "recipes/packages";
+              apps = "recipes/apps";
+            };
           };
         };
-      };
     };
 }

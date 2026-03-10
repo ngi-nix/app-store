@@ -1,7 +1,7 @@
-module NixForge.Route exposing (..)
+module Main.Route exposing (..)
 
 import AppUrl exposing (AppUrl)
-import NixForge.Config.App as App
+import Main.Config.App as App
 
 
 type Updater model cmd

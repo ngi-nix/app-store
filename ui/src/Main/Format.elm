@@ -1,4 +1,4 @@
-module NixForge.Format exposing (format)
+module Main.Format exposing (format)
 
 
 format : String -> List String -> String

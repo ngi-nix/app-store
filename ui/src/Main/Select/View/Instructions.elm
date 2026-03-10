@@ -1,12 +1,12 @@
-module NixForge.Select.View.Instructions exposing (..)
+module Main.Select.View.Instructions exposing (..)
 
 import Dict
-import Html exposing (Html, a, br, button, code, div, h2, h3, hr, p, pre, span, text)
+import Html exposing (Html, a, button, code, div, h2, h3, hr, p, pre, span, text)
 import Html.Attributes exposing (class, href, style, target)
 import Html.Events exposing (onClick)
+import Main.Config.App as App exposing (App)
+import Main.Format exposing (format)
 import Markdown
-import NixForge.Config.App as App exposing (App)
-import NixForge.Format exposing (format)
 
 
 repositoryToGithubUrl : String -> String
@@ -77,10 +77,10 @@ footerHtml =
                 [ text "Nix@NGI team." ]
             , text " Contribute or report issues in "
             , a
-                [ href "https://github.com/ngi-nix/app-store"
+                [ href "https://github.com/ngi-nix/ngi-nix-forge"
                 , target "_blank"
                 ]
-                [ text "github:ngi-nix/app-store" ]
+                [ text "github:ngi-nix/ngi-nix-forge" ]
             , text "."
             ]
         ]

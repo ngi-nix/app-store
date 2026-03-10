@@ -1,12 +1,12 @@
-module NixForge.Select exposing (..)
+module Main.Select exposing (..)
 
 import Dict
 import Http
-import NixForge.Config exposing (..)
-import NixForge.Config.App exposing (..)
-import NixForge.Select.Model exposing (..)
-import NixForge.Select.Update exposing (..)
-import NixForge.Select.View exposing (..)
+import Main.Config exposing (..)
+import Main.Config.App exposing (..)
+import Main.Select.Model exposing (..)
+import Main.Select.Update exposing (..)
+import Main.Select.View exposing (..)
 
 
 initSelect : () -> ( ModelSelect, Cmd UpdateSelect )

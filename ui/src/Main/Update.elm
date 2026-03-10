@@ -1,13 +1,13 @@
-module NixForge.Update exposing (..)
+module Main.Update exposing (..)
 
 import Browser
-import NixForge.Config exposing (..)
-import NixForge.Config.App exposing (..)
-import NixForge.Model exposing (..)
-import NixForge.Route exposing (..)
-import NixForge.Select exposing (..)
-import NixForge.Select.Model exposing (..)
-import NixForge.Select.Update exposing (..)
+import Main.Config exposing (..)
+import Main.Config.App exposing (..)
+import Main.Model exposing (..)
+import Main.Route exposing (..)
+import Main.Select exposing (..)
+import Main.Select.Model exposing (..)
+import Main.Select.Update exposing (..)
 import Url
 
 

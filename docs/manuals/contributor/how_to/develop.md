@@ -27,7 +27,7 @@ End the services by sending them a SIGINT (usually Ctrl-C).
 
 You can supervise those services with:
 ```bash
-systemctl --user status ngi-nix-app-store-dev-'*'.service
+systemctl --user status ngi_nix_dev-'*'.service
 ```
 
 For convenience `systemd-manager-tui` is also provisioned by the development shell to do the same.

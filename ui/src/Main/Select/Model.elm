@@ -1,8 +1,8 @@
-module NixForge.Select.Model exposing (..)
+module Main.Select.Model exposing (..)
 
 import Dict exposing (Dict)
-import NixForge.Config exposing (..)
-import NixForge.Config.App exposing (..)
+import Main.Config exposing (..)
+import Main.Config.App exposing (..)
 
 
 type alias ModelSelect =

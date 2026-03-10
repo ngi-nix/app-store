@@ -1,7 +1,7 @@
 {
     "postprocess": ["elm-watch/postprocess.sh"],
     "targets": {
-        "nix-forge-ui": {
+        "main": {
             "inputs": [
                 "src/Main.elm"
             ],

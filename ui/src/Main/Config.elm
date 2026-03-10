@@ -1,8 +1,8 @@
-module NixForge.Config exposing (..)
+module Main.Config exposing (..)
 
 import Dict exposing (Dict)
 import Json.Decode as Decode
-import NixForge.Config.App as App exposing (..)
+import Main.Config.App as App exposing (..)
 
 
 type alias Config =

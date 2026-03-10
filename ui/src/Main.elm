@@ -3,15 +3,15 @@ module Main exposing (main)
 import Browser
 import Browser.Navigation as Nav
 import Html exposing (Html)
-import NixForge.Config exposing (..)
-import NixForge.Config.App exposing (..)
-import NixForge.Model exposing (..)
-import NixForge.Route exposing (..)
-import NixForge.Select exposing (..)
-import NixForge.Select.Model exposing (..)
-import NixForge.Select.Update exposing (..)
-import NixForge.Select.View exposing (..)
-import NixForge.Update exposing (..)
+import Main.Config exposing (..)
+import Main.Config.App exposing (..)
+import Main.Model exposing (..)
+import Main.Route exposing (..)
+import Main.Select exposing (..)
+import Main.Select.Model exposing (..)
+import Main.Select.Update exposing (..)
+import Main.Select.View exposing (..)
+import Main.Update exposing (..)
 import Url exposing (Url)
 
 
@@ -19,8 +19,8 @@ main : Program () Model Update
 main =
     Browser.application
         { init = init
-        , view = \model -> { title = "Nix Forge", body = [ view model ] }
-        , update = NixForge.Update.update
+        , view = \model -> { title = "NGI Nix Forge", body = [ view model ] }
+        , update = Main.Update.update
         , subscriptions = \_ -> Sub.none
         , onUrlRequest = Update_LinkClicked
         , onUrlChange = Update_UrlChange

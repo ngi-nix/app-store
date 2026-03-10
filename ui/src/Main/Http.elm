@@ -1,4 +1,4 @@
-module NixForge.Http exposing (..)
+module Main.Http exposing (..)
 
 import Http
 import String
