@@ -26,33 +26,6 @@ in
             appsFilter = lib.mkOption {
               internal = true;
               type = lib.types.attrsOf (lib.types.listOf lib.types.str);
-              default = {
-                programs = [
-                  "apps.*.name"
-                  "apps.*.version"
-                  "apps.*.programs.enable"
-                  "apps.*.programs.requirements"
-                ];
-                containers = [
-                  "apps.*.name"
-                  "apps.*.version"
-                  "apps.*.containers.enable"
-                  "apps.*.containers.images"
-                  "apps.*.containers.composeFile"
-                ];
-                vm = [
-                  "apps.*.name"
-                  "apps.*.version"
-                  "apps.*.vm.enable"
-                  "apps.*.vm.name"
-                  "apps.*.vm.requirements"
-                  "apps.*.vm.config.system"
-                  "apps.*.vm.config.ports"
-                  "apps.*.vm.config.cores"
-                  "apps.*.vm.config.memorySize"
-                  "apps.*.vm.config.diskSize"
-                ];
-              };
               description = "Defines which options are relevant for each app output type.";
             };
 
@@ -318,6 +291,34 @@ in
           in
           {
             packages = allApps;
+
+            forge.appsFilter = lib.mkDefault {
+              programs = [
+                "apps.*.name"
+                "apps.*.version"
+                "apps.*.programs.enable"
+                "apps.*.programs.requirements"
+              ];
+              containers = [
+                "apps.*.name"
+                "apps.*.version"
+                "apps.*.containers.enable"
+                "apps.*.containers.images"
+                "apps.*.containers.composeFile"
+              ];
+              vm = [
+                "apps.*.name"
+                "apps.*.version"
+                "apps.*.vm.enable"
+                "apps.*.vm.name"
+                "apps.*.vm.requirements"
+                "apps.*.vm.config.system"
+                "apps.*.vm.config.ports"
+                "apps.*.vm.config.cores"
+                "apps.*.vm.config.memorySize"
+                "apps.*.vm.config.diskSize"
+              ];
+            };
           };
       }
     );
