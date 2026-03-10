@@ -14,7 +14,7 @@ import Html exposing (Html, a, br, button, code, div, h2, h3, hr, p, pre, span, 
 import Html.Attributes exposing (class, href, style, target)
 import Html.Events exposing (onClick)
 import Markdown
-import NixForge.Config.App exposing (App)
+import NixForge.Config.App as App exposing (App)
 import NixForge.Config.Package exposing (Package)
 import NixForge.Format exposing (format)
 
@@ -193,7 +193,7 @@ packageInstructionsHtml repositoryUrl recipeDirPackages onCopy maybePkg =
 runAppShellCmd : String -> App -> String
 runAppShellCmd repositoryUrl app =
     format """nix shell {0}#{1}
-""" [ repositoryUrl, app.name ]
+""" [ repositoryUrl, App.unAppName app.name ]
 
 
 runAppContainerCmd : String -> App -> String
@@ -205,13 +205,13 @@ for image in ./result/*.tar.gz; do
 done
 
 podman-compose --profile services --file $(pwd)/result/compose.yaml up
-""" [ repositoryUrl, app.name ]
+""" [ repositoryUrl, App.unAppName app.name ]
 
 
 runAppVmCmd : String -> App -> String
 runAppVmCmd repositoryUrl app =
     format """nix run {0}#{1}.oci
-""" [ repositoryUrl, app.name ]
+""" [ repositoryUrl, App.unAppName app.name ]
 
 
 appInstructionsHtml : String -> String -> (String -> msg) -> Maybe App -> List (Html msg)
@@ -222,7 +222,7 @@ appInstructionsHtml repositoryUrl recipeDirApps onCopy maybeApp =
             ]
 
         Just app ->
-            [ h2 [] [ text app.name ]
+            [ h2 [] [ text (App.unAppName app.name) ]
             , hr [] []
             , h3 [] [ text "USAGE" ]
             , if not (String.isEmpty app.usage) then
@@ -273,10 +273,10 @@ appInstructionsHtml repositoryUrl recipeDirApps onCopy maybeApp =
             , hr [] []
             , text "Recipe: "
             , a
-                [ href (repositoryToGithubUrl repositoryUrl ++ "/blob/master/" ++ recipeDirApps ++ "/" ++ app.name ++ "/recipe.nix")
+                [ href (repositoryToGithubUrl repositoryUrl ++ "/blob/master/" ++ recipeDirApps ++ "/" ++ App.unAppName app.name ++ "/recipe.nix")
                 , target "_blank"
                 ]
-                [ text (recipeDirApps ++ "/" ++ app.name ++ "/recipe.nix") ]
+                [ text (recipeDirApps ++ "/" ++ App.unAppName app.name ++ "/recipe.nix") ]
             , a
                 [ href "options.html"
                 , target "_blank"

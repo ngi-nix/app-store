@@ -1,6 +1,7 @@
 module NixForge.Route exposing (..)
 
 import AppUrl exposing (AppUrl)
+import NixForge.Config.App as App
 import NixForge.Config.Package as Package
 
 

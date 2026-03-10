@@ -5,7 +5,7 @@ import Html exposing (Html, a, div, h5, p, small, span, text)
 import Html.Attributes exposing (class, href, name)
 import Html.Events exposing (onClick)
 import NixForge.Config exposing (..)
-import NixForge.Config.App exposing (..)
+import NixForge.Config.App as App exposing (..)
 import NixForge.Config.Package exposing (..)
 import NixForge.Output exposing (..)
 import NixForge.Route exposing (..)
@@ -25,16 +25,16 @@ viewApps apps selectedApp filter =
 viewApp : App -> Maybe App -> Html UpdateSelect
 viewApp app selectedApp =
     a
-        [ href ("#app-" ++ app.name)
+        [ href ("/app/" ++ App.unAppName app.name)
         , class
             ("list-group-item list-group-item-action flex-column align-items-start" ++ appActiveState app selectedApp)
         , onClick (UpdateSelect_App app)
         ]
         [ div
-            [ name ("app-" ++ app.name)
+            [ name ("app-" ++ App.unAppName app.name)
             , class "d-flex w-100 justify-content-between"
             ]
-            [ h5 [ class "mb-1" ] [ text app.name ]
+            [ h5 [ class "mb-1" ] [ text (App.unAppName app.name) ]
             , small [] [ text ("v" ++ app.version) ]
             ]
         , p

@@ -5,7 +5,7 @@ import Json.Decode as Decode
 
 
 type alias App =
-    { name : String
+    { name : AppName
     , description : String
     , version : String
     , usage : String
@@ -30,16 +30,34 @@ type alias AppOci =
     }
 
 
+type AppName
+    = AppName String
+
+
+unAppName : AppName -> String
+unAppName (AppName n) =
+    n
+
+
+appName : String -> Maybe AppName
+appName s =
+    if String.all (\c -> 'a' <= c && c <= 'z' || 'A' <= c && c <= 'Z' || '0' <= c && c <= '9' || c == '-') s then
+        Just (AppName s)
+
+    else
+        Nothing
+
+
 appDecoder : Decode.Decoder App
 appDecoder =
     Decode.map7 App
-        (Decode.field "name" Decode.string)
+        (Decode.field "name" (Decode.map (\y -> Maybe.withDefault (AppName "no-name") (appName y)) Decode.string))
         (Decode.field "description" Decode.string)
         (Decode.field "version" Decode.string)
         (Decode.field "usage" Decode.string)
         (Decode.field "programs" appProgramsDecoder)
         (Decode.field "containers" appContainersDecoder)
-        (Decode.field "oci" (Decode.dict appOciDecoder))
+        (Decode.field "vm" appOciDecoder |> Decode.map (\oci -> [ ( "default", oci ) ] |> Dict.fromList))
 
 
 appProgramsDecoder : Decode.Decoder AppPrograms
