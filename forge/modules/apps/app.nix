@@ -24,14 +24,10 @@
     };
 
     # Programs shell configuration
-    programs = {
-      enable = lib.mkEnableOption ''
-        Programs bundle output.
-      '';
-      requirements = lib.mkOption {
-        type = lib.types.listOf lib.types.package;
-        default = [ ];
-      };
+    programs = lib.mkOption {
+      type = lib.types.submodule ./programs;
+      default = { };
+      description = "Programs shell configuration.";
     };
 
     # Container configuration
