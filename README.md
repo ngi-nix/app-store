@@ -1,4 +1,4 @@
-# NGI App Store
+# NGI Nix Forge
 
 **WARNING: this sofware is currently in alpha state of development.**
 
@@ -8,7 +8,7 @@
   **mutli-component applications** using
   [module system](https://nix.dev/tutorials/module-system/index.html)
 
-* [Web UI](https://ngi-nix.github.io/app-store)
+* [Web UI](https://ngi-nix.github.io/ngi-nix-forge)
 
 * [LLMs support](./AGENTS.md)
 
@@ -43,7 +43,7 @@ graph TB
         AO3[NixOS VM<br/>for Multi-component services]
     end
 
-    REG[App Store Registry]
+    REG[Nix Forge Registry]
 
     subgraph Deployment["Deployment"]
         SHELL[Shell Environment<br/>for CLI and GUI components]
@@ -69,10 +69,10 @@ graph TB
 
 ## Self hosting
 
-* Initiate new App Store instance from template
+* Initiate new Nix Forge instance from template
 
 ```bash
-nix flake init --template github:ngi-nix/app-store#example
+nix flake init --template github:ngi-nix/ngi-nix-forge#example
 ```
 
 * Set `repositoryUrl` attribute in `flake.nix` to your repository
