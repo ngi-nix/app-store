@@ -14,6 +14,23 @@
     "readOnly": false,
     "type": "list of (submodule)"
   },
+  "apps.*.containers": {
+    "declarations": [],
+    "default": {
+      "_type": "literalExpression",
+      "text": "{ }"
+    },
+    "description": "Container configuration.",
+    "loc": [
+      "perSystem",
+      "forge",
+      "apps",
+      "*",
+      "containers"
+    ],
+    "readOnly": false,
+    "type": "submodule"
+  },
   "apps.*.containers.composeFile": {
     "declarations": [],
     "default": {
@@ -175,6 +192,23 @@
     "readOnly": false,
     "type": "string"
   },
+  "apps.*.programs": {
+    "declarations": [],
+    "default": {
+      "_type": "literalExpression",
+      "text": "{ }"
+    },
+    "description": "Programs shell configuration.",
+    "loc": [
+      "perSystem",
+      "forge",
+      "apps",
+      "*",
+      "programs"
+    ],
+    "readOnly": false,
+    "type": "submodule"
+  },
   "apps.*.programs.enable": {
     "declarations": [],
     "default": {
@@ -248,6 +282,23 @@
     ],
     "readOnly": false,
     "type": "string"
+  },
+  "apps.*.vm": {
+    "declarations": [],
+    "default": {
+      "_type": "literalExpression",
+      "text": "{ }"
+    },
+    "description": "NixOS VM configuration.",
+    "loc": [
+      "perSystem",
+      "forge",
+      "apps",
+      "*",
+      "vm"
+    ],
+    "readOnly": false,
+    "type": "submodule"
   },
   "apps.*.vm.config.cores": {
     "declarations": [],
