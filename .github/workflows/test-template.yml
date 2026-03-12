@@ -37,7 +37,7 @@ jobs:
         working-directory: /tmp/template-test
         run: |
           nix flake init -t ${{ github.workspace }}#example
-          sed -i 's|nix-forge.url = "github:imincik/nix-forge";|nix-forge.url = "path:${{ github.workspace }}";|g' flake.nix
+          sed -i 's|nix-forge.url = .*;|nix-forge.url = "path:${{ github.workspace }}";|g' flake.nix
           git add *
 
       - name: Show flake info
