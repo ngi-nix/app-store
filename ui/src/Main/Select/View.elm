@@ -89,9 +89,8 @@ viewerFocus model =
                     [ text app.description
                     ]
                 , div
-                    []
-                    [ Markdown.toHtml [ class "markdown-content" ] (String.trim app.usage)
-                    ]
+                    [ class "markdown-content" ]
+                    (Markdown.toHtml Nothing (String.trim app.usage))
                 ]
 
         ModelSelectFocus_Error { msg } ->

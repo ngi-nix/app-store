@@ -98,10 +98,10 @@ appInstructionsHtml repositoryUrl recipeDirApps onCopy maybeApp =
             , hr [] []
             , h3 [] [ text "USAGE" ]
             , if not (String.isEmpty app.usage) then
-                div []
-                    [ Markdown.toHtml [ class "markdown-content" ] (String.trim app.usage)
-                    , hr [] []
-                    ]
+                div [ class "markdown-content" ]
+                    (Markdown.toHtml Nothing (String.trim app.usage)
+                        ++ [ hr [] [] ]
+                    )
 
               else
                 text ""
