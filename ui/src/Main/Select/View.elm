@@ -1,8 +1,8 @@
 module Main.Select.View exposing (..)
 
 import Dict
-import Html exposing (Html, a, div, footer, h1, h2, h5, header, input, main_, nav, p, section, small, span, text)
-import Html.Attributes exposing (class, href, name, placeholder, style, target, value)
+import Html exposing (Html, a, div, footer, h1, h2, h4, h5, header, hr, input, li, main_, nav, p, section, small, span, text, ul)
+import Html.Attributes exposing (class, href, id, name, placeholder, style, tabindex, target, value)
 import Html.Events exposing (onClick, onInput)
 import Main.Config exposing (..)
 import Main.Config.App as App exposing (..)
@@ -74,14 +74,14 @@ viewerFocus model =
                             _ ->
                                 List.filter (\app -> String.contains model.modelSelect_search app.name)
                        )
-                    |> List.map (model |> viewerSearchResult)
+                    |> List.map (viewerSearchResult model)
                 )
 
-        ModelSelectFocus_App { app } ->
-            viewerAppPage app
+        ModelSelectFocus_App state ->
+            viewerAppPage state
 
         ModelSelectFocus_Error { msg } ->
-            div []
+            div [ class "alert alert-danger" ]
                 [ text ("Error: " ++ msg) ]
 
 
@@ -99,7 +99,9 @@ viewerSearchResult model app =
         ]
         [ div
             [ name ("app-" ++ app.name)
-            , class "d-flex w-100 justify-content-between"
+            , class "w-100"
+            , style "display" "flex"
+            , style "justify-content" "space-between"
             ]
             [ h5 [ class "mb-1" ] [ text app.name ]
             , small [] [ text ("v" ++ app.version) ]
@@ -134,28 +136,114 @@ viewerSearchResult model app =
         ]
 
 
+viewerAppModal : { app : App, showRunModal : Bool, activeModalTab : ModalTab } -> Html UpdateSelect
+viewerAppModal appState =
+    if not appState.showRunModal then
+        text ""
 
--- app page --
+    else
+        div []
+            [ div
+                [ class "modal show"
+                , style "display" "block"
+                , tabindex -1
+                , style "background-color" "rgba(0,0,0,0.5)"
+                ]
+                [ div [ class "modal-dialog modal-xl modal-dialog-scrollable" ]
+                    [ div [ class "modal-content" ]
+                        [ div [ class "modal-header bg-light" ]
+                            [ h5 [ class "modal-title" ] [ text ("Run " ++ appState.app.name) ]
+                            , Html.button
+                                [ class "btn-close"
+                                , onClick (UpdateSelect_ToggleRunModal False)
+                                ]
+                                []
+                            ]
+                        , div [ class "modal-body" ]
+                            [ ul [ class "nav nav-pills mb-4" ]
+                                [ viewTab Programs "Programs" appState.activeModalTab
+                                , viewTab Containers "Containers" appState.activeModalTab
+                                , viewTab VM "VM" appState.activeModalTab
+                                ]
+                            , div [ class "tab-content mb-5 p-3 border rounded bg-light" ]
+                                [ viewTabContent appState.activeModalTab appState.app ]
+                            , hr [] []
+                            , div [ id "usage", class "mt-4" ]
+                                [ h4 [ class "mb-3" ] [ text "Usage Instructions" ]
+                                , div [ class "markdown-content" ]
+                                    (Markdown.toHtml Nothing (String.trim appState.app.usage))
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ]
 
 
-viewerAppPage : App -> Html msg
-viewerAppPage app =
-    div [ class "" ]
-        [ h2
-            []
-            [ text app.name
+viewTab : ModalTab -> String -> ModalTab -> Html UpdateSelect
+viewTab targetTab label currentTab =
+    let
+        activeClass =
+            if targetTab == currentTab then
+                " active"
+
+            else
+                ""
+    in
+    li [ class "nav-item" ]
+        [ Html.button
+            [ class ("nav-link" ++ activeClass)
+            , style "cursor" "pointer"
+            , style "border" "none"
+            , onClick (UpdateSelect_SetModalTab targetTab)
             ]
-        , div
-            []
-            [ text app.version
+            [ text label ]
+        ]
+
+
+viewTabContent : ModalTab -> App -> Html UpdateSelect
+viewTabContent activeTab app =
+    case activeTab of
+        Programs ->
+            div [] [ text "Programs configuration and run commands go here." ]
+
+        Containers ->
+            div [] [ text "Docker/Podman container run commands go here." ]
+
+        VM ->
+            div [] [ text "Virtual Machine configuration goes here." ]
+
+
+viewerAppPage : { app : App, showRunModal : Bool, activeModalTab : ModalTab } -> Html UpdateSelect
+viewerAppPage appState =
+    let
+        { app } =
+            appState
+    in
+    div []
+        [ div
+            [ style "display" "flex"
+            , style "justify-content" "space-between"
+            , style "align-items" "center"
+            , style "margin-bottom" "1rem"
+            , style "border-bottom" "1px solid #dee2e6"
+            , style "padding-bottom" "0.5rem"
             ]
-        , div
-            []
-            [ text app.description
+            [ div []
+                [ h2 [ style "margin" "0" ] [ text app.name ]
+                , text ("v" ++ app.version)
+                ]
+            , Html.button
+                [ class "btn btn-success"
+                , onClick (UpdateSelect_ToggleRunModal True)
+                ]
+                [ text "Run" ]
             ]
-        , div
-            [ class "markdown-content" ]
+        , div [ class "lead mb-4" ]
+            [ text app.description ]
+        , div [ class "markdown-content" ]
             (Markdown.toHtml Nothing (String.trim app.usage))
+        , viewerAppModal appState
         ]
 
 
