@@ -1,7 +1,10 @@
 {
+  config,
   lib,
-  pkgs,
+
   inputs,
+  nimi,
+  pkgs,
   ...
 }:
 {
@@ -60,6 +63,17 @@
     };
 
     # Container configuration
+    container = lib.mkOption {
+      type = lib.types.submodule {
+        imports = [ ./container ];
+        _module.args.app = config;
+        _module.args.pkgs = pkgs;
+        _module.args.nimi = nimi;
+      };
+      default = { };
+      description = "Container configuration.";
+    };
+
     containers = lib.mkOption {
       type = lib.types.submodule {
         imports = [ ./containers ];

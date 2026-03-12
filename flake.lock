@@ -71,6 +71,25 @@
         "type": "github"
       }
     },
+    "nimi": {
+      "inputs": {
+        "nix2container": "nix2container",
+        "nixpkgs": "nixpkgs"
+      },
+      "locked": {
+        "lastModified": 1771178957,
+        "narHash": "sha256-vfwz/D1ggRJdny/XaL62Mx2t8VIyaA1YtLuRZ7wjnrg=",
+        "owner": "weyl-ai",
+        "repo": "nimi",
+        "rev": "08a12bcddbca92b770f239da195188edd4d2f45a",
+        "type": "github"
+      },
+      "original": {
+        "owner": "weyl-ai",
+        "repo": "nimi",
+        "type": "github"
+      }
+    },
     "nix-utils": {
       "flake": false,
       "locked": {
@@ -87,13 +106,34 @@
         "type": "github"
       }
     },
+    "nix2container": {
+      "inputs": {
+        "nixpkgs": [
+          "nimi",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1767430085,
+        "narHash": "sha256-SiXJ6xv4pS2MDUqfj0/mmG746cGeJrMQGmoFgHLS25Y=",
+        "owner": "nlewo",
+        "repo": "nix2container",
+        "rev": "66f4b8a47e92aa744ec43acbb5e9185078983909",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nlewo",
+        "repo": "nix2container",
+        "type": "github"
+      }
+    },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1768564909,
-        "narHash": "sha256-Kell/SpJYVkHWMvnhqJz/8DqQg2b6PguxVWOuadbHCc=",
+        "lastModified": 1769461804,
+        "narHash": "sha256-msG8SU5WsBUfVVa/9RPLaymvi5bI8edTavbIq3vRlhI=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "e4bae1bd10c9c57b2cf517953ab70060a828ee6f",
+        "rev": "bfc1b8a4574108ceef22f02bafcf6611380c100d",
         "type": "github"
       },
       "original": {
@@ -118,13 +158,30 @@
         "type": "github"
       }
     },
+    "nixpkgs_2": {
+      "locked": {
+        "lastModified": 1768564909,
+        "narHash": "sha256-Kell/SpJYVkHWMvnhqJz/8DqQg2b6PguxVWOuadbHCc=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "e4bae1bd10c9c57b2cf517953ab70060a828ee6f",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "elm2nix": "elm2nix",
         "flake-parts": "flake-parts",
         "import-tree": "import-tree",
+        "nimi": "nimi",
         "nix-utils": "nix-utils",
-        "nixpkgs": "nixpkgs"
+        "nixpkgs": "nixpkgs_2"
       }
     },
     "systems": {

@@ -18,7 +18,12 @@ in
 
   options = {
     perSystem = mkPerSystemOption (
-      { config, pkgs, ... }:
+      {
+        config,
+        pkgs,
+        nimi,
+        ...
+      }:
       let
         cfg = config.forge.apps;
       in
@@ -36,7 +41,7 @@ in
               description = "List of applications.";
               type = lib.types.listOf (
                 lib.types.submoduleWith {
-                  specialArgs = { inherit inputs pkgs; };
+                  specialArgs = { inherit inputs pkgs nimi; };
                   modules = [ ./app.nix ];
                 }
               );
@@ -145,6 +150,7 @@ in
               # finalApp parameter is currently not used in this function
               app: finalApp:
               { }
+              // lib.optionalAttrs app.container.enable { container = app.container.result.imageBuilder; }
               // lib.optionalAttrs app.containers.enable { containers = containerBundle app; }
               // lib.optionalAttrs app.vm.enable { vm = nixosVm app; };
 

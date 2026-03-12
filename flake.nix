@@ -21,6 +21,8 @@
       flake = false;
     };
 
+    nimi.url = "github:weyl-ai/nimi";
+
     # git-hooks = {
     #   url = "github:cachix/git-hooks.nix";
     #   inputs.nixpkgs.follows = "nixpkgs";
@@ -54,7 +56,9 @@
       # Export flake module for use in other projects
       flake.flakeModules.default = import ./forge/flake-module.nix { inherit inputs; };
 
-      perSystem = { ... }: {
+      perSystem = { system, ... }: {
+        _module.args.nimi = inputs.nimi.packages.${system}.nimi;
+
         forge = {
           repositoryUrl = "github:imincik/nix-forge";
           recipeDirs = {
