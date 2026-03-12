@@ -149,7 +149,7 @@ viewerAppModal appState =
                 , tabindex -1
                 , style "background-color" "rgba(0,0,0,0.5)"
                 ]
-                [ div [ class "modal-dialog modal-xl modal-dialog-scrollable" ]
+                [ div [ class "modal-dialog modal-lg" ]
                     [ div [ class "modal-content" ]
                         [ div [ class "modal-header bg-light" ]
                             [ h5 [ class "modal-title" ] [ text ("Run " ++ appState.app.name) ]
