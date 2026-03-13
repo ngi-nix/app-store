@@ -29,6 +29,7 @@
             self'.packages.elm2nix
             systemd-manager-tui
             watchman
+            podman-compose
           ];
           shellHook = ''
             PATH="$PWD/bin:$PATH"
