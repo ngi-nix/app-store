@@ -1,7 +1,6 @@
 module Main.Config.App exposing (..)
 
-import Json.Decode as Decode
-import Json.Encode as Encode
+import Json.Decode as Decode exposing (Decoder)
 
 
 type alias App =
@@ -34,50 +33,44 @@ type alias AppName =
     String
 
 
-appName : String -> Maybe AppName
-appName s =
-    if String.length s > 0 && String.all (\c -> 'a' <= c && c <= 'z' || 'A' <= c && c <= 'Z' || '0' <= c && c <= '9' || c == '-') s then
-        Just s
-
-    else
-        Nothing
-
-
-appDecoder : Decode.Decoder App
-appDecoder =
+decodeApp : Decoder App
+decodeApp =
     Decode.map7 App
-        (Decode.field "name" Decode.string
-            |> Decode.andThen
-                (\uncheckedName ->
-                    case appName uncheckedName of
-                        Nothing ->
-                            Decode.fail <| "Invalid application name: " ++ uncheckedName
-
-                        Just validName ->
-                            Decode.succeed validName
-                )
-        )
+        (Decode.field "name" decodeAppName)
         (Decode.field "description" Decode.string)
         (Decode.field "version" Decode.string)
         (Decode.field "usage" Decode.string)
-        (Decode.field "programs" appProgramsDecoder)
-        (Decode.field "container" appContainerDecoder)
-        (Decode.field "nixos" appNixosVmDecoder)
+        (Decode.field "programs" decodeAppPrograms)
+        (Decode.field "container" decodeAppContainer)
+        (Decode.field "nixos" decodeAppNixosVm)
 
 
-appProgramsDecoder : Decode.Decoder AppPrograms
-appProgramsDecoder =
+decodeAppName : Decoder AppName
+decodeAppName =
+    Decode.string
+        |> Decode.andThen
+            (\s ->
+                if String.length s > 0 && String.all (\c -> 'a' <= c && c <= 'z' || 'A' <= c && c <= 'Z' || '0' <= c && c <= '9' || c == '-' || c == '_') s then
+                    Decode.succeed s
+
+                else
+                    Decode.fail <| "Invalid application name: " ++ s
+            )
+
+
+decodeAppPrograms : Decoder AppPrograms
+decodeAppPrograms =
     Decode.map AppPrograms
         (Decode.field "enable" Decode.bool)
 
 
-appContainerDecoder : Decode.Decoder AppContainer
-appContainerDecoder =
+decodeAppContainer : Decoder AppContainer
+decodeAppContainer =
     Decode.map AppContainer
         (Decode.field "enable" Decode.bool)
 
 
-appNixosVmDecoder : Decode.Decoder AppNixosVm
-appNixosVmDecoder =
+decodeAppNixosVm : Decoder AppNixosVm
+decodeAppNixosVm =
     Decode.map AppNixosVm
         (Decode.field "enable" Decode.bool)

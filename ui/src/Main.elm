@@ -2,9 +2,8 @@ module Main exposing (main)
 
 import AppUrl
 import Browser
-import Html
 import Http
-import Main.Config exposing (..)
+import Main.Config
 import Main.Config.App exposing (..)
 import Main.Model exposing (..)
 import Main.Navigation
@@ -27,7 +26,7 @@ main =
 
 init : String -> ( Model, Cmd Update )
 init href =
-    ( { model_config = Main.Config.configInit
+    ( { model_config = Main.Config.initConfig
       , model_search = ""
       , model_route =
             href
@@ -44,7 +43,7 @@ cmdGetConfig : Cmd Update
 cmdGetConfig =
     Http.get
         { url = "/forge-config.json"
-        , expect = Http.expectJson Update_GetConfig configDecoder
+        , expect = Http.expectJson Update_GetConfig Main.Config.decodeConfig
         }
 
 

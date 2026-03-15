@@ -1,12 +1,12 @@
 module Main.View exposing (..)
 
 import Dict
-import Html exposing (Attribute, Html, a, div, footer, h1, h2, h3, h4, h5, header, hr, input, li, main_, nav, p, section, small, span, text, ul)
+import Html exposing (Attribute, Html, a, div, footer, h2, h3, h4, h5, header, hr, input, li, main_, nav, p, section, small, span, text, ul)
 import Html.Attributes exposing (class, href, id, name, placeholder, style, tabindex, target, value)
 import Html.Events exposing (onClick, onInput)
 import Json.Decode as Decode
 import Main.Config exposing (..)
-import Main.Config.App as App exposing (..)
+import Main.Config.App exposing (..)
 import Main.Model exposing (..)
 import Main.Route as Route exposing (..)
 import Main.Update exposing (..)
@@ -20,11 +20,18 @@ view model =
         , style "display" "flex"
         , style "flex-direction" "column"
         ]
-        [ header [ class "py-3" ] [ viewTitle ]
-        , nav [ class "mb-4" ] [ model |> viewSearchInput ]
-        , main_ [ class "flex-grow-1" ]
+        [ header
+            [ class "py-3" ]
+            [ viewTitle ]
+        , nav
+            [ class "mb-4" ]
+            [ model |> viewSearchInput ]
+        , main_
+            [ class "flex-grow-1" ]
             [ section [] [ model |> viewFocus ] ]
-        , footer [ class "mt-auto py-3 border-top" ] [ viewPoweredBy ]
+        , footer
+            [ class "mt-auto py-3 border-top" ]
+            [ viewPoweredBy ]
         ]
 
 
@@ -201,9 +208,9 @@ viewAppModal model =
                             ]
                         , div [ class "modal-body" ]
                             [ ul [ class "nav nav-pills mb-4" ]
-                                [ viewTab Programs "Programs" model.modelFocusApp_activeModalTab
-                                , viewTab Container "Container" model.modelFocusApp_activeModalTab
-                                , viewTab VM "VM" model.modelFocusApp_activeModalTab
+                                [ viewTab ModalTab_Programs "Programs" model.modelFocusApp_activeModalTab
+                                , viewTab ModalTab_Container "Container" model.modelFocusApp_activeModalTab
+                                , viewTab ModalTab_VM "VM" model.modelFocusApp_activeModalTab
                                 ]
                             , div [ class "tab-content mb-5 p-3 border rounded bg-light" ]
                                 [ viewTabContent model.modelFocusApp_activeModalTab ]
@@ -244,13 +251,13 @@ viewTab targetTab label currentTab =
 viewTabContent : ModalTab -> Html Update
 viewTabContent activeTab =
     case activeTab of
-        Programs ->
+        ModalTab_Programs ->
             div [] [ text "Programs configuration and run commands go here." ]
 
-        Container ->
+        ModalTab_Container ->
             div [] [ text "Docker/Podman container run commands go here." ]
 
-        VM ->
+        ModalTab_VM ->
             div [] [ text "Virtual Machine configuration goes here." ]
 
 

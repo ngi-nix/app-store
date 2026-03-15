@@ -1,5 +1,7 @@
 module Main.Route exposing (..)
 
+import Json.Decode
+import Main.Config.App
 import AppUrl exposing (AppUrl)
 import Dict
 import List.Extra as List
@@ -26,6 +28,10 @@ fromAppUrl url =
                     Just (Route_Search q)
 
         [ "app", app ] ->
+            app
+              |> Json.Decode.decodeString Main.Config.App.decodeAppName
+              |> 
+            Result.mapError Decode.errorToString ()
             case app |> App.appName of
                 Nothing ->
                     Nothing

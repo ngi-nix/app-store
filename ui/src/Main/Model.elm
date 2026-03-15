@@ -14,9 +14,9 @@ type alias Model =
 
 
 type ModalTab
-    = Programs
-    | Container
-    | VM
+    = ModalTab_Programs
+    | ModalTab_Container
+    | ModalTab_VM
 
 
 type ModelFocus
