@@ -10,6 +10,7 @@ import Main.Config.App exposing (..)
 import Main.Model exposing (..)
 import Main.Route as Route exposing (..)
 import Main.Update exposing (..)
+import Main.View.Instructions exposing (appInstructionsHtml)
 import Markdown
 
 
@@ -92,7 +93,11 @@ viewFocus model =
                 )
 
         ModelFocus_App state ->
-            viewFocus_App state
+            let
+                repositoryUrl =
+                    model.model_config.config_repository
+            in
+            viewFocus_App repositoryUrl state
 
         ModelFocus_Error { msg } ->
             div [ class "alert alert-danger" ]
@@ -146,7 +151,7 @@ viewSearchResult model app =
                       else
                         []
                     , if app.app_vm.enable then
-                        [ span [ class "badge bg-secondary" ] [ text "oci" ] ]
+                        [ span [ class "badge bg-secondary me-1" ] [ text "vm" ] ]
 
                       else
                         []
@@ -156,8 +161,8 @@ viewSearchResult model app =
         ]
 
 
-viewFocus_App : ModelFocusApp -> Html Update
-viewFocus_App model =
+viewFocus_App : String -> ModelFocusApp -> Html Update
+viewFocus_App repositoryUrl model =
     div []
         [ div
             [ style "display" "flex"
@@ -179,12 +184,12 @@ viewFocus_App model =
             ]
         , div [ class "lead mb-4" ]
             [ text model.modelFocusApp_app.app_description ]
-        , viewAppModal model
+        , viewAppModal repositoryUrl model
         ]
 
 
-viewAppModal : ModelFocusApp -> Html Update
-viewAppModal model =
+viewAppModal : String -> ModelFocusApp -> Html Update
+viewAppModal repositoryUrl model =
     if not model.modelFocusApp_showRunModal then
         text ""
 
@@ -207,19 +212,22 @@ viewAppModal model =
                                 []
                             ]
                         , div [ class "modal-body" ]
-                            [ ul [ class "nav nav-pills mb-4" ]
-                                [ viewTab ModalTab_Programs "Programs" model.modelFocusApp_activeModalTab
-                                , viewTab ModalTab_Container "Container" model.modelFocusApp_activeModalTab
-                                , viewTab ModalTab_VM "VM" model.modelFocusApp_activeModalTab
-                                ]
+                            [ viewModalTabs model
                             , div [ class "tab-content mb-5 p-3 border rounded bg-light" ]
-                                [ viewTabContent model.modelFocusApp_activeModalTab ]
-                            , hr [] []
-                            , div [ id "usage", class "mt-4" ]
-                                [ h4 [ class "mb-3" ] [ text "Usage Instructions" ]
-                                , div [ class "markdown-content" ]
-                                    (Markdown.toHtml Nothing (String.trim model.modelFocusApp_app.app_usage))
-                                ]
+                                [ viewTabContent repositoryUrl model ]
+                            , if not (String.isEmpty model.modelFocusApp_app.app_usage) then
+                                div [ id "usage", class "mt-4" ]
+                                    [ hr [] []
+                                    , h4 [ class "mb-3" ] [ text "Usage Instructions" ]
+                                    , div [ class "markdown-content" ]
+                                        (Markdown.toHtml
+                                            Nothing
+                                            (String.trim model.modelFocusApp_app.app_usage)
+                                        )
+                                    ]
+
+                              else
+                                text ""
                             ]
                         ]
                     ]
@@ -227,15 +235,26 @@ viewAppModal model =
             ]
 
 
-viewTab : ModalTab -> String -> ModalTab -> Html Update
-viewTab targetTab label currentTab =
+viewTab : ModalTab -> ModelFocusApp -> Html Update
+viewTab targetTab model =
     let
         activeClass =
-            if targetTab == currentTab then
+            if targetTab == model.modelFocusApp_activeModalTab then
                 " active"
 
             else
                 ""
+
+        targetKey =
+            case targetTab of
+                Programs ->
+                    "programs"
+
+                Container ->
+                    "container"
+
+                VM ->
+                    "vm"
     in
     li [ class "nav-item" ]
         [ Html.button
@@ -244,21 +263,45 @@ viewTab targetTab label currentTab =
             , style "border" "none"
             , onClick (Update_SetModalTab targetTab)
             ]
-            [ text label ]
+            [ text targetKey ]
         ]
 
 
-viewTabContent : ModalTab -> Html Update
-viewTabContent activeTab =
-    case activeTab of
-        ModalTab_Programs ->
-            div [] [ text "Programs configuration and run commands go here." ]
+viewModalTabs : ModelFocusApp -> Html Update
+viewModalTabs model =
+    let
+        enabled : ModalTab -> Bool
+        enabled tab =
+            case tab of
+                Programs ->
+                    model.modelFocusApp_app.app_programs.enable
 
-        ModalTab_Container ->
-            div [] [ text "Docker/Podman container run commands go here." ]
+                Container ->
+                    model.modelFocusApp_app.app_container.enable
 
-        ModalTab_VM ->
-            div [] [ text "Virtual Machine configuration goes here." ]
+                VM ->
+                    model.modelFocusApp_app.app_vm.enable
+
+        panes =
+            [ Programs, Container, VM ]
+    in
+    ul [ class "nav nav-pills mb-4" ]
+        (panes
+            |> List.filter enabled
+            |> List.map (\tab -> viewTab tab model)
+        )
+
+
+viewTabContent : String -> ModelFocusApp -> Html Update
+viewTabContent repositoryUrl model =
+    div []
+        (appInstructionsHtml
+            repositoryUrl
+            "recipes/apps"
+            Update_CopyCode
+            (Just model.modelFocusApp_app)
+            model.modelFocusApp_activeModalTab
+        )
 
 
 viewPoweredBy : Html update
