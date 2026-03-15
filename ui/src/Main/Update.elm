@@ -11,6 +11,7 @@ import Main.Model exposing (..)
 import Main.Navigation
 import Main.Route as Route exposing (..)
 import Navigation
+import Result
 
 
 type Update
@@ -50,7 +51,7 @@ update upd model =
                                     ModelFocus_App
                                         { modelFocusApp_app = app
                                         , modelFocusApp_showRunModal = False
-                                        , modelFocusApp_activeModalTab = Programs
+                                        , modelFocusApp_activeModalTab = ModalTab_Programs
                                         }
 
                                 Nothing ->
@@ -62,20 +63,19 @@ update upd model =
                                                 ++ String.concat (model.model_config.config_apps |> Dict.keys)
                                         }
                       }
-                    , Cmd.none
-                      --, Navigation.pushUrl Main.Navigation.navCmd
-                      --    (route |> Route.toAppUrl)
+                    , Navigation.pushUrl Main.Navigation.navCmd
+                        (route |> Route.toAppUrl)
                     )
 
         Update_GotNavigationEvent event ->
             case event.appUrl |> Route.fromAppUrl of
-                Nothing ->
-                    ( model, Cmd.none )
-
-                Just route ->
-                    ( { model | model_route = route }
+                Err err ->
+                    ( { model | model_focus = ModelFocus_Error { msg = Route.showRouteError err } }
                     , Cmd.none
                     )
+
+                Ok route ->
+                    model |> update (Update_Route route)
 
         Update_NavigateTo url ->
             ( model

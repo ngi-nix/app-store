@@ -1,46 +1,57 @@
 module Main.Route exposing (..)
 
-import Json.Decode
-import Main.Config.App
 import AppUrl exposing (AppUrl)
 import Dict
+import Json.Decode
+import Json.Encode
 import List.Extra as List
-import Main.Config.App as App
+import Main.Config.App
 
 
 type Route
     = Route_Search String
-    | Route_App App.AppName
+    | Route_App Main.Config.App.AppName
 
 
-fromAppUrl : AppUrl -> Maybe Route
+type RouteError
+    = RouteError_Parsing String
+    | RouteError_Unknown AppUrl
+
+
+showRouteError : RouteError -> String
+showRouteError err =
+    case err of
+        RouteError_Parsing s ->
+            "RouteError_Parsing: " ++ s
+
+        RouteError_Unknown url ->
+            "RouteError_Unknown: " ++ AppUrl.toString url
+
+
+fromAppUrl : AppUrl -> Result RouteError Route
 fromAppUrl url =
     case url.path of
         [] ->
-            Just (Route_Search "")
+            Ok (Route_Search "")
 
         [ "app" ] ->
             case url.queryParameters |> Dict.get "q" |> Maybe.andThen List.uncons of
                 Nothing ->
-                    Nothing
+                    Ok (Route_Search "")
 
                 Just ( q, _ ) ->
-                    Just (Route_Search q)
+                    Ok (Route_Search q)
 
         [ "app", app ] ->
-            app
-              |> Json.Decode.decodeString Main.Config.App.decodeAppName
-              |> 
-            Result.mapError Decode.errorToString ()
-            case app |> App.appName of
-                Nothing ->
-                    Nothing
+            case app |> Json.Encode.string |> Json.Decode.decodeValue Main.Config.App.decodeAppName of
+                Err e ->
+                    Err (RouteError_Parsing (Json.Decode.errorToString e))
 
-                Just name ->
-                    Just (Route_App name)
+                Ok n ->
+                    Ok (Route_App n)
 
         _ ->
-            Nothing
+            Err (RouteError_Unknown url)
 
 
 toAppUrl : Route -> AppUrl
