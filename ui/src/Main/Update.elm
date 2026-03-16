@@ -1,6 +1,5 @@
 module Main.Update exposing (..)
 
-import AppUrl exposing (AppUrl)
 import Dict
 import Http
 import Main.Clipboard as Clipboard
@@ -11,63 +10,38 @@ import Main.Model exposing (..)
 import Main.Navigation
 import Main.Route as Route exposing (..)
 import Navigation
-import Result
+
+
+type alias Updater =
+    Model -> ( Model, Cmd Update )
 
 
 type Update
-    = Update_CopyCode String
-    | Update_GetConfig (Result Http.Error Config)
-    | Update_GotNavigationEvent Navigation.Event
-    | Update_NavigateTo AppUrl
+    = Update_Chain (List Update)
+    | Update_CopyCode String
+    | Update_Config (Result Http.Error Config)
+    | Update_Navigation Navigation.Event
     | Update_Route Route
     | Update_SetModalTab ModalTab
     | Update_ToggleRunModal Bool
+    | Update_Updater Updater
 
 
-update : Update -> Model -> ( Model, Cmd Update )
+update : Update -> Updater
 update upd model =
     case upd of
-        Update_Route route ->
-            case route of
-                Route_Search search ->
-                    ( { model
-                        | model_route = route
-                        , model_focus = ModelFocus_Search
-                        , model_search = search
-                      }
-                      -- , Navigation.pushUrlWithState Main.Navigation.navCmd
-                      --     (Route_ route |> Main.Route.toAppUrl)
-                      --     (model.apps |> Json.Encode.dict identity Main.Config.App.appEncoder)
-                    , Navigation.pushUrl Main.Navigation.navCmd
-                        (route |> Route.toAppUrl)
-                    )
+        Update_Chain ups ->
+            let
+                chain msg1 ( model1, cmds1 ) =
+                    let
+                        ( model2, cmds2 ) =
+                            update msg1 model1
+                    in
+                    ( model2, Cmd.batch [ cmds1, cmds2 ] )
+            in
+            ups |> List.foldl chain ( model, Cmd.none )
 
-                Route_App appName ->
-                    ( { model
-                        | model_route = route
-                        , model_focus =
-                            case model.model_config.config_apps |> Dict.get appName of
-                                Just app ->
-                                    ModelFocus_App
-                                        { modelFocusApp_app = app
-                                        , modelFocusApp_showRunModal = False
-                                        , modelFocusApp_activeModalTab = ModalTab_Programs
-                                        }
-
-                                Nothing ->
-                                    ModelFocus_Error
-                                        { msg =
-                                            "No such app: "
-                                                ++ appName
-                                                ++ ". Available: "
-                                                ++ String.concat (model.model_config.config_apps |> Dict.keys)
-                                        }
-                      }
-                    , Navigation.pushUrl Main.Navigation.navCmd
-                        (route |> Route.toAppUrl)
-                    )
-
-        Update_GotNavigationEvent event ->
+        Update_Navigation event ->
             case event.appUrl |> Route.fromAppUrl of
                 Err err ->
                     ( { model | model_focus = ModelFocus_Error { msg = Route.showRouteError err } }
@@ -75,11 +49,11 @@ update upd model =
                     )
 
                 Ok route ->
-                    model |> update (Update_Route route)
+                    model |> updateConfig (updateRoute route)
 
-        Update_NavigateTo url ->
+        Update_Route route ->
             ( model
-            , Navigation.pushUrl Main.Navigation.navCmd url
+            , Navigation.pushUrl Main.Navigation.navCmd (route |> Route.toAppUrl)
             )
 
         Update_CopyCode code ->
@@ -87,7 +61,7 @@ update upd model =
             , Clipboard.copyToClipboard code
             )
 
-        Update_GetConfig res ->
+        Update_Config res ->
             case res of
                 Ok config ->
                     ( { model | model_config = config }
@@ -134,3 +108,60 @@ update upd model =
                     ( model
                     , Cmd.none
                     )
+
+        Update_Updater up ->
+            model |> up
+
+
+updateRoute : Route -> Updater
+updateRoute route model =
+    case route of
+        Route_Search search ->
+            ( { model
+                | model_route = route
+                , model_focus = ModelFocus_Search
+                , model_search = search
+              }
+            , Cmd.none
+            )
+
+        Route_App appName ->
+            ( { model
+                | model_route = route
+                , model_focus =
+                    case model.model_config.config_apps |> Dict.get appName of
+                        Just app ->
+                            ModelFocus_App
+                                { modelFocusApp_app = app
+                                , modelFocusApp_showRunModal = False
+                                , modelFocusApp_activeModalTab = ModalTab_Programs
+                                }
+
+                        Nothing ->
+                            ModelFocus_Error
+                                { msg =
+                                    "No such app: "
+                                        ++ appName
+                                        ++ ". Available: "
+                                        ++ String.concat (model.model_config.config_apps |> Dict.keys)
+                                }
+              }
+            , Cmd.none
+            )
+
+
+{-| `updateConfig up` populate `model_config` if empty, then run `up`.
+`up` is thus always run after `model_config` has been updated.
+-}
+updateConfig : Updater -> Updater
+updateConfig up model =
+    if Dict.isEmpty model.model_config.config_apps then
+        ( model
+        , Http.get
+            { url = "/forge-config.json"
+            , expect = Http.expectJson (\res -> Update_Chain [ Update_Config res, Update_Updater up ]) Main.Config.decodeConfig
+            }
+        )
+
+    else
+        model |> up

@@ -2,8 +2,6 @@ module Main exposing (main)
 
 import AppUrl
 import Browser
-import Http
-import Json.Encode
 import Main.Config
 import Main.Config.App exposing (..)
 import Main.Model exposing (..)
@@ -37,31 +35,23 @@ init href =
     in
     case href |> Url.fromString of
         Nothing ->
-            ( model, cmdGetConfig )
+            ( model, Cmd.none )
 
         Just url ->
-            case url |> AppUrl.fromUrl |> Main.Route.fromAppUrl of
+            let
+                appUrl =
+                    url |> AppUrl.fromUrl
+            in
+            case appUrl |> Main.Route.fromAppUrl of
                 Err err ->
                     ( { model | model_focus = ModelFocus_Error { msg = Main.Route.showRouteError err } }
-                    , cmdGetConfig
+                    , Cmd.none
                     )
 
                 Ok route ->
-                    let
-                        ( m, _ ) =
-                            model |> update (Update_Route route)
-                    in
-                    ( m, cmdGetConfig )
-
-
-cmdGetConfig : Cmd Update
-cmdGetConfig =
-    Http.get
-        { url = "/forge-config.json"
-        , expect = Http.expectJson Update_GetConfig Main.Config.decodeConfig
-        }
+                    model |> update (Update_Route route)
 
 
 subscriptions : Model -> Sub Update
 subscriptions _ =
-    Navigation.onEvent Main.Navigation.onNavEvent Update_GotNavigationEvent
+    Navigation.onEvent Main.Navigation.onNavEvent Update_Navigation
