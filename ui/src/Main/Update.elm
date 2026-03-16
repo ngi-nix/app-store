@@ -4,7 +4,7 @@ import Dict
 import Http
 import Main.Config exposing (..)
 import Main.Config.App exposing (..)
-import Main.Error as Error exposing (..)
+import Main.Error exposing (..)
 import Main.Model exposing (..)
 import Main.Ports.Clipboard as Clipboard
 import Main.Ports.Navigation
@@ -22,8 +22,6 @@ type Update
     | Update_Config (Result Http.Error Config)
     | Update_Navigation Navigation.Event
     | Update_Route Route
-    | Update_SetModalTab ModalTab
-    | Update_SetRunModal Bool
     | Update_Updater Updater
     | Update_NoOp
 
@@ -65,48 +63,12 @@ update upd model =
         Update_Config res ->
             case res of
                 Ok config ->
-                    ( { model | model_config = config }
+                    ( { model | model_config = { config | config_apps = config.config_apps } }
                     , Cmd.none
                     )
 
                 Err err ->
                     ( { model | model_errors = model.model_errors ++ [ Error_Http err ] }
-                    , Cmd.none
-                    )
-
-        Update_SetRunModal visibility ->
-            case model.model_focus of
-                ModelFocus_App state ->
-                    ( { model
-                        | model_focus =
-                            ModelFocus_App
-                                { state
-                                    | modelFocusApp_showRunModal = visibility
-                                }
-                      }
-                    , Cmd.none
-                    )
-
-                _ ->
-                    ( model
-                    , Cmd.none
-                    )
-
-        Update_SetModalTab tab ->
-            case model.model_focus of
-                ModelFocus_App modelFocusApp ->
-                    ( { model
-                        | model_focus =
-                            ModelFocus_App
-                                { modelFocusApp
-                                    | modelFocusApp_activeModalTab = tab
-                                }
-                      }
-                    , Cmd.none
-                    )
-
-                _ ->
-                    ( model
                     , Cmd.none
                     )
 
@@ -120,32 +82,84 @@ update upd model =
 updateRoute : Route -> Updater
 updateRoute route model =
     case route of
-        Route_Search search ->
+        Route_Search routeSearch ->
             ( { model
-                | model_route = route
-                , model_focus = ModelFocus_Search
-                , model_search = search
+                | model_page = Page_Search
+                , model_search = routeSearch.routeSearch_pattern
               }
             , Cmd.none
             )
 
-        Route_App appName ->
-            ( case model.model_config.config_apps |> Dict.get appName of
+        Route_App routeApp ->
+            ( case model.model_config.config_apps |> Dict.get routeApp.routeApp_name of
                 Just app ->
-                    { model
-                        | model_route = route
-                        , model_focus =
-                            ModelFocus_App
-                                { modelFocusApp_app = app
-                                , modelFocusApp_showRunModal = False
-                                , modelFocusApp_activeModalTab = ModalTab_Programs
+                    case routeApp.routeApp_runOutput of
+                        Nothing ->
+                            { model
+                                | model_page =
+                                    Page_App
+                                        { pageApp_route =
+                                            { routeApp
+                                                | routeApp_runOutput =
+                                                    [ if app.app_programs.enable then
+                                                        [ AppOutput_Programs ]
+
+                                                      else
+                                                        []
+                                                    , if app.app_container.enable then
+                                                        [ AppOutput_Container ]
+
+                                                      else
+                                                        []
+                                                    , if app.app_vm.enable then
+                                                        [ AppOutput_VM ]
+
+                                                      else
+                                                        []
+                                                    ]
+                                                        |> List.concat
+                                                        |> List.head
+                                            }
+                                        , pageApp_app = app
+                                        }
+                            }
+
+                        Just output ->
+                            let
+                                appHasRequestedOutput =
+                                    case output of
+                                        AppOutput_Programs ->
+                                            app.app_programs.enable
+
+                                        AppOutput_Container ->
+                                            app.app_container.enable
+
+                                        AppOutput_VM ->
+                                            app.app_vm.enable
+                            in
+                            if appHasRequestedOutput then
+                                { model
+                                    | model_page =
+                                        Page_App
+                                            { pageApp_route = routeApp
+                                            , pageApp_app = app
+                                            }
                                 }
-                    }
+
+                            else
+                                { model
+                                    | model_page =
+                                        Page_App
+                                            { pageApp_route = routeApp
+                                            , pageApp_app = app
+                                            }
+                                    , model_errors = model.model_errors ++ [ Error_App (ErrorApp_NoSuchOutput output) ]
+                                }
 
                 Nothing ->
                     { model
-                        | model_route = route
-                        , model_errors = model.model_errors ++ [ Error_App (ErrorApp_NotFound appName) ]
+                        | model_page = Page_Search
+                        , model_errors = model.model_errors ++ [ Error_App (ErrorApp_NotFound routeApp.routeApp_name) ]
                     }
             , Cmd.none
             )

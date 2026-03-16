@@ -1,6 +1,5 @@
 module Main.View exposing (..)
 
-import Browser.Events
 import Dict
 import Html exposing (Html, a, div, footer, h2, h3, h5, header, input, li, main_, nav, p, section, small, span, text, ul)
 import Html.Attributes exposing (class, href, name, placeholder, style, tabindex, target, value)
@@ -39,7 +38,7 @@ view model =
             )
         , main_
             [ class "flex-grow-1" ]
-            [ section [] [ model |> viewFocus ] ]
+            [ section [] [ model |> viewPage ] ]
         , footer
             [ class "mt-auto py-3 border-top" ]
             [ viewPoweredBy ]
@@ -55,7 +54,7 @@ viewTitle =
             , style "color" "inherit"
             , style "text-decoration" "none"
             , style "cursor" "pointer"
-            , onClick (Update_Route (Route_Search ""))
+            , onClick (Update_Route (Route_Search { routeSearch_pattern = "" }))
             ]
             [ text "NGI Nix Forge" ]
         ]
@@ -74,67 +73,68 @@ viewSearchInput model =
                 [ class "form-control form-control-lg py-2 my-2"
                 , placeholder "Search applications by name"
                 , value model.model_search
-                , onInput (\search -> Update_Route (Route_Search search))
+                , onInput (\search -> Update_Route (Route_Search { routeSearch_pattern = search }))
                 ]
                 []
             ]
         ]
 
 
-viewFocus : Model -> Html Update
-viewFocus model =
-    case model.model_focus of
-        ModelFocus_Search ->
-            div
-                [ class "container m-app-grid"
-                ]
-                (model.model_config.config_apps
-                    |> Dict.values
-                    |> (case model.model_search of
-                            "" ->
-                                identity
+viewPage : Model -> Html Update
+viewPage model =
+    case model.model_page of
+        Page_Search ->
+            viewPageSearch model
 
-                            _ ->
-                                List.filter
-                                    (\app ->
-                                        let
-                                            -- Case Insensitive search
-                                            model_search =
-                                                String.toLower model.model_search
-
-                                            app_name =
-                                                String.toLower app.app_name
-
-                                            app_description =
-                                                String.toLower app.app_description
-
-                                            name_matches =
-                                                String.contains model_search app_name
-
-                                            desc_matches =
-                                                String.contains model_search app_description
-                                        in
-                                        name_matches || desc_matches
-                                    )
-                       )
-                    |> List.map (viewSearchResult model)
-                )
-
-        ModelFocus_App state ->
-            let
-                repositoryUrl =
-                    model.model_config.config_repository
-            in
-            viewFocus_App repositoryUrl state
+        Page_App pageApp ->
+            viewPageApp model pageApp
 
 
-viewSearchResult : Model -> App -> Html Update
-viewSearchResult model app =
+viewPageSearch : Model -> Html Update
+viewPageSearch model =
+    div
+        [ class "container m-app-grid"
+        ]
+        (model.model_config.config_apps
+            |> Dict.values
+            |> (case model.model_search of
+                    "" ->
+                        identity
+
+                    _ ->
+                        List.filter
+                            (\app ->
+                                let
+                                    -- Case Insensitive search
+                                    model_search =
+                                        String.toLower model.model_search
+
+                                    app_name =
+                                        String.toLower app.app_name
+
+                                    app_description =
+                                        String.toLower app.app_description
+
+                                    name_matches =
+                                        String.contains model_search app_name
+
+                                    desc_matches =
+                                        String.contains model_search app_description
+                                in
+                                name_matches || desc_matches
+                            )
+               )
+            |> List.map (viewPageSearchApp model)
+        )
+
+
+viewPageSearchApp : Model -> App -> Html Update
+viewPageSearchApp model app =
     a
-        [ href (Route_App app.app_name |> Route.toString)
+        [ href (Route_App (initRouteApp app.app_name) |> Route.toString)
         , class "card m-app-card shadow-sm p-3"
         , style "text-decoration" "none"
-        , onClick (Update_Route (Route_App app.app_name))
+        , onClick (Update_Route (Route_App (initRouteApp app.app_name)))
         ]
         [ div
             [ name ("app-" ++ app.app_name)
@@ -179,8 +179,8 @@ viewSearchResult model app =
         ]
 
 
-viewFocus_App : String -> ModelFocusApp -> Html Update
-viewFocus_App repositoryUrl model =
+viewPageApp : Model -> PageApp -> Html Update
+viewPageApp model pageApp =
     div []
         [ div
             [ style "display" "flex"
@@ -191,24 +191,28 @@ viewFocus_App repositoryUrl model =
             , style "padding-bottom" "0.5rem"
             ]
             [ div []
-                [ h2 [ style "margin" "0" ] [ text model.modelFocusApp_app.app_name ]
-                , text ("v" ++ model.modelFocusApp_app.app_version)
+                [ h2 [ style "margin" "0" ] [ text pageApp.pageApp_route.routeApp_name ]
+                , text ("v" ++ pageApp.pageApp_app.app_version)
                 ]
             , Html.button
                 [ class "btn btn-success"
-                , onClick (Update_SetRunModal True)
+                , let
+                    route =
+                        pageApp.pageApp_route
+                  in
+                  onClick (Update_Route (Route_App { route | routeApp_runShown = True }))
                 ]
                 [ text "Run" ]
             ]
         , div [ class "lead mb-4" ]
-            [ text model.modelFocusApp_app.app_description ]
-        , viewAppModal repositoryUrl model
+            [ text pageApp.pageApp_app.app_description ]
+        , viewPageAppRun model pageApp
         ]
 
 
-viewAppModal : String -> ModelFocusApp -> Html Update
-viewAppModal repositoryUrl model =
-    if not model.modelFocusApp_showRunModal then
+viewPageAppRun : Model -> PageApp -> Html Update
+viewPageAppRun model pageApp =
+    if not pageApp.pageApp_route.routeApp_runShown then
         text ""
 
     else
@@ -218,7 +222,11 @@ viewAppModal repositoryUrl model =
                 , style "display" "block"
                 , tabindex -1
                 , style "background-color" "rgba(0,0,0,0.5)"
-                , onClick (Update_SetRunModal False)
+                , let
+                    route =
+                        pageApp.pageApp_route
+                  in
+                  onClick (Update_Route (Route_App { route | routeApp_runShown = False }))
                 ]
                 [ div
                     [ class "modal-dialog modal-lg"
@@ -226,18 +234,21 @@ viewAppModal repositoryUrl model =
                     ]
                     [ div [ class "modal-content" ]
                         [ div [ class "modal-header bg-light" ]
-                            [ h5 [ class "modal-title" ] [ text ("Run " ++ model.modelFocusApp_app.app_name) ]
+                            [ h5 [ class "modal-title" ] [ text ("Run " ++ pageApp.pageApp_route.routeApp_name) ]
                             , Html.button
                                 [ class "btn-close"
-                                , onClick (Update_SetRunModal False)
+                                , let
+                                    route =
+                                        pageApp.pageApp_route
+                                  in
+                                  onClick (Update_Route (Route_App { route | routeApp_runShown = False }))
                                 ]
                                 []
                             ]
                         , div [ class "modal-body" ]
-                            [ viewModalTabs model
+                            [ viewPageAppRunOuputs model pageApp
                             , div [ class "tab-content mb-5 p-3 border rounded bg-light" ]
-                                [ viewTabContent repositoryUrl model ]
-                            , viewInstructionsUsage Update_CopyCode model
+                                [ viewPageAppInstructions model pageApp ]
                             ]
                         ]
                     ]
@@ -245,73 +256,56 @@ viewAppModal repositoryUrl model =
             ]
 
 
-viewTab : ModalTab -> ModelFocusApp -> Html Update
-viewTab targetTab model =
+viewPageAppRunOuputs : Model -> PageApp -> Html Update
+viewPageAppRunOuputs model pageApp =
     let
-        activeClass =
-            if targetTab == model.modelFocusApp_activeModalTab then
-                " active"
-
-            else
-                ""
-
-        targetKey =
-            case targetTab of
-                ModalTab_Programs ->
-                    "programs"
-
-                ModalTab_Container ->
-                    "container"
-
-                ModalTab_VM ->
-                    "vm"
-    in
-    li [ class "nav-item" ]
-        [ Html.button
-            [ class ("nav-link" ++ activeClass)
-            , style "cursor" "pointer"
-            , style "border" "none"
-            , onClick (Update_SetModalTab targetTab)
-            ]
-            [ text targetKey ]
-        ]
-
-
-viewModalTabs : ModelFocusApp -> Html Update
-viewModalTabs model =
-    let
-        enabled : ModalTab -> Bool
+        enabled : AppOutput -> Bool
         enabled tab =
             case tab of
-                ModalTab_Programs ->
-                    model.modelFocusApp_app.app_programs.enable
+                AppOutput_Programs ->
+                    pageApp.pageApp_app.app_programs.enable
 
-                ModalTab_Container ->
-                    model.modelFocusApp_app.app_container.enable
+                AppOutput_Container ->
+                    pageApp.pageApp_app.app_container.enable
 
-                ModalTab_VM ->
-                    model.modelFocusApp_app.app_vm.enable
-
-        panes =
-            [ ModalTab_Programs, ModalTab_Container, ModalTab_VM ]
+                AppOutput_VM ->
+                    pageApp.pageApp_app.app_vm.enable
     in
     ul [ class "nav nav-pills mb-4" ]
-        (panes
+        ([ AppOutput_Programs
+         , AppOutput_Container
+         , AppOutput_VM
+         ]
             |> List.filter enabled
-            |> List.map (\tab -> viewTab tab model)
+            |> List.map (viewPageAppRunOuput model pageApp)
         )
 
 
-viewTabContent : String -> ModelFocusApp -> Html Update
-viewTabContent repositoryUrl model =
-    div []
-        (viewInstructionsApp
-            repositoryUrl
-            "recipes/apps"
-            Update_CopyCode
-            (Just model.modelFocusApp_app)
-            model.modelFocusApp_activeModalTab
-        )
+viewPageAppRunOuput : Model -> PageApp -> AppOutput -> Html Update
+viewPageAppRunOuput model pageApp appOutput =
+    li [ class "nav-item" ]
+        [ Html.button
+            [ class
+                ([ "nav-link"
+                 , if Just appOutput == pageApp.pageApp_route.routeApp_runOutput then
+                    "active"
+
+                   else
+                    ""
+                 ]
+                    |> String.join " "
+                )
+            , style "cursor" "pointer"
+            , style "border" "none"
+            , let
+                route =
+                    pageApp.pageApp_route
+              in
+              onClick (Update_Route (Route_App { route | routeApp_runOutput = Just appOutput }))
+            ]
+            [ text <| showAppOutput appOutput
+            ]
+        ]
 
 
 viewPoweredBy : Html update
@@ -370,25 +364,3 @@ viewPoweredBy =
           else
             text ""
         ]
-
-
-subscriptions : ModelFocusApp -> Sub Update
-subscriptions model =
-    if model.modelFocusApp_showRunModal then
-        Browser.Events.onKeyDown (decodeEscapeKey |> Decode.map Update_SetRunModal)
-
-    else
-        Sub.none
-
-
-decodeEscapeKey : Decode.Decoder Bool
-decodeEscapeKey =
-    Decode.field "key" Decode.string
-        |> Decode.andThen
-            (\key ->
-                if key == "Escape" then
-                    Decode.succeed False
-
-                else
-                    Decode.fail "Not escape"
-            )

@@ -2,7 +2,7 @@ module Main.Error exposing (..)
 
 import AppUrl exposing (AppUrl)
 import Http
-import Main.Config.App exposing (AppName)
+import Main.Config.App exposing (..)
 
 
 type Error
@@ -59,12 +59,20 @@ showErrorRoute err =
 
 
 type ErrorApp
-    = ErrorApp_NotFound AppName
+    = ErrorApp_NoSuchOutput AppOutput
+    | ErrorApp_NotFound AppName
 
 
 showErrorApp : ErrorApp -> String
 showErrorApp err =
     case err of
+        ErrorApp_NoSuchOutput output ->
+            String.concat
+                [ "No such output: "
+                , output |> showAppOutput
+                , "."
+                ]
+
         ErrorApp_NotFound appName ->
             String.concat
                 [ "No such app: "

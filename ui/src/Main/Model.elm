@@ -9,25 +9,27 @@ import Main.Route exposing (..)
 type alias Model =
     { model_config : Config
     , model_search : String
-    , model_route : Route
-    , model_focus : ModelFocus
+    , model_page : Page
     , model_errors : List Error
     }
 
 
-type ModalTab
-    = ModalTab_Programs
-    | ModalTab_Container
-    | ModalTab_VM
+{-| A `Page` is located at a `Route`,
+with more or less data than `Route`:
+
+  - More data if viewing the `Page` requires more than provided in its address,
+    eg. by querying the backend (eg. `pageApp_app`).
+
+  - Less data if navigating away from the `Page` must persist that data,
+    and thus be persisted in `Model` (eg. `model_search`).
+
+-}
+type Page
+    = Page_Search
+    | Page_App PageApp
 
 
-type ModelFocus
-    = ModelFocus_App ModelFocusApp
-    | ModelFocus_Search
-
-
-type alias ModelFocusApp =
-    { modelFocusApp_app : App
-    , modelFocusApp_showRunModal : Bool
-    , modelFocusApp_activeModalTab : ModalTab
+type alias PageApp =
+    { pageApp_route : RouteApp
+    , pageApp_app : App
     }
