@@ -32,6 +32,7 @@ init href =
             , model_search = ""
             , model_route = Route_Search ""
             , model_focus = ModelFocus_Search
+            , model_errors = []
             }
     in
     case href |> Url.fromString of

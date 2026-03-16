@@ -8,6 +8,7 @@ import Html.Events exposing (onInput, stopPropagationOn)
 import Json.Decode as Decode
 import Main.Config exposing (..)
 import Main.Config.App exposing (..)
+import Main.Error
 import Main.Helpers.Html exposing (..)
 import Main.Model exposing (..)
 import Main.Route as Route exposing (..)
@@ -28,6 +29,14 @@ view model =
         , nav
             [ class "mb-4" ]
             [ model |> viewSearchInput ]
+        , div []
+            (model.model_errors
+                |> List.map
+                    (\error ->
+                        div [ class "alert alert-danger" ]
+                            [ text ("Error: " ++ Main.Error.showError error) ]
+                    )
+            )
         , main_
             [ class "flex-grow-1" ]
             [ section [] [ model |> viewFocus ] ]
@@ -96,10 +105,6 @@ viewFocus model =
                     model.model_config.config_repository
             in
             viewFocus_App repositoryUrl state
-
-        ModelFocus_Error { msg } ->
-            div [ class "alert alert-danger" ]
-                [ text ("Error: " ++ msg) ]
 
 
 viewSearchResult : Model -> App -> Html Update
