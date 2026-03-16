@@ -2,12 +2,12 @@ module Main.Update exposing (..)
 
 import Dict
 import Http
-import Main.Clipboard as Clipboard
 import Main.Config exposing (..)
 import Main.Config.App exposing (..)
-import Main.Http as Http
+import Main.Helpers.Http as Http
 import Main.Model exposing (..)
-import Main.Navigation
+import Main.Ports.Clipboard as Clipboard
+import Main.Ports.Navigation
 import Main.Route as Route exposing (..)
 import Navigation
 
@@ -23,8 +23,9 @@ type Update
     | Update_Navigation Navigation.Event
     | Update_Route Route
     | Update_SetModalTab ModalTab
-    | Update_ToggleRunModal Bool
+    | Update_SetRunModal Bool
     | Update_Updater Updater
+    | Update_NoOp
 
 
 update : Update -> Updater
@@ -53,7 +54,7 @@ update upd model =
 
         Update_Route route ->
             ( model
-            , Navigation.pushUrl Main.Navigation.navCmd (route |> Route.toAppUrl)
+            , Navigation.pushUrl Main.Ports.Navigation.navCmd (route |> Route.toAppUrl)
             )
 
         Update_CopyCode code ->
@@ -73,7 +74,7 @@ update upd model =
                     , Cmd.none
                     )
 
-        Update_ToggleRunModal visibility ->
+        Update_SetRunModal visibility ->
             case model.model_focus of
                 ModelFocus_App state ->
                     ( { model
@@ -108,6 +109,9 @@ update upd model =
                     ( model
                     , Cmd.none
                     )
+
+        Update_NoOp ->
+            ( model, Cmd.none )
 
         Update_Updater up ->
             model |> up

@@ -1,16 +1,17 @@
 module Main.View exposing (..)
 
+import Browser.Events
 import Dict
-import Html exposing (Attribute, Html, a, div, footer, h2, h3, h4, h5, header, hr, input, li, main_, nav, p, section, small, span, text, ul)
-import Html.Attributes exposing (class, href, id, name, placeholder, style, tabindex, target, value)
-import Html.Events exposing (onClick, onInput)
+import Html exposing (Attribute, Html, a, div, footer, h2, h3, h5, header, input, li, main_, nav, p, section, small, span, text, ul)
+import Html.Attributes exposing (class, href, name, placeholder, style, tabindex, target, value)
+import Html.Events exposing (onClick, onInput, stopPropagationOn)
 import Json.Decode as Decode
 import Main.Config exposing (..)
 import Main.Config.App exposing (..)
 import Main.Model exposing (..)
 import Main.Route as Route exposing (..)
 import Main.Update exposing (..)
-import Markdown
+import Main.View.Instructions exposing (usageInstructions, viewInstructionsApp)
 
 
 view : Model -> Html Update
@@ -45,7 +46,7 @@ viewTitle =
             , style "text-decoration" "none"
             , style "cursor" "pointer"
             ]
-            [ text "ngi-nix forge" ]
+            [ text "NGI Nix Forge" ]
         ]
 
 
@@ -74,10 +75,7 @@ viewFocus model =
     case model.model_focus of
         ModelFocus_Search ->
             div
-                [ class "list-group gap-3"
-                , style "flex-wrap" "wrap"
-                , style "flex-direction" "row"
-                , style "justify-content" "space-between"
+                [ class "container m-app-grid"
                 ]
                 (model.model_config.config_apps
                     |> Dict.values
@@ -92,7 +90,11 @@ viewFocus model =
                 )
 
         ModelFocus_App state ->
-            viewFocus_App state
+            let
+                repositoryUrl =
+                    model.model_config.config_repository
+            in
+            viewFocus_App repositoryUrl state
 
         ModelFocus_Error { msg } ->
             div [ class "alert alert-danger" ]
@@ -109,12 +111,8 @@ viewSearchResult : Model -> App -> Html Update
 viewSearchResult model app =
     a
         [ href (Route_App app.app_name |> Route.toString)
-        , class "list-group-item list-group-item-action"
-        , style "flex-direction" "column"
-        , style "align-items" "start"
-        , style "flex-shrink" "1"
-        , style "flex-grow" "1"
-        , style "flex-basis" "20em"
+        , class "card m-app-card shadow-sm p-3"
+        , style "text-decoration" "none"
         , onClickPreventDefault (Update_Route (Route_App app.app_name))
         ]
         [ div
@@ -124,7 +122,11 @@ viewSearchResult model app =
             , style "justify-content" "space-between"
             ]
             [ h5 [ class "mb-1" ] [ text app.app_name ]
-            , small [] [ text ("v" ++ app.app_version) ]
+            , small
+                [ class "text-muted"
+                , style "font-style" "italic"
+                ]
+                [ text ("v" ++ app.app_version) ]
             ]
         , p
             [ class "mb-1"
@@ -146,7 +148,7 @@ viewSearchResult model app =
                       else
                         []
                     , if app.app_vm.enable then
-                        [ span [ class "badge bg-secondary" ] [ text "oci" ] ]
+                        [ span [ class "badge bg-secondary me-1" ] [ text "vm" ] ]
 
                       else
                         []
@@ -156,8 +158,8 @@ viewSearchResult model app =
         ]
 
 
-viewFocus_App : ModelFocusApp -> Html Update
-viewFocus_App model =
+viewFocus_App : String -> ModelFocusApp -> Html Update
+viewFocus_App repositoryUrl model =
     div []
         [ div
             [ style "display" "flex"
@@ -173,18 +175,18 @@ viewFocus_App model =
                 ]
             , Html.button
                 [ class "btn btn-success"
-                , onClick (Update_ToggleRunModal True)
+                , onClick (Update_SetRunModal True)
                 ]
                 [ text "Run" ]
             ]
         , div [ class "lead mb-4" ]
             [ text model.modelFocusApp_app.app_description ]
-        , viewAppModal model
+        , viewAppModal repositoryUrl model
         ]
 
 
-viewAppModal : ModelFocusApp -> Html Update
-viewAppModal model =
+viewAppModal : String -> ModelFocusApp -> Html Update
+viewAppModal repositoryUrl model =
     if not model.modelFocusApp_showRunModal then
         text ""
 
@@ -195,31 +197,26 @@ viewAppModal model =
                 , style "display" "block"
                 , tabindex -1
                 , style "background-color" "rgba(0,0,0,0.5)"
+                , onClick (Update_SetRunModal False)
                 ]
-                [ div [ class "modal-dialog modal-lg" ]
+                [ div
+                    [ class "modal-dialog modal-lg"
+                    , stopPropagationOn "click" (Decode.succeed ( Update_NoOp, True ))
+                    ]
                     [ div [ class "modal-content" ]
                         [ div [ class "modal-header bg-light" ]
                             [ h5 [ class "modal-title" ] [ text ("Run " ++ model.modelFocusApp_app.app_name) ]
                             , Html.button
                                 [ class "btn-close"
-                                , onClick (Update_ToggleRunModal False)
+                                , onClick (Update_SetRunModal False)
                                 ]
                                 []
                             ]
                         , div [ class "modal-body" ]
-                            [ ul [ class "nav nav-pills mb-4" ]
-                                [ viewTab ModalTab_Programs "Programs" model.modelFocusApp_activeModalTab
-                                , viewTab ModalTab_Container "Container" model.modelFocusApp_activeModalTab
-                                , viewTab ModalTab_VM "VM" model.modelFocusApp_activeModalTab
-                                ]
+                            [ viewModalTabs model
                             , div [ class "tab-content mb-5 p-3 border rounded bg-light" ]
-                                [ viewTabContent model.modelFocusApp_activeModalTab ]
-                            , hr [] []
-                            , div [ id "usage", class "mt-4" ]
-                                [ h4 [ class "mb-3" ] [ text "Usage Instructions" ]
-                                , div [ class "markdown-content" ]
-                                    (Markdown.toHtml Nothing (String.trim model.modelFocusApp_app.app_usage))
-                                ]
+                                [ viewTabContent repositoryUrl model ]
+                            , usageInstructions Update_CopyCode model
                             ]
                         ]
                     ]
@@ -227,15 +224,26 @@ viewAppModal model =
             ]
 
 
-viewTab : ModalTab -> String -> ModalTab -> Html Update
-viewTab targetTab label currentTab =
+viewTab : ModalTab -> ModelFocusApp -> Html Update
+viewTab targetTab model =
     let
         activeClass =
-            if targetTab == currentTab then
+            if targetTab == model.modelFocusApp_activeModalTab then
                 " active"
 
             else
                 ""
+
+        targetKey =
+            case targetTab of
+                ModalTab_Programs ->
+                    "programs"
+
+                ModalTab_Container ->
+                    "container"
+
+                ModalTab_VM ->
+                    "vm"
     in
     li [ class "nav-item" ]
         [ Html.button
@@ -244,32 +252,57 @@ viewTab targetTab label currentTab =
             , style "border" "none"
             , onClick (Update_SetModalTab targetTab)
             ]
-            [ text label ]
+            [ text targetKey ]
         ]
 
 
-viewTabContent : ModalTab -> Html Update
-viewTabContent activeTab =
-    case activeTab of
-        ModalTab_Programs ->
-            div [] [ text "Programs configuration and run commands go here." ]
+viewModalTabs : ModelFocusApp -> Html Update
+viewModalTabs model =
+    let
+        enabled : ModalTab -> Bool
+        enabled tab =
+            case tab of
+                ModalTab_Programs ->
+                    model.modelFocusApp_app.app_programs.enable
 
-        ModalTab_Container ->
-            div [] [ text "Docker/Podman container run commands go here." ]
+                ModalTab_Container ->
+                    model.modelFocusApp_app.app_container.enable
 
-        ModalTab_VM ->
-            div [] [ text "Virtual Machine configuration goes here." ]
+                ModalTab_VM ->
+                    model.modelFocusApp_app.app_vm.enable
+
+        panes =
+            [ ModalTab_Programs, ModalTab_Container, ModalTab_VM ]
+    in
+    ul [ class "nav nav-pills mb-4" ]
+        (panes
+            |> List.filter enabled
+            |> List.map (\tab -> viewTab tab model)
+        )
+
+
+viewTabContent : String -> ModelFocusApp -> Html Update
+viewTabContent repositoryUrl model =
+    div []
+        (viewInstructionsApp
+            repositoryUrl
+            "recipes/apps"
+            Update_CopyCode
+            (Just model.modelFocusApp_app)
+            model.modelFocusApp_activeModalTab
+        )
 
 
 viewPoweredBy : Html update
 viewPoweredBy =
     div
-        [ class "text-secondary fs-8"
+        [ class "text-secondary"
         , style "display" "flex"
         , style "flex-wrap" "wrap"
         , style "flex-direction" "row"
         , style "justify-content" "space-evenly"
         , style "column-gap" "1ex"
+        , style "font-size" "0.8em"
         ]
         [ span []
             [ text "Powered by "
@@ -282,7 +315,6 @@ viewPoweredBy =
                 [ text "Nixpkgs" ]
             , text " and "
             , a [ href "https://elm-lang.org", target "_blank" ] [ text "Elm" ]
-            , text ". "
             ]
         , span []
             [ text "Developed by "
@@ -290,7 +322,7 @@ viewPoweredBy =
                 [ href "https://nixos.org/community/teams/ngi/"
                 , target "_blank"
                 ]
-                [ text "Nix@NGI team." ]
+                [ text "Nix@NGI team" ]
             ]
         , span []
             [ text " Contribute or report issues at "
@@ -299,6 +331,43 @@ viewPoweredBy =
                 , target "_blank"
                 ]
                 [ text "ngi-nix/ngi-nix-forge" ]
-            , text "."
             ]
+        , let
+            commit =
+                ":master"
+          in
+          if not (String.contains "master" commit) then
+            span []
+                [ text " Version "
+                , a
+                    [ href ("https://github.com/ngi-nix/ngi-nix-forge/commit/" ++ commit)
+                    , target "_blank"
+                    ]
+                    [ text commit ]
+                ]
+
+          else
+            text ""
         ]
+
+
+subscriptions : ModelFocusApp -> Sub Update
+subscriptions model =
+    if model.modelFocusApp_showRunModal then
+        Browser.Events.onKeyDown (escapeKeyDecoder |> Decode.map Update_SetRunModal)
+
+    else
+        Sub.none
+
+
+escapeKeyDecoder : Decode.Decoder Bool
+escapeKeyDecoder =
+    Decode.field "key" Decode.string
+        |> Decode.andThen
+            (\key ->
+                if key == "Escape" then
+                    Decode.succeed False
+
+                else
+                    Decode.fail "Not escape"
+            )

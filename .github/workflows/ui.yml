@@ -44,6 +44,11 @@ jobs:
       - name: Setup GitHub Pages
         uses: actions/configure-pages@v5
 
+      - name: Encode version information
+        run: |
+          commit="$(git rev-parse --short HEAD)"
+          sed -i "s/:master/$commit/g" ui/src/Main/View.elm
+
       - name: Build UI
         run: nix build .#_forge-ui --accept-flake-config
 

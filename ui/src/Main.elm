@@ -5,7 +5,7 @@ import Browser
 import Main.Config
 import Main.Config.App exposing (..)
 import Main.Model exposing (..)
-import Main.Navigation
+import Main.Ports.Navigation
 import Main.Route exposing (..)
 import Main.Update exposing (..)
 import Main.View
@@ -30,7 +30,7 @@ init href =
             { model_config = Main.Config.initConfig
             , model_search = ""
             , model_route = Route_Search ""
-            , model_focus = ModelFocus_Error { msg = "Invalid address: " ++ href }
+            , model_focus = ModelFocus_Search
             }
     in
     case href |> Url.fromString of
@@ -53,5 +53,18 @@ init href =
 
 
 subscriptions : Model -> Sub Update
-subscriptions _ =
-    Navigation.onEvent Main.Navigation.onNavEvent Update_Navigation
+subscriptions model =
+    let
+        activePageSub =
+            case model.model_focus of
+                ModelFocus_App state ->
+                    Main.View.subscriptions state
+
+                _ ->
+                    Sub.none
+
+        globalSubs =
+            [ Navigation.onEvent Main.Ports.Navigation.onNavEvent Update_Navigation
+            ]
+    in
+    Sub.batch (activePageSub :: globalSubs)
