@@ -4,9 +4,9 @@ import Html exposing (Html, a, button, code, div, h2, h4, hr, p, pre, text)
 import Html.Attributes exposing (class, href, id, style, target)
 import Html.Events exposing (onClick)
 import Main.Config.App exposing (App)
+import Main.Helpers.Html exposing (..)
+import Main.Helpers.Markdown as Markdown
 import Main.Model exposing (ModalTab(..), ModelFocusApp)
-import Markdown.Parser
-import Markdown.Renderer exposing (defaultHtmlRenderer)
 
 
 repositoryToGithubUrl : String -> String
@@ -21,17 +21,20 @@ repositoryToGithubUrl repositoryUrl =
         repositoryUrl
 
 
-codeBlock : (String -> update) -> String -> Html update
-codeBlock onCopy content =
-    div [ class "position-relative" ]
-        [ button
-            [ class "btn btn-sm btn-secondary position-absolute top-0 end-0 m-2 button copy"
-            , onClick (onCopy content)
+viewInstructionsUsage : (String -> update) -> ModelFocusApp -> Html update
+viewInstructionsUsage onCopy model =
+    if not (String.isEmpty model.modelFocusApp_app.app_usage) then
+        div [ id "usage", class "mt-4" ]
+            [ hr [] []
+            , h4 [ class "mb-3" ] [ text "Usage Instructions" ]
+            , div [ class "markdown-content" ]
+                (model.modelFocusApp_app.app_usage
+                    |> Markdown.render onCopy
+                )
             ]
-            [ text "" ]
-        , pre [ class "bg-dark text-warning p-3 rounded border border-secondary" ]
-            [ code [] [ text content ] ]
-        ]
+
+    else
+        text ""
 
 
 viewInstructionsNixInstall : (String -> update) -> List (Html update)
@@ -155,38 +158,3 @@ viewInstructionsApp repositoryUrl recipeDirApps onCopy maybeApp modalTab =
                 ]
                 [ text (recipeDirApps ++ "/" ++ app.app_name ++ "/recipe.nix") ]
             ]
-
-
-renderMarkdown : (String -> msg) -> String -> List (Html msg)
-renderMarkdown onCopy markdownStr =
-    markdownStr
-        |> Markdown.Parser.parse
-        |> Result.mapError (\_ -> "Failed to parse markdown")
-        |> Result.andThen (Markdown.Renderer.render (customRenderer onCopy))
-        |> Result.withDefault [ text "Error rendering markdown." ]
-
-
-customRenderer : (String -> msg) -> Markdown.Renderer.Renderer (Html msg)
-customRenderer onCopy =
-    { defaultHtmlRenderer
-        | codeBlock =
-            \block ->
-                block.body |> codeBlock onCopy
-    }
-
-
-usageInstructions : (String -> msg) -> ModelFocusApp -> Html msg
-usageInstructions onCopy model =
-    if not (String.isEmpty model.modelFocusApp_app.app_usage) then
-        div [ id "usage", class "mt-4" ]
-            [ hr [] []
-            , h4 [ class "mb-3" ] [ text "Usage Instructions" ]
-            , div [ class "markdown-content" ]
-                (model.modelFocusApp_app.app_usage
-                    |> String.trim
-                    |> renderMarkdown onCopy
-                )
-            ]
-
-    else
-        text ""
