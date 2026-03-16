@@ -1,6 +1,6 @@
 services:
   api:
-    image: localhost/api:latest
+    image: localhost/python-web:latest
     environment:
       - DB_HOST=database
       - DB_NAME=postgres

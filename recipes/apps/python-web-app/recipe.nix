@@ -32,6 +32,10 @@
     ```
   '';
 
+  services.python-web = {
+    command = pkgs.mypkgs.python-web;
+  };
+
   programs = {
     enable = true;
     requirements = [
@@ -43,9 +47,6 @@
     enable = true;
     name = "python-web";
     requirements = [ pkgs.mypkgs.python-web ];
-    imageConfig.CMD = [
-      "python-web"
-    ];
     composeFile = ./compose.yaml;
   };
 
@@ -61,11 +62,6 @@
         host all all 0.0.0.0/0 trust
         host all all ::0/0 trust
       '';
-      # api service
-      systemd.services.api.script = "${pkgs.mypkgs.python-web}/bin/python-web";
-      systemd.services.api.wantedBy = [
-        "multi-user.target"
-      ];
     };
     vm.forwardPorts = [
       "5000:5000"
