@@ -4,7 +4,7 @@ import Html exposing (Html, a, button, code, div, h2, hr, p, pre, text)
 import Html.Attributes exposing (class, href, style, target)
 import Html.Events exposing (onClick)
 import Main.Config.App exposing (App)
-import Main.Helpers.Format exposing (format)
+import Main.Helpers.Format exposing (dedent, format)
 import Main.Model exposing (ModalTab(..))
 
 
@@ -69,7 +69,10 @@ viewInstructionsApp repositoryUrl recipeDirApps onCopy maybeApp modalTab =
                                 div []
                                     [ p [ style "margin-bottom" "0em" ] [ text "Run application programs (CLI, GUI) in a shell environment" ]
                                     , hr [] []
-                                    , codeBlock onCopy <| format """nix --experimental-features='nix-command flakes' shell {0}#{1}""" [ repositoryUrl, app.app_name ]
+                                    , codeBlock onCopy <| format (dedent """
+                                      nix shell \\
+                                        --extra-experimental-features "nix-command flakes" \\
+                                        {0}#{1}""") [ repositoryUrl, app.app_name ]
                                     ]
 
                             else
@@ -81,13 +84,16 @@ viewInstructionsApp repositoryUrl recipeDirApps onCopy maybeApp modalTab =
                                     [ p [ style "margin-bottom" "0em" ] [ text "Run application services using OCI containers" ]
                                     , hr [] []
                                     , codeBlock onCopy <|
-                                        format """
-                                        nix --experimental-features='nix-command flakes' build {0}#{1}.container && ./result/bin/build-oci
+                                        format (dedent """
+                                        nix build \\
+                                          --extra-experimental-features "nix-command flakes" \\
+                                          {0}#{1}.container && ./result/bin/build-oci
 
                                         podman load < *.tar
 
-                                        podman-compose --profile services --file $(pwd)/result/compose.yaml up --force-recreate
-                                        """ [ repositoryUrl, app.app_name ]
+                                        podman-compose --profile services \\
+                                          --file $(pwd)/result/compose.yaml up --force-recreate
+                                        """) [ repositoryUrl, app.app_name ]
                                     ]
 
                             else
@@ -98,7 +104,10 @@ viewInstructionsApp repositoryUrl recipeDirApps onCopy maybeApp modalTab =
                                 div []
                                     [ p [ style "margin-bottom" "0em" ] [ text "Run application services in Nixos vm" ]
                                     , hr [] []
-                                    , codeBlock onCopy <| format """nix --experimental-features='nix-command flakes' run {0}#{1}.vm""" [ repositoryUrl, app.app_name ]
+                                    , codeBlock onCopy <| format (dedent """
+                                    nix run \\
+                                      --extra-experimental-features "nix-command flakes" \\
+                                      {0}#{1}.vm""") [ repositoryUrl, app.app_name ]
                                     ]
 
                             else
