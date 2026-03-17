@@ -2,16 +2,18 @@ module Main.View exposing (..)
 
 import Browser.Events
 import Dict
-import Html exposing (Attribute, Html, a, div, footer, h2, h3, h5, header, input, li, main_, nav, p, section, small, span, text, ul)
+import Html exposing (Html, a, div, footer, h2, h3, h5, header, input, li, main_, nav, p, section, small, span, text, ul)
 import Html.Attributes exposing (class, href, name, placeholder, style, tabindex, target, value)
-import Html.Events exposing (onClick, onInput, stopPropagationOn)
+import Html.Events exposing (onInput, stopPropagationOn)
 import Json.Decode as Decode
 import Main.Config exposing (..)
 import Main.Config.App exposing (..)
+import Main.Error
+import Main.Helpers.Html exposing (..)
 import Main.Model exposing (..)
 import Main.Route as Route exposing (..)
 import Main.Update exposing (..)
-import Main.View.Instructions exposing (usageInstructions, viewInstructionsApp)
+import Main.View.Instructions exposing (..)
 
 
 view : Model -> Html Update
@@ -27,6 +29,14 @@ view model =
         , nav
             [ class "mb-4" ]
             [ model |> viewSearchInput ]
+        , div []
+            (model.model_errors
+                |> List.map
+                    (\error ->
+                        div [ class "alert alert-danger" ]
+                            [ text ("Error: " ++ Main.Error.showError error) ]
+                    )
+            )
         , main_
             [ class "flex-grow-1" ]
             [ section [] [ model |> viewFocus ] ]
@@ -96,16 +106,6 @@ viewFocus model =
             in
             viewFocus_App repositoryUrl state
 
-        ModelFocus_Error { msg } ->
-            div [ class "alert alert-danger" ]
-                [ text ("Error: " ++ msg) ]
-
-
-onClickPreventDefault : msg -> Attribute msg
-onClickPreventDefault msg =
-    Html.Events.preventDefaultOn "click"
-        (Decode.succeed ( msg, True ))
-
 
 viewSearchResult : Model -> App -> Html Update
 viewSearchResult model app =
@@ -113,7 +113,7 @@ viewSearchResult model app =
         [ href (Route_App app.app_name |> Route.toString)
         , class "card m-app-card shadow-sm p-3"
         , style "text-decoration" "none"
-        , onClickPreventDefault (Update_Route (Route_App app.app_name))
+        , onClick (Update_Route (Route_App app.app_name))
         ]
         [ div
             [ name ("app-" ++ app.app_name)
@@ -216,7 +216,7 @@ viewAppModal repositoryUrl model =
                             [ viewModalTabs model
                             , div [ class "tab-content mb-5 p-3 border rounded bg-light" ]
                                 [ viewTabContent repositoryUrl model ]
-                            , usageInstructions Update_CopyCode model
+                            , viewInstructionsUsage Update_CopyCode model
                             ]
                         ]
                     ]
@@ -354,14 +354,14 @@ viewPoweredBy =
 subscriptions : ModelFocusApp -> Sub Update
 subscriptions model =
     if model.modelFocusApp_showRunModal then
-        Browser.Events.onKeyDown (escapeKeyDecoder |> Decode.map Update_SetRunModal)
+        Browser.Events.onKeyDown (decodeEscapeKey |> Decode.map Update_SetRunModal)
 
     else
         Sub.none
 
 
-escapeKeyDecoder : Decode.Decoder Bool
-escapeKeyDecoder =
+decodeEscapeKey : Decode.Decoder Bool
+decodeEscapeKey =
     Decode.field "key" Decode.string
         |> Decode.andThen
             (\key ->

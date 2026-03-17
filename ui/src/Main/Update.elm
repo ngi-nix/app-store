@@ -4,7 +4,7 @@ import Dict
 import Http
 import Main.Config exposing (..)
 import Main.Config.App exposing (..)
-import Main.Helpers.Http as Http
+import Main.Error as Error exposing (..)
 import Main.Model exposing (..)
 import Main.Ports.Clipboard as Clipboard
 import Main.Ports.Navigation
@@ -45,7 +45,7 @@ update upd model =
         Update_Navigation event ->
             case event.appUrl |> Route.fromAppUrl of
                 Err err ->
-                    ( { model | model_focus = ModelFocus_Error { msg = Route.showRouteError err } }
+                    ( { model | model_errors = model.model_errors ++ [ Error_Route err ] }
                     , Cmd.none
                     )
 
@@ -70,7 +70,7 @@ update upd model =
                     )
 
                 Err err ->
-                    ( { model | model_focus = ModelFocus_Error { msg = Http.errorToString err } }
+                    ( { model | model_errors = model.model_errors ++ [ Error_Http err ] }
                     , Cmd.none
                     )
 
@@ -130,26 +130,23 @@ updateRoute route model =
             )
 
         Route_App appName ->
-            ( { model
-                | model_route = route
-                , model_focus =
-                    case model.model_config.config_apps |> Dict.get appName of
-                        Just app ->
+            ( case model.model_config.config_apps |> Dict.get appName of
+                Just app ->
+                    { model
+                        | model_route = route
+                        , model_focus =
                             ModelFocus_App
                                 { modelFocusApp_app = app
                                 , modelFocusApp_showRunModal = False
                                 , modelFocusApp_activeModalTab = ModalTab_Programs
                                 }
+                    }
 
-                        Nothing ->
-                            ModelFocus_Error
-                                { msg =
-                                    "No such app: "
-                                        ++ appName
-                                        ++ ". Available: "
-                                        ++ String.concat (model.model_config.config_apps |> Dict.keys)
-                                }
-              }
+                Nothing ->
+                    { model
+                        | model_route = route
+                        , model_errors = model.model_errors ++ [ Error_App (ErrorApp_NotFound appName) ]
+                    }
             , Cmd.none
             )
 
@@ -163,7 +160,15 @@ updateConfig up model =
         ( model
         , Http.get
             { url = "/forge-config.json"
-            , expect = Http.expectJson (\res -> Update_Chain [ Update_Config res, Update_Updater up ]) Main.Config.decodeConfig
+            , expect =
+                Http.expectJson
+                    (\res ->
+                        Update_Chain
+                            [ Update_Config res
+                            , Update_Updater up
+                            ]
+                    )
+                    Main.Config.decodeConfig
             }
         )
 

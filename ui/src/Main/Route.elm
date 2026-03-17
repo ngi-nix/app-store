@@ -6,6 +6,7 @@ import Json.Decode
 import Json.Encode
 import List.Extra as List
 import Main.Config.App
+import Main.Error exposing (..)
 
 
 type Route
@@ -13,22 +14,7 @@ type Route
     | Route_App Main.Config.App.AppName
 
 
-type RouteError
-    = RouteError_Parsing String
-    | RouteError_Unknown AppUrl
-
-
-showRouteError : RouteError -> String
-showRouteError err =
-    case err of
-        RouteError_Parsing s ->
-            "RouteError_Parsing: " ++ s
-
-        RouteError_Unknown url ->
-            "RouteError_Unknown: " ++ AppUrl.toString url
-
-
-fromAppUrl : AppUrl -> Result RouteError Route
+fromAppUrl : AppUrl -> Result ErrorRoute Route
 fromAppUrl url =
     case url.path of
         [] ->
@@ -45,13 +31,13 @@ fromAppUrl url =
         [ "app", app ] ->
             case app |> Json.Encode.string |> Json.Decode.decodeValue Main.Config.App.decodeAppName of
                 Err e ->
-                    Err (RouteError_Parsing (Json.Decode.errorToString e))
+                    Err (ErrorRoute_Parsing (Json.Decode.errorToString e))
 
                 Ok n ->
                     Ok (Route_App n)
 
         _ ->
-            Err (RouteError_Unknown url)
+            Err (ErrorRoute_Unknown url)
 
 
 toAppUrl : Route -> AppUrl

@@ -33,9 +33,7 @@ ln -s "$(
 )/css/bootstrap.min.css" \
   "$rootDir/ui/build/css/bootstrap.min.css"
 
-ln -s "$rootDir/ui/build/Elm.js" "$rootDir/ui/build/js/Elm.js"
-
-# Note: using `watchman cwatch-project`
+# Note: using `watchman watch-project`
 # would not support working in a non-default git-worktree or jj-workspace.
 # Remark(resiliency): if the systemd unit in watchman fails,
 # `systemctl --user reset-failed`
@@ -77,6 +75,9 @@ systemd-run --user --slice "$slice" -u ${unit}-elm-watch \
 
 # Remark(correctness): esbuild never serves stale build results
 # https://esbuild.github.io/api/#serve
+#
+# Remark(correctness): --serve-fallback= prevents 404 errors
+# eg. on forge-config.json
 systemd-run --user --slice "$slice" -u ${unit}-esbuild \
   -p WorkingDirectory="$PWD/ui" \
   esbuild \
