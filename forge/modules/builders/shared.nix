@@ -77,6 +77,7 @@ in
           pkgMeta = pkg: {
             description = pkg.description;
             mainProgram = pkg.mainProgram;
+            license = pkg.license;
           };
 
           debugShellHookAttr = {
