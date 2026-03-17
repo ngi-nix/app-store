@@ -29,7 +29,7 @@
     environment = lib.mkOption {
       type = lib.types.listOf lib.types.str;
       default = [ ];
-      description = "Envrionment variables.";
+      description = "Environment variables.";
       apply =
         self:
         let
