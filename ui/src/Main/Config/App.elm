@@ -74,3 +74,22 @@ decodeAppNixosVm : Decoder AppNixosVm
 decodeAppNixosVm =
     Decode.map AppNixosVm
         (Decode.field "enable" Decode.bool)
+
+
+type AppOutput
+    = AppOutput_Programs
+    | AppOutput_Container
+    | AppOutput_VM
+
+
+showAppOutput : AppOutput -> String
+showAppOutput r =
+    case r of
+        AppOutput_Programs ->
+            "Programs"
+
+        AppOutput_Container ->
+            "Container"
+
+        AppOutput_VM ->
+            "VM"

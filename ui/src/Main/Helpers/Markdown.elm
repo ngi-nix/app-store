@@ -2,7 +2,6 @@ module Main.Helpers.Markdown exposing (..)
 
 import Html exposing (Html, text)
 import Main.Helpers.Html as Html
-import Main.Model exposing (ModalTab(..))
 import Markdown.Parser
 import Markdown.Renderer exposing (Renderer, defaultHtmlRenderer)
 
