@@ -280,28 +280,41 @@ in
 
             # Collect assertions from packages
             assertions = lib.flatten (
-              map (pkg: [
-                {
-                  condition = !(pkg.source.git == null && pkg.source.url == null && pkg.source.path == null);
-                  message = ''
-                    Package '${pkg.name}': one of sources options must be defined.
-                    Available options: source.git, source.url, or source.path.
-                  '';
-                }
-                (
-                  let
-                    builders = lib.filterAttrs (name: _: lib.hasSuffix "Builder" name) pkg.build;
-                    builderNames = map (name: "build." + name) (lib.attrNames builders);
-                  in
+              map (
+                pkg:
+                let
+                  builders = lib.filterAttrs (name: _: lib.hasSuffix "Builder" name) pkg.build;
+                  builderNames = map (name: "build." + name) (lib.attrNames builders);
+
+                  enabledBuilders = lib.filterAttrs (_: b: b.enable) builders;
+                  enabledBuilderNames = map (name: "build." + name) (lib.attrNames enabledBuilders);
+
+                  enabledBuildersCount = lib.length enabledBuilderNames;
+                in
+                [
                   {
-                    condition = lib.any (b: b.enable) (lib.attrValues builders);
+                    condition = !(pkg.source.git == null && pkg.source.url == null && pkg.source.path == null);
+                    message = ''
+                      Package '${pkg.name}': one of sources options must be defined.
+                      Available options: source.git, source.url, or source.path.
+                    '';
+                  }
+                  {
+                    condition = !(enabledBuildersCount != 1);
+                    message = ''
+                      Package '${pkg.name}': only one builder can be enabled at a time.
+                      Enabled options: ${lib.concatStringsSep ", " enabledBuilderNames}.
+                    '';
+                  }
+                  {
+                    condition = !(enabledBuildersCount == 0);
                     message = ''
                       Package '${pkg.name}': one of builder options must be enabled.
                       Available options: ${lib.concatStringsSep ", " builderNames}.
                     '';
                   }
-                )
-              ]) cfg
+                ]
+              ) cfg
             );
 
             # Evaluation check: show warnings first, then throw on failed assertions
