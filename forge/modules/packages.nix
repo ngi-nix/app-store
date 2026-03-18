@@ -79,6 +79,18 @@ in
                       description = "Name of the main executable program.";
                       example = "hello";
                     };
+                    license = lib.mkOption {
+                      type =
+                        with lib.types;
+                        oneOf [
+                          attrs # lib.licenses.gpl3Only
+                          str # "gpl3Only"
+                          (listOf (either attrs str))
+                        ];
+                      default = [ ];
+                      description = "License, or licenses, for the package.";
+                      example = lib.literalExpression "lib.licenses.gpl3Only";
+                    };
 
                     # Source configuration
                     source = {
@@ -249,13 +261,21 @@ in
           {
             # Collect warnings from packages
             warnings = lib.flatten (
-              map (pkg: {
-                condition = pkg.source.hash == "";
-                message = ''
-                  Package '${pkg.name}': source.hash is empty.
-                  Correct hash will be printed in the error message when package is built.
-                '';
-              }) cfg
+              map (pkg: [
+                {
+                  condition = pkg.source.hash == "";
+                  message = ''
+                    Package '${pkg.name}': source.hash is empty.
+                    Correct hash will be printed in the error message when package is built.
+                  '';
+                }
+                {
+                  condition = pkg.license == [ ];
+                  message = ''
+                    Package '${pkg.name}': license is empty.
+                  '';
+                }
+              ]) cfg
             );
 
             # Collect assertions from packages
