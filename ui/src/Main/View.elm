@@ -13,6 +13,7 @@ import Main.Icons exposing (circleHalf, moonStarsFill, search, sunFill)
 import Main.Model exposing (..)
 import Main.Nix exposing (showNixUrl)
 import Main.Route as Route exposing (..)
+import Main.Subscriptions exposing (decodeEscapeKey)
 import Main.Theme exposing (Theme(..))
 import Main.Update exposing (..)
 import Main.View.Instructions exposing (..)
@@ -94,15 +95,8 @@ viewSearchInput model =
             , id "main-search-bar"
             , onInput Update_SearchInput
             , preventDefaultOn "keydown"
-                (Decode.field "key" Decode.string
-                    |> Decode.andThen
-                        (\key ->
-                            if key == "Escape" then
-                                Decode.succeed ( Update_CancelSearch, True )
-
-                            else
-                                Decode.fail "Not Escape"
-                        )
+                (decodeEscapeKey
+                    |> Decode.map (\_ -> ( Update_CancelSearch, True ))
                 )
             ]
             []
