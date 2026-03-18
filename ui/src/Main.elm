@@ -14,7 +14,13 @@ import Main.View
 import Url
 
 
-main : Program String Model Update
+type alias Flags =
+    { href : String
+    , theme : String
+    }
+
+
+main : Program Flags Model Update
 main =
     Browser.element
         { init = init
@@ -24,8 +30,8 @@ main =
         }
 
 
-init : String -> ( Model, Cmd Update )
-init href =
+init : Flags -> ( Model, Cmd Update )
+init flags =
     let
         model =
             { model_config = Main.Config.initConfig
@@ -35,7 +41,7 @@ init href =
             , model_theme = themeFromString flags.theme
             }
     in
-    case href |> Url.fromString of
+    case flags.href |> Url.fromString of
         Nothing ->
             ( model, Cmd.none )
 
