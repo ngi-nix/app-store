@@ -1,7 +1,7 @@
 module Main.View exposing (..)
 
 import Dict
-import Html exposing (Html, a, button, div, footer, form, h2, h5, header, input, li, main_, nav, p, section, small, span, text, ul)
+import Html exposing (Html, a, div, footer, h2, h5, header, input, li, main_, nav, p, section, small, span, text, ul)
 import Html.Attributes exposing (attribute, class, href, name, placeholder, style, tabindex, target, title, type_, value)
 import Html.Events exposing (onInput, stopPropagationOn)
 import Json.Decode as Decode
@@ -9,7 +9,7 @@ import Main.Config exposing (..)
 import Main.Config.App exposing (..)
 import Main.Error
 import Main.Helpers.Html exposing (..)
-import Main.Icons exposing (circleHalf, moonStarsFill, sunFill)
+import Main.Icons exposing (circleHalf, moonStarsFill, search, sunFill)
 import Main.Model exposing (..)
 import Main.Route as Route exposing (..)
 import Main.Theme exposing (Theme(..))
@@ -20,18 +20,21 @@ import Main.View.Instructions exposing (..)
 view : Model -> Html Update
 view model =
     div
-        [ class "min-vh-100 container"
-        , style "display" "flex"
-        , style "flex-direction" "column"
+        [ class "min-vh-100 container d-flex flex-column"
         ]
         [ header
-            [ class "py-3" ]
-            [ nav
-                [ class "navbar navbar-expand-lg"
+            [ class "py-3 d-flex align-items-center justify-content-between"
+            ]
+            [ div
+                [ class "d-flex gap-3 align-items-center flex-grow-1"
                 ]
                 [ viewTitle
                 , model |> viewSearchInput
-                , model |> viewThemeToggle
+                ]
+            , nav
+                [ class "navbar navbar-expand-lg ms-3"
+                ]
+                [ model |> viewThemeToggle
                 ]
             ]
         , div []
@@ -67,33 +70,36 @@ viewTitle =
 viewSearchInput : Model -> Html Update
 viewSearchInput model =
     div
-        [ class "name px-2"
+        [ class "name position-relative px-2 flex-grow-1"
+        , style "max-width" "600px"
         , style "display" "flex"
         , style "justify-content" "between"
         , style "align-items" "center"
         ]
-        [ form [ class "d-flex" ]
-            [ input
-                [ class "form-control me-2"
-                , type_ "search"
-                , placeholder "Search"
-                , value model.model_search
-                , onInput (\search -> Update_Route (Route_Search { routeSearch_pattern = search }))
-                ]
-                []
-            , button
-                [ class "btn btn-outline-success"
-                , type_ "submit"
-                ]
-                [ text "Search" ]
+        [ div
+            [ class "position-absolute top-50 start-0 translate-middle-y text-secondary"
+            , style "pointer-events" "none"
+            , style "margin-left" "1.2rem"
             ]
+            [ search ]
+        , input
+            [ class "form-control bg-transparent"
+            , style "padding-left" "2.2rem"
+            , style "padding-top" "0.5rem"
+            , style "border-radius" "30px"
+            , type_ "search"
+            , placeholder "Search apps"
+            , value model.model_search
+            , onInput (\search -> Update_Route (Route_Search { routeSearch_pattern = search }))
+            ]
+            []
         ]
 
 
 viewThemeToggle : Model -> Html Update
 viewThemeToggle model =
-    button
-        [ class "btn btn-outline-secondary d-flex align-items-center ms-3"
+    span
+        [ class "d-flex align-items-center ms-3"
         , title "Toggle dark mode"
         , attribute "aria-label" "Toggle dark mode"
         , onClick Update_CycleTheme
