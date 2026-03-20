@@ -73,7 +73,7 @@ viewPageAppInstructions model pageApp =
                 Just output ->
                     div []
                         [ case output of
-                            AppOutput_Programs ->
+                            AppOutput_Shell ->
                                 if pageApp.pageApp_app.app_programs.enable then
                                     div []
                                         [ p [ style "margin-bottom" "0em" ] [ text "Enter a shell environment with CLI and GUI programs." ]

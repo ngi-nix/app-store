@@ -77,7 +77,7 @@ decodeAppNixosVm =
 
 
 type AppOutput
-    = AppOutput_Programs
+    = AppOutput_Shell
     | AppOutput_Container
     | AppOutput_VM
 
@@ -85,8 +85,8 @@ type AppOutput
 showAppOutput : AppOutput -> String
 showAppOutput r =
     case r of
-        AppOutput_Programs ->
-            "Programs"
+        AppOutput_Shell ->
+            "Shell"
 
         AppOutput_Container ->
             "Container"

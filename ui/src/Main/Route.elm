@@ -94,8 +94,8 @@ fromAppUrl url =
                                     |> Maybe.map
                                         (\( output, _ ) ->
                                             case output of
-                                                "programs" ->
-                                                    AppOutput_Programs
+                                                "shell" ->
+                                                    AppOutput_Shell
 
                                                 "container" ->
                                                     AppOutput_Container
@@ -104,7 +104,7 @@ fromAppUrl url =
                                                     AppOutput_VM
 
                                                 _ ->
-                                                    AppOutput_Programs
+                                                    AppOutput_Shell
                                         )
                             }
                         )
@@ -147,8 +147,8 @@ toAppUrl route =
 
                         Just output ->
                             case output of
-                                AppOutput_Programs ->
-                                    [ "programs" ]
+                                AppOutput_Shell ->
+                                    [ "shell" ]
 
                                 AppOutput_Container ->
                                     [ "container" ]

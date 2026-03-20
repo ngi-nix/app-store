@@ -165,7 +165,7 @@ updateRoute route model =
                                             { routeApp
                                                 | routeApp_runOutput =
                                                     [ if app.app_programs.enable then
-                                                        [ AppOutput_Programs ]
+                                                        [ AppOutput_Shell ]
 
                                                       else
                                                         []
@@ -191,7 +191,7 @@ updateRoute route model =
                             let
                                 appHasRequestedOutput =
                                     case output of
-                                        AppOutput_Programs ->
+                                        AppOutput_Shell ->
                                             app.app_programs.enable
 
                                         AppOutput_Container ->
