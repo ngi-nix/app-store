@@ -64,6 +64,8 @@ viewTitle =
         , style "text-decoration" "none"
         , style "cursor" "pointer"
         , class "navbar-brand px-2"
+        , style "font-size" "1.5rem"
+        , style "font-weight" "bold"
         , onClick (Update_Route (Route_Search { routeSearch_pattern = "" }))
         ]
         [ text "NGI Nix Forge" ]
