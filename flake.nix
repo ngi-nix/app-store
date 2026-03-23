@@ -1,5 +1,5 @@
 {
-  description = "NGI Nix Forge";
+  description = "NGI Forge";
 
   nixConfig = {
     extra-substituters = [ "" ];
@@ -58,7 +58,7 @@
           _module.args.nimi = inputs.nimi.packages.${system}.nimi;
 
           forge = {
-            repositoryUrl = "github:ngi-nix/ngi-nix-forge";
+            repositoryUrl = "github:ngi-nix/forge";
             recipeDirs = {
               packages = "recipes/packages";
               apps = "recipes/apps";
