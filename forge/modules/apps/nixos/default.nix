@@ -167,12 +167,12 @@
               name: value:
               lib.recursiveUpdate (lib.removeAttrs value [ "passthru" ]) {
                 systemd.mainExecStart = lib.escapeShellArgs value.process.argv;
-                systemd.service.environment = value.passthru.environment;
+                systemd.service.environment = value.passthru.raw.environment;
               }
             ) app.services;
           };
 
-          environment.variables = lib.concatMapAttrs (_: value: value.passthru.environment) app.services;
+          environment.variables = lib.concatMapAttrs (_: value: value.passthru.raw.environment) app.services;
         }
         config.extraConfig
       ];

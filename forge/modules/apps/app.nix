@@ -51,7 +51,7 @@
           {
             process.argv = [ command ] ++ value.argv;
             configData = value.configData;
-            passthru.environment = value.environment;
+            passthru.raw = value;
           }
         ) self;
     };

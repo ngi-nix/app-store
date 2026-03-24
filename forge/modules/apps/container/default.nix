@@ -27,13 +27,6 @@
       type = lib.types.listOf lib.types.package;
       default = [ ];
       description = "List of packages to add to the container's `/bin` directory.";
-      apply =
-        self:
-        (pkgs.buildEnv {
-          name = "runtime-bins";
-          paths = self;
-          pathsToLink = [ "/bin" ];
-        });
     };
 
     # NOTE: config is reserved by the module system
@@ -87,7 +80,12 @@
   config = {
     result.nimi.config = {
       settings.container = {
-        copyToRoot = config.requirements;
+        copyToRoot = pkgs.buildEnv {
+          name = "runtime-bins";
+          paths = config.requirements;
+          pathsToLink = [ "/bin" ];
+        };
+
         imageConfig = config.imageConfig // {
           Env =
             let
@@ -106,7 +104,7 @@
               # { K = "V"; } -> [ "K=V" ]
               envAttrsToList = attrs: lib.mapAttrsToList (n: v: "${n}=${v}") attrs;
 
-              appEnv = lib.concatMapAttrs (_: value: value.passthru.environment) app.services;
+              appEnv = lib.concatMapAttrs (_: value: value.passthru.raw.environment) app.services;
               containerEnv = envListToAttrs config.imageConfig.Env or [ ];
 
               # NOTE: we merge Attrs to remove duplicate keys
