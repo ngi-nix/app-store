@@ -29,15 +29,21 @@ view model =
             [ class "py-3 d-flex align-items-center justify-content-between"
             ]
             [ div
-                [ class "d-flex gap-3 align-items-center flex-grow-1"
+                [ class "d-flex gap-3 flex-grow-1"
+                , style "align-items" "center"
                 ]
                 [ viewTitle
                 , model |> viewSearchInput
                 ]
             , nav
-                [ class "navbar navbar-expand-lg ms-3"
+                [ class "navbar-nav navbar-expand-lg ms-3"
+                , class "d-flex ms-3"
+                , style "align-items" "center"
+                , style "flex-direction" "row"
+                , style "justify-content" "space-evenly"
                 ]
-                [ model |> viewThemeToggle
+                [ li [ class "nav-item me-3" ] [ viewOptionsLink ]
+                , model |> viewThemeToggle
                 ]
             ]
         , div []
@@ -55,6 +61,21 @@ view model =
             [ class "mt-auto py-3 border-top" ]
             [ viewPoweredBy ]
         ]
+
+
+viewOptionsLink : Html Update
+viewOptionsLink =
+    a
+        [ href (Route_RecipeOptions { routeRecipeOptions_pattern = Just "" } |> Route.toString)
+        , style "color" "inherit"
+        , style "text-decoration" "none"
+        , style "cursor" "pointer"
+        , class "nav-link"
+        , title "View Options Docs"
+        , attribute "aria-label" "View Options Docs"
+        , onClick (Update_Route (Route_RecipeOptions { routeRecipeOptions_pattern = Just "" }))
+        ]
+        [ bookHalf ]
 
 
 viewTitle : Html Update
@@ -115,7 +136,7 @@ viewSearchInput model =
 viewThemeToggle : Model -> Html Update
 viewThemeToggle model =
     span
-        [ class "d-flex align-items-center ms-3"
+        [ class "nav-item"
         , title "Toggle theme"
         , attribute "aria-label" "Toggle theme"
         , onClick Update_CycleTheme
