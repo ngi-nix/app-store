@@ -28,35 +28,20 @@ let
     nimi = def.nimi-def.nimi;
     nimiLib = def.nimi.passthru;
 
-    mox = flake.outputs.packages.x86_64-linux.mox;
+    debug = flake.outputs.allSystems.x86_64-linux;
 
-    app = call ./nimi.nix { inherit (default) nimi mox; };
-
-    debug = eval {
-      imports = [
-        # ./forge/flake-module.nix
-        # ./flake/develop.nix
-        # ./flake/checks.nix
-        # ./flake/templates.nix
-
-        ./_forge/flake-module.nix
-        ./_forge/modules/flake-module.nix
-      ];
-
-      _module.args.rootPath = ./.;
-      _module.args.inputs = inputs;
-      _module.args.flake-parts-lib = inputs.flake-parts.lib;
-    };
-
-    output = flake.outputs.allSystems.x86_64-linux;
-
-    apps = default.output.forge.apps;
+    apps = lib.listToAttrs (
+      map (v: {
+        name = v.name;
+        value = v;
+      }) def.debug.forge.apps
+    );
 
     forgePkgs = lib.listToAttrs (
       map (v: {
         name = v.name;
         value = v;
-      }) default.output.forge.packages
+      }) def.output.forge.packages
     );
   });
 
