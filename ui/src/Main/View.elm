@@ -42,9 +42,17 @@ view model =
                 , style "flex-direction" "row"
                 , style "justify-content" "space-evenly"
                 ]
-                [ li [ class "nav-item me-3" ] [ viewRecipeOptionsLink ]
-                , model |> viewThemeToggle
-                ]
+                ((case model.model_page of
+                    Page_RecipeOptions _ ->
+                        []
+
+                    _ ->
+                        [ li [ class "nav-item me-3" ] [ viewRecipeOptionsLink ]
+                        ]
+                 )
+                    ++ [ model |> viewThemeToggle
+                       ]
+                )
             ]
         , div []
             (model.model_errors
@@ -126,8 +134,8 @@ viewRecipeOptionsLink =
         , style "text-decoration" "none"
         , style "cursor" "pointer"
         , class "nav-link"
-        , title "View Options Docs"
-        , attribute "aria-label" "View Options Docs"
+        , title "View available recipe options"
+        , attribute "aria-label" "View available recipe options"
         , onClick (Update_Route (Route_RecipeOptions { routeRecipeOptions_pattern = Just "" }))
         ]
         [ iconBookHalf ]
