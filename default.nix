@@ -43,6 +43,8 @@ let
         value = v;
       }) def.output.forge.packages
     );
+
+    shells = flake.outputs.devShells.${system};
   });
 
   eval = module: (lib.evalModules { modules = [ module ]; });
