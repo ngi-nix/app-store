@@ -26,17 +26,6 @@ in
       {
         options = {
           forge = {
-            packagesFilter = lib.mkOption {
-              internal = true;
-              type = lib.types.attrsOf (lib.types.listOf lib.types.str);
-              description = ''
-                Defines which configuration options are relevant for each builder type.
-
-                Used for filtering options documentation to show only builder-specific
-                options in the generated documentation.
-              '';
-            };
-
             packages = lib.mkOption {
               default = [ ];
               description = ''

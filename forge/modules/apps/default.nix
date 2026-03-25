@@ -31,12 +31,6 @@ in
       {
         options = {
           forge = {
-            appsFilter = lib.mkOption {
-              internal = true;
-              type = lib.types.attrsOf (lib.types.listOf lib.types.str);
-              description = "Defines which options are relevant for each app output type.";
-            };
-
             apps = lib.mkOption {
               default = [ ];
               description = "List of applications.";
