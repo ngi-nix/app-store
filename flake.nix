@@ -21,6 +21,11 @@
       flake = false;
     };
 
+    devshell = {
+      url = "github:numtide/devshell";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     nimi.url = "github:weyl-ai/nimi";
   };
 
@@ -41,7 +46,7 @@
 
       imports = [
         (import ./forge/flake-module.nix { inherit inputs; })
-        ./flake/develop.nix
+        ./flake/develop
         ./flake/packages.nix
         ./flake/checks.nix
         ./flake/templates.nix
