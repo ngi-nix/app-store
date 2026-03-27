@@ -10,6 +10,7 @@ type alias App =
     , app_programs : AppPrograms
     , app_container : AppContainer
     , app_vm : AppNixosVm
+    , app_grants : AppNgiSubgrants
     }
 
 
@@ -28,19 +29,28 @@ type alias AppNixosVm =
     }
 
 
+type alias AppNgiSubgrants =
+    { commons : List String
+    , core : List String
+    , entrust : List String
+    , review : List String
+    }
+
+
 type alias AppName =
     String
 
 
 decodeApp : Decoder App
 decodeApp =
-    Decode.map6 App
+    Decode.map7 App
         (Decode.field "name" decodeAppName)
         (Decode.field "description" Decode.string)
         (Decode.field "usage" Decode.string)
         (Decode.field "programs" decodeAppPrograms)
         (Decode.field "container" decodeAppContainer)
         (Decode.field "nixos" decodeAppNixosVm)
+        (Decode.field "grants" decodeAppNgiSubgrants)
 
 
 decodeAppName : Decoder AppName
@@ -72,6 +82,15 @@ decodeAppNixosVm : Decoder AppNixosVm
 decodeAppNixosVm =
     Decode.map AppNixosVm
         (Decode.field "enable" Decode.bool)
+
+
+decodeAppNgiSubgrants : Decoder AppNgiSubgrants
+decodeAppNgiSubgrants =
+    Decode.map4 AppNgiSubgrants
+        (Decode.field "Commons" (Decode.list Decode.string))
+        (Decode.field "Core" (Decode.list Decode.string))
+        (Decode.field "Entrust" (Decode.list Decode.string))
+        (Decode.field "Review" (Decode.list Decode.string))
 
 
 type AppOutput

@@ -180,3 +180,48 @@ details.accordion-item[open] > summary.accordion-button::after {
 [data-bs-theme="dark"] .navbar-toggler-icon {
   --bs-navbar-toggler-icon-bg: "";
 }
+
+a:link {
+  text-decoration: none;
+}
+
+/* permalinks */
+.anchor-link {
+  padding: 0 0.175rem;
+  font-weight: 400;
+  color: #0d6efd80;
+  text-decoration: none;
+  opacity: 0;
+  transition:
+    color 0.15s ease-in-out,
+    opacity 0.15s ease-in-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .anchor-link {
+    transition: none;
+  }
+}
+.anchor-link:after {
+  content: "#";
+}
+.anchor-link:focus,
+.anchor-link:hover,
+:hover > .anchor-link,
+:target > .anchor-link {
+  color: #0d6efd;
+  text-decoration: none;
+  opacity: 1;
+}
+
+/* box containers */
+.box-container {
+  background-color: #f6f6ff;
+  padding: 10px;
+  margin: 10px 0;
+  font-size: 14px;
+  border-radius: 3px;
+}
+
+[data-bs-theme="dark"] .box-container {
+  background-color: #28283f;
+}
