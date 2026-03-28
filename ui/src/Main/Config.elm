@@ -5,8 +5,20 @@ import Json.Decode as Decode exposing (Decoder)
 import List
 import Main.Config.App as Config exposing (..)
 import Main.Error exposing (..)
-import Main.Nix exposing (..)
+import Main.Helpers.Nix exposing (..)
 import Url exposing (Url)
+
+
+commit : String
+commit =
+    "master"
+
+
+{-| Note: master is < 8 chars
+-}
+shortCommit : String
+shortCommit =
+    String.left 8 commit
 
 
 {-| Warning(portability): `Url` only supports HTTP(s) protocol.

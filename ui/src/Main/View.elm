@@ -1,7 +1,7 @@
 module Main.View exposing (..)
 
 import Dict
-import Html exposing (Html, a, code, div, footer, h3, h5, h6, header, hr, input, li, main_, nav, p, section, small, span, text, ul)
+import Html exposing (Html, a, button, code, div, footer, h3, h5, h6, header, input, li, main_, nav, p, section, small, span, text, ul)
 import Html.Attributes exposing (attribute, class, href, id, name, placeholder, rel, style, tabindex, target, title, type_, value)
 import Html.Events exposing (onInput, preventDefaultOn, stopPropagationOn)
 import Json.Decode as Decode
@@ -10,9 +10,9 @@ import Main.Config.App exposing (..)
 import Main.Error
 import Main.Helpers.Html exposing (..)
 import Main.Helpers.Markdown as Markdown
+import Main.Helpers.Nix exposing (..)
 import Main.Icons exposing (..)
 import Main.Model exposing (..)
-import Main.Nix exposing (..)
 import Main.Route as Route exposing (..)
 import Main.Subscriptions exposing (decodeEscapeKey)
 import Main.Theme exposing (Theme(..))
@@ -59,7 +59,7 @@ view model =
             [ section [] [ model |> viewPage ] ]
         , footer
             [ class "mt-auto py-3 border-top" ]
-            [ viewPoweredBy ]
+            [ viewPoweredBy model ]
         ]
 
 
@@ -261,7 +261,7 @@ viewPageApp model pageApp =
                     [ text pageApp.pageApp_route.routeApp_name
                     ]
                 ]
-            , Html.button
+            , button
                 [ class "btn btn-success"
                 , let
                     route =
@@ -273,7 +273,6 @@ viewPageApp model pageApp =
             ]
         , viewPageAppTabs model pageApp
         , viewPageAppTabContent model pageApp
-        , viewRecipeLink model pageApp
         , viewPageAppRun model pageApp
         ]
 
@@ -350,6 +349,7 @@ viewTabMetadata model pageApp =
                     [ a [ href "#", target "_blank" ] [ text "Documentation" ] ]
                 , li [ class "list-group-item bg-transparent px-0" ]
                     [ a [ href "#", target "_blank" ] [ text "Source Repository" ] ]
+                , viewRecipeLink model pageApp
                 ]
             ]
         , div [ class "col-md-6" ]
@@ -367,7 +367,6 @@ viewTabMetadata model pageApp =
             , viewPageAppNgiSubgrants model pageApp
             ]
         ]
-
 
 
 hasAnyGrants : AppNgiSubgrants -> Bool
@@ -462,13 +461,12 @@ viewPageAppNgiSubgrants model pageApp =
 
 viewRecipeLink : Model -> PageApp -> Html update
 viewRecipeLink model pageApp =
-    div []
-        [ text "Recipe: "
-        , a
+    li [ class "list-group-item bg-transparent px-0" ]
+        [ a
             [ href
                 (String.join "/"
                     [ model.model_config.config_repository |> showNixUrl
-                    , "blob/master"
+                    , "blob/" ++ commit
                     , model.model_config.config_recipe.configRecipe_apps
                     , pageApp.pageApp_app.app_name
                     , "recipe.nix"
@@ -476,7 +474,7 @@ viewRecipeLink model pageApp =
                 )
             , target "_blank"
             ]
-            [ text (model.model_config.config_recipe.configRecipe_apps ++ "/" ++ pageApp.pageApp_app.app_name ++ "/recipe.nix") ]
+            [ text "Recipe Definition" ]
         ]
 
 
@@ -505,7 +503,7 @@ viewPageAppRun model pageApp =
                     [ div [ class "modal-content" ]
                         [ div [ class "modal-header" ]
                             [ h5 [ class "modal-title" ] [ text ("Run " ++ pageApp.pageApp_route.routeApp_name) ]
-                            , Html.button
+                            , button
                                 [ class "btn-close"
                                 , let
                                     route =
@@ -554,7 +552,7 @@ viewPageAppRunOuputs model pageApp =
 viewPageAppRunOuput : Model -> PageApp -> AppOutput -> Html Update
 viewPageAppRunOuput model pageApp appOutput =
     li [ class "nav-item" ]
-        [ Html.button
+        [ button
             [ class
                 ([ "nav-link"
                  , if Just appOutput == pageApp.pageApp_route.routeApp_runOutput then
@@ -615,8 +613,8 @@ viewPageRecipeOption model pageRecipeOptions ( optionName, option ) =
         ]
 
 
-viewPoweredBy : Html update
-viewPoweredBy =
+viewPoweredBy : Model -> Html update
+viewPoweredBy model =
     div
         [ class "text-secondary"
         , style "display" "flex"
@@ -651,27 +649,19 @@ viewPoweredBy =
         , span []
             [ text " Contribute or report issues at "
             , a
-                [ href "https://github.com/ngi-nix/forge"
+                [ href (model.model_config.config_repository |> showNixUrl)
                 , target "_blank"
                 ]
-                [ text "ngi-nix/forge" ]
+                [ text (model.model_config.config_repository |> showGithubRepoSlug) ]
             , text "."
             ]
-        , let
-            commit =
-                ":master"
-          in
-          if not (String.contains "master" commit) then
-            span []
-                [ text " Version "
-                , a
-                    [ href ("https://github.com/ngi-nix/forge/commit/" ++ commit)
-                    , target "_blank"
-                    ]
-                    [ text commit ]
-                , text "."
+        , span []
+            [ text " Version "
+            , a
+                [ href ((model.model_config.config_repository |> showNixUrl) ++ "/tree/" ++ commit)
+                , target "_blank"
                 ]
-
-          else
-            text ""
+                [ text shortCommit ]
+            , text "."
+            ]
         ]
