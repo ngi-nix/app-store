@@ -1,7 +1,12 @@
 import { init as initNavigationPort } from "./Navigation.js";
 import { getInitialTheme, initThemePort } from "./ThemeSwitch.js";
 import { initClipboardListener } from "./Clipboard.js";
+import {
+  getInitialFlakePreference,
+  initFlakePreferencePort,
+} from "./FlakePreference.js";
 
+const startingFlakePreference = getInitialFlakePreference();
 const startingTheme = getInitialTheme();
 
 // work around github pages adding extra trailing slash
@@ -22,14 +27,19 @@ const app = Elm.Main.init({
   flags: {
     href: window.location.href,
     theme: startingTheme,
+    prefersFlakes: startingFlakePreference,
   },
 });
+
+// register ports
+
+initClipboardListener(app);
 
 initNavigationPort({
   navCmd: app.ports.navCmd,
   onNavEvent: app.ports.onNavEvent,
 });
 
+initFlakePreferencePort(app);
 
-initClipboardListener(app);
 initThemePort(app);
