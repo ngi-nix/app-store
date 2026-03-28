@@ -141,7 +141,7 @@ viewThemeToggle model =
         , attribute "aria-label" "Toggle theme"
         , onClick Update_CycleTheme
         ]
-        [ case model.model_theme of
+        [ case model.model_preferences.pref_theme of
             Theme_Dark ->
                 iconMoonStarsFill
 
