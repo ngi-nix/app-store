@@ -347,10 +347,13 @@ viewDescription model pageApp =
 
 viewTabResources : Model -> PageApp -> Html Update
 viewTabResources model pageApp =
-    div [ class "box-container mb-3" ]
+    div
+        [ class "box-container target-highlight mb-3"
+        , id "resources"
+        , tabindex -1
+        ]
         [ h6
             [ class "mt-3 mb-3 ms-2"
-            , id "resources"
             ]
             [ text "Resources"
             , a
@@ -401,10 +404,13 @@ viewTabNgiGrants model pageApp =
             pageApp.pageApp_app.app_grants
     in
     if hasAnyGrants subgrants then
-        div [ class "box-container mb-3" ]
+        div
+            [ class "box-container target-highlight mb-3"
+            , id "grants"
+            , tabindex -1
+            ]
             [ h6
                 [ class "mt-3 mb-3 ms-2"
-                , id "grants"
                 ]
                 [ text "NGI Grants"
                 , a

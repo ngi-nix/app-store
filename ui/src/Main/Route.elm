@@ -33,6 +33,7 @@ type alias RouteApp =
       routeApp_name : AppName
     , routeApp_runShown : Bool
     , routeApp_runOutput : Maybe AppOutput
+    , routeApp_focusWidget : Maybe String
     }
 
 
@@ -45,6 +46,7 @@ initRouteApp name =
     { routeApp_name = name
     , routeApp_runShown = False
     , routeApp_runOutput = Nothing
+    , routeApp_focusWidget = Nothing
     }
 
 
@@ -84,28 +86,32 @@ fromAppUrl url =
 
                 Ok name ->
                     let
-                        ( isRunShown, runOutput ) =
+                        ( isRunShown, runOutput, focusId ) =
                             case url.fragment of
                                 Just "run-shell" ->
-                                    ( True, Just AppOutput_Shell )
+                                    ( True, Just AppOutput_Shell, Nothing )
 
                                 Just "run-container" ->
-                                    ( True, Just AppOutput_Container )
+                                    ( True, Just AppOutput_Container, Nothing )
 
                                 Just "run-vm" ->
-                                    ( True, Just AppOutput_VM )
+                                    ( True, Just AppOutput_VM, Nothing )
 
                                 Just "run" ->
-                                    ( True, Nothing )
+                                    ( True, Nothing, Nothing )
 
-                                _ ->
-                                    ( False, Nothing )
+                                Just targetId ->
+                                    ( False, Nothing, Just targetId )
+
+                                Nothing ->
+                                    ( False, Nothing, Nothing )
                     in
                     Ok
                         (Route_App
                             { routeApp_name = name
                             , routeApp_runShown = isRunShown
                             , routeApp_runOutput = runOutput
+                            , routeApp_focusWidget = focusId
                             }
                         )
 
