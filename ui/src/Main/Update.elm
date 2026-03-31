@@ -17,6 +17,7 @@ import Main.Ports.ThemeSwitch as ThemeSwitch
 import Main.Route as Route exposing (..)
 import Main.Theme exposing (cycleTheme, themeToString)
 import Navigation
+import Process
 import Task
 
 
@@ -369,7 +370,16 @@ updateRoute route =
                                 , model_errors = model.model_errors ++ [ Error_App (ErrorApp_NotFound routeApp.routeApp_name) ]
                                 , model_route = route
                             }
-                    , Cmd.none
+                    , case routeApp.routeApp_focusWidget of
+                        Just focusId ->
+                            Dom.focus focusId
+                                |> Task.andThen (\_ -> Process.sleep 2000)
+                                -- wait 2s for css animation and remove focus to fix alt+tab focus
+                                |> Task.andThen (\_ -> Dom.blur focusId)
+                                |> Task.attempt Update_FocusResult
+
+                        Nothing ->
+                            Cmd.none
                     )
 
         Route_RecipeOptions routeRecipe ->

@@ -225,3 +225,27 @@ a:link {
 [data-bs-theme="dark"] .box-container {
   background-color: #28283f;
 }
+
+.box-container:focus {
+  outline: none;
+}
+
+.box-container.target-highlight:focus {
+  animation: highlight-pulse 2s ease-out;
+}
+
+@keyframes highlight-pulse {
+  0% {
+    box-shadow: 0 0 0 0px rgba(0, 0, 0, 0);
+    background-color: transparent;
+  }
+  10% {
+    /* Adjust these colors to match your app's theme */
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.5);
+    background-color: rgba(59, 130, 246, 0.1);
+  }
+  100% {
+    box-shadow: 0 0 0 0px rgba(59, 130, 246, 0);
+    background-color: transparent;
+  }
+}
