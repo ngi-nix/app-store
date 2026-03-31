@@ -128,11 +128,15 @@ viewPageAppInstructions model pageApp =
     in
     div []
         [ if not pageApp.pageApp_app.app_programs.enable && not pageApp.pageApp_app.app_container.enable && not pageApp.pageApp_app.app_vm.enable then
-            p [ style "color" "red" ] [ text "No output is enabled for this pageApp.pageApp_app.app_ Enable at least one of the - programs, container or nixos vm - in recipe file." ]
+            div []
+                [ p [ class "text-danger" ] [ text "No output is enabled for this app." ]
+                , p [] [ text "Enable at least one of the - programs, container or nixos vm - in recipe file." ]
+                ]
 
           else
-            text ""
-        , viewInstructionsNixInstall model
-        , hr [] []
-        , instructions
+            div []
+                [ viewInstructionsNixInstall model
+                , hr [] []
+                , instructions
+                ]
         ]
