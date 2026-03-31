@@ -46,9 +46,12 @@ body {
   text-decoration: none;
   border-radius: 5px;
   border: solid 1px gray;
-  background-color: gray;
   margin: 0;
   font-size: 0.8rem;
+}
+
+.button.copy {
+  opacity: 0.7;
 }
 
 .button.copy:before {
@@ -59,8 +62,20 @@ body {
   content: "⿻ Copied ✓";
 }
 
+.button.copy.active {
+  background-color: #256929;
+  opacity: 1;
+}
+
+.button.copy.active:hover {
+  background-color: #256929;
+  opacity: 1;
+}
+
 .button.copy:hover {
-  background-color: darkgrey;
+  background-color: transparent;
+  opacity: 1;
+  border: solid 1px gray;
 }
 
 .m-app-card {
