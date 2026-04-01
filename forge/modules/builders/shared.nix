@@ -26,6 +26,8 @@ in
                     forges = {
                       # forge = fetchFunction
                       codeberg = pkgs.fetchFromCodeberg;
+                      forgejo = pkgs.fetchFromForgejo;
+                      gitea = pkgs.fetchFromGitea;
                       github = pkgs.fetchFromGitHub;
                       gitlab = pkgs.fetchFromGitLab;
                     };
