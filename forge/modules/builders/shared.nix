@@ -29,20 +29,36 @@ in
                       github = pkgs.fetchFromGitHub;
                       gitlab = pkgs.fetchFromGitLab;
                     };
+
+                    gitSchemas = lib.fix (self: {
+                      "3" = [
+                        "owner"
+                        "repo"
+                        "rev"
+                      ];
+
+                      "4" = [ "domain" ] ++ self."3";
+                    });
                   in
                   pkg:
                   let
-                    # Expected format: "forge:owner/repo/rev"
+                    # Expected formats:
+                    # - "forge:owner/repo/rev"
+                    # - "forge:domain/owner/repo/rev"
                     parts = lib.splitString ":" pkg.source.git;
                     forge = lib.elemAt parts 0;
                     pathParts = lib.splitString "/" (lib.elemAt parts 1);
+
+                    schema = gitSchemas.${toString (lib.length pathParts)};
+
+                    # assign each source attribute to its appropriate path part
+                    sourceAttrs = lib.listToAttrs (lib.zipListsWith lib.nameValuePair schema pathParts);
                   in
-                  forges.${forge} {
-                    owner = lib.elemAt pathParts 0;
-                    repo = lib.elemAt pathParts 1;
-                    rev = lib.elemAt pathParts 2;
-                    hash = pkg.source.hash;
-                  };
+                  forges.${forge} (
+                    lib.recursiveUpdate sourceAttrs {
+                      hash = pkg.source.hash;
+                    }
+                  );
 
                 url =
                   pkg:
