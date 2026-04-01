@@ -1,6 +1,11 @@
 {
   description = "NGI Forge";
 
+  nixConfig = {
+    extra-substituters = [ "https://ngi-forge.cachix.org" ];
+    extra-trusted-public-keys = [ "ngi-forge.cachix.org-1:PK0qK+LhWt4GQVpUtPapyXWxJSM1GhtmPW6CRCoygz0=" ];
+  };
+
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-parts.url = "github:hercules-ci/flake-parts";

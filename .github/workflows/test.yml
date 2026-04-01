@@ -24,7 +24,7 @@ jobs:
 
       - uses: cachix/cachix-action@v16
         with:
-          name: flake-forge
+          name: ngi-forge
           authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
 
       - name: Run checks
