@@ -11,6 +11,7 @@ import Main.Helpers.List as List
 import Main.Helpers.Nix exposing (..)
 import Main.Model exposing (..)
 import Main.Ports.Clipboard as Clipboard
+import Main.Ports.FlakePreference as FlakePreference
 import Main.Ports.Navigation
 import Main.Ports.ThemeSwitch as ThemeSwitch
 import Main.Route as Route exposing (..)
@@ -40,6 +41,7 @@ type Update
     | Update_ToggleNavBar
     | Update_CycleTheme
     | Update_Focus String
+    | Update_SetFlakePreference Bool
     | Update_FocusResult (Result Dom.Error ())
     | Update_AmbientKeyPress AmbientKeyState
     | Update_SearchInput UpdateSearchInput
@@ -112,6 +114,18 @@ update upd model =
         Update_CopyToClipboard code ->
             ( model
             , Clipboard.copyToClipboard code
+            )
+
+        Update_SetFlakePreference value ->
+            let
+                oldPrefs =
+                    model.model_preferences
+
+                newPrefs =
+                    { oldPrefs | pref_flakes = value }
+            in
+            ( { model | model_preferences = newPrefs }
+            , FlakePreference.saveFlakePreference value
             )
 
         Update_CycleTheme ->
