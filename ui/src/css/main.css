@@ -7,10 +7,12 @@ body {
   height: 100vh;
 }
 
-.recipe-option:focus {
-  border:2px solid red;
-  scroll-behavior:smooth;
-  scroll-snap-type:y mandatory;
+.recipe-option.trigger-pulse {
+  animation: highlight-pulse 2s ease-out;
+}
+
+.recipe-option {
+  outline: none;
 }
 
 /* Markdown content styling */
@@ -179,4 +181,73 @@ details.accordion-item[open] > summary.accordion-button::after {
 /* remove bootstrap default behavior */
 [data-bs-theme="dark"] .navbar-toggler-icon {
   --bs-navbar-toggler-icon-bg: "";
+}
+
+a:link {
+  text-decoration: none;
+}
+
+/* permalinks */
+.anchor-link {
+  padding: 0 0.175rem;
+  font-weight: 400;
+  color: #0d6efd80;
+  text-decoration: none;
+  opacity: 0;
+  transition:
+    color 0.15s ease-in-out,
+    opacity 0.15s ease-in-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .anchor-link {
+    transition: none;
+  }
+}
+.anchor-link:after {
+  content: "#";
+}
+.anchor-link:focus,
+.anchor-link:hover,
+:hover > .anchor-link,
+:target > .anchor-link {
+  color: #0d6efd;
+  text-decoration: none;
+  opacity: 1;
+}
+
+/* box containers */
+.box-container {
+  background-color: #f6f6ff;
+  padding: 10px;
+  margin: 10px 0;
+  font-size: 14px;
+  border-radius: 3px;
+}
+
+[data-bs-theme="dark"] .box-container {
+  background-color: #28283f;
+}
+
+.box-container {
+  outline: none;
+}
+
+.box-container.target-highlight.trigger-pulse {
+  animation: highlight-pulse 2s ease-out;
+}
+
+@keyframes highlight-pulse {
+  0% {
+    box-shadow: 0 0 0 0px rgba(0, 0, 0, 0);
+    background-color: transparent;
+  }
+  10% {
+    /* Adjust these colors to match your app's theme */
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.5);
+    background-color: rgba(59, 130, 246, 0.1);
+  }
+  100% {
+    box-shadow: 0 0 0 0px rgba(59, 130, 246, 0);
+    background-color: transparent;
+  }
 }

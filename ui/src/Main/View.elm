@@ -1,8 +1,9 @@
 module Main.View exposing (..)
 
+import AppUrl
 import Dict
-import Html exposing (Html, a, button, code, div, footer, h2, h3, h5, header, img, input, li, main_, p, section, small, span, text, ul)
-import Html.Attributes exposing (attribute, class, href, id, name, placeholder, src, style, tabindex, target, title, type_, value, width)
+import Html exposing (Html, a, button, code, div, footer, h2, h5, h6, header, img, input, li, main_, p, section, small, span, text, ul)
+import Html.Attributes exposing (attribute, class, href, id, name, placeholder, rel, src, style, tabindex, target, title, type_, value, width)
 import Html.Events exposing (onInput, preventDefaultOn, stopPropagationOn)
 import Json.Decode as Decode
 import Main.Config exposing (..)
@@ -317,40 +318,181 @@ viewPageSearchApp model app =
 
 viewPageApp : Model -> PageApp -> Html Update
 viewPageApp model pageApp =
-    div []
-        [ div
-            [ style "display" "flex"
-            , style "justify-content" "space-between"
-            , style "align-items" "center"
-            ]
-            [ div []
-                [ h2
-                    [ class "mb-1 fw-bold"
-                    ]
-                    [ text pageApp.pageApp_route.routeApp_name
-                    ]
+    div [ class "container" ]
+        [ div [ class "row" ]
+            [ div
+                [ class "col-12 col-lg-9" ]
+                [ viewPageAppHeader model pageApp
+                , viewDescription model pageApp
+                , viewPageAppRun model pageApp
                 ]
-            , button
-                [ class "btn btn-success"
-                , let
-                    route =
-                        pageApp.pageApp_route
-                  in
-                  onClick (Update_RouteWithoutHistory (Route_App { route | routeApp_runShown = True }))
+            , div
+                [ class "col-12 col-lg-3 order-lg-first" ]
+                [ viewAppResources model pageApp
+                , viewAppNgiGrants model pageApp
                 ]
-                [ text "Run" ]
             ]
-        , div
-            [ class "mb-4"
-            , style "margin-bottom" "1rem"
-            , style "border-bottom" "1px solid #dee2e6"
-            , style "padding-bottom" "0.5rem"
-            ]
-            [ text pageApp.pageApp_app.app_description ]
-        , viewInstructionsUsage model pageApp
-        , viewRecipeLink model pageApp
-        , viewPageAppRun model pageApp
         ]
+
+
+viewPageAppHeader : Model -> PageApp -> Html Update
+viewPageAppHeader model pageApp =
+    div
+        [ style "display" "flex"
+        , style "justify-content" "space-between"
+        , style "align-items" "center"
+        , class "my-4 mb-4"
+        ]
+        [ div []
+            [ h2
+                [ class "mb-1 fw-bold"
+                , style "margin" "0"
+                ]
+                [ text pageApp.pageApp_route.routeApp_name
+                ]
+            ]
+        , button
+            [ class "btn btn-success"
+            , let
+                route =
+                    pageApp.pageApp_route
+              in
+              onClick (Update_RouteWithoutHistory (Route_App { route | routeApp_runShown = True }))
+            ]
+            [ text "Run" ]
+        ]
+
+
+viewDescription : Model -> PageApp -> Html Update
+viewDescription model pageApp =
+    div []
+        [ p [ class "lead" ] [ text pageApp.pageApp_app.app_description ]
+        , viewInstructionsUsage model pageApp
+        ]
+
+
+viewAppResources : Model -> PageApp -> Html Update
+viewAppResources model pageApp =
+    div
+        [ class "box-container target-highlight mb-3"
+        , id "resources"
+        , tabindex -1
+        ]
+        [ h6
+            [ class "mt-3 mb-3 ms-2"
+            ]
+            [ text "Resources"
+            , a
+                [ class "anchor-link"
+                , href
+                    ((model.model_route |> toAppUrl |> AppUrl.toString)
+                        ++ "#resources"
+                    )
+                ]
+                []
+            ]
+        , ul [ class "", style "padding-left" "10px" ]
+            [ {- li [ class "list-group-item bg-transparent px-0 mb-3" ]
+                     [ a
+                         [ href "#"
+                         , target "_blank"
+                         , rel "noopener"
+                         ]
+                         [ text "Homepage" ]
+                     ]
+                 , li
+                     [ class "list-group-item bg-transparent px-0 mb-3"
+                     ]
+                     [ a
+                         [ href "#"
+                         , target "_blank"
+                         , rel "noopener"
+                         ]
+                         [ text "Documentation" ]
+                     ]
+                 , li [ class "list-group-item bg-transparent px-0 mb-3" ]
+                     [ a
+                         [ href "#"
+                         , target "_blank"
+                         , rel "noopener"
+                         ]
+                         [ text "Source Repository" ]
+                     ]
+                 ,
+              -}
+              viewRecipeLink model pageApp
+            ]
+        ]
+
+
+viewAppNgiGrants : Model -> PageApp -> Html msg
+viewAppNgiGrants model pageApp =
+    let
+        subgrants =
+            pageApp.pageApp_app.app_grants
+    in
+    if hasAnyGrants subgrants then
+        div
+            [ class "box-container target-highlight mb-3"
+            , id "grants"
+            , tabindex -1
+            ]
+            [ h6
+                [ class "mt-3 mb-3 ms-2"
+                ]
+                [ text "NGI Grants"
+                , a
+                    [ class "anchor-link"
+                    , href
+                        ((model.model_route |> toAppUrl |> AppUrl.toString)
+                            ++ "#grants"
+                        )
+                    ]
+                    []
+                ]
+            , div []
+                [ viewGrantCategory "Commons" subgrants.commons
+                , viewGrantCategory "Core" subgrants.core
+                , viewGrantCategory "Entrust" subgrants.entrust
+                , viewGrantCategory "Review" subgrants.review
+                ]
+            ]
+
+    else
+        text ""
+
+
+hasAnyGrants : AppNgiSubgrants -> Bool
+hasAnyGrants subgrants =
+    not (List.isEmpty subgrants.commons)
+        || not (List.isEmpty subgrants.core)
+        || not (List.isEmpty subgrants.entrust)
+        || not (List.isEmpty subgrants.review)
+
+
+viewGrantCategory : String -> List String -> Html msg
+viewGrantCategory categoryName grants =
+    if List.isEmpty grants then
+        text ""
+
+    else
+        div [ class "container row mb-1" ]
+            [ small [ class "col-6" ] [ text categoryName ]
+            , ul [ class "col" ]
+                (List.map
+                    (\grantName ->
+                        li [ class "list-group-item bg-transparent mb-1" ]
+                            [ a
+                                [ href ("https://nlnet.nl/project/" ++ grantName ++ "/")
+                                , target "_blank"
+                                , rel "noopener noreferrer"
+                                ]
+                                [ text grantName ]
+                            ]
+                    )
+                    grants
+                )
+            ]
 
 
 viewRecipeLink : Model -> PageApp -> Html update
@@ -458,6 +600,7 @@ viewPageAppRunOutput model pageApp appOutput =
                 )
             , style "cursor" "pointer"
             , style "border" "none"
+            , id <| "run-" ++ (showAppOutput appOutput |> String.toLower)
             , let
                 route =
                     pageApp.pageApp_route

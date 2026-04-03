@@ -31,6 +31,7 @@ type alias RouteApp =
     { routeApp_name : AppName
     , routeApp_runShown : Bool
     , routeApp_runOutput : Maybe AppOutput
+    , routeApp_focusWidget : Maybe String
     }
 
 
@@ -47,6 +48,7 @@ initRouteApp name =
     { routeApp_name = name
     , routeApp_runShown = False
     , routeApp_runOutput = Nothing
+    , routeApp_focusWidget = Nothing
     }
 
 
@@ -86,31 +88,32 @@ fromAppUrl url =
 
                 Ok name ->
                     let
-                        routeApp_runOutput =
+                        ( isRunShown, runOutput, focusId ) =
                             case url.fragment of
                                 Just "run-shell" ->
-                                    Just AppOutput_Shell
+                                    ( True, Just AppOutput_Shell, Nothing )
 
                                 Just "run-container" ->
-                                    Just AppOutput_Container
+                                    ( True, Just AppOutput_Container, Nothing )
 
                                 Just "run-vm" ->
-                                    Just AppOutput_VM
+                                    ( True, Just AppOutput_VM, Nothing )
 
-                                _ ->
-                                    Nothing
+                                Just "run" ->
+                                    ( True, Nothing, Nothing )
+
+                                Just targetId ->
+                                    ( False, Nothing, Just targetId )
+
+                                Nothing ->
+                                    ( False, Nothing, Nothing )
                     in
                     Ok
                         (Route_App
                             { routeApp_name = name
-                            , routeApp_runShown =
-                                case routeApp_runOutput of
-                                    Just _ ->
-                                        True
-
-                                    Nothing ->
-                                        False
-                            , routeApp_runOutput = routeApp_runOutput
+                            , routeApp_runShown = isRunShown
+                            , routeApp_runOutput = runOutput
+                            , routeApp_focusWidget = focusId
                             }
                         )
 
@@ -178,19 +181,24 @@ toAppUrl route =
             , queryParameters = Dict.empty
             , fragment =
                 if routeApp.routeApp_runShown then
-                    routeApp.routeApp_runOutput
-                        |> Maybe.map
-                            (\output ->
-                                case output of
-                                    AppOutput_Shell ->
-                                        "run-shell"
+                    Just
+                        ("run"
+                            ++ (case routeApp.routeApp_runOutput of
+                                    Nothing ->
+                                        ""
 
-                                    AppOutput_Container ->
-                                        "run-container"
+                                    Just output ->
+                                        case output of
+                                            AppOutput_Shell ->
+                                                "-shell"
 
-                                    AppOutput_VM ->
-                                        "run-vm"
-                            )
+                                            AppOutput_Container ->
+                                                "-container"
+
+                                            AppOutput_VM ->
+                                                "-vm"
+                               )
+                        )
 
                 else
                     Nothing

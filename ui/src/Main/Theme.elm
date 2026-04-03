@@ -1,4 +1,4 @@
-module Main.Theme exposing (Theme(..), cycleTheme, themeFromString, themeToString)
+module Main.Theme exposing (..)
 
 
 type Theme

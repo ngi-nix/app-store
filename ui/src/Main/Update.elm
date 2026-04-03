@@ -13,6 +13,7 @@ import Main.Model exposing (..)
 import Main.Ports.Clipboard as Clipboard
 import Main.Ports.FlakePreference as FlakePreference
 import Main.Ports.Navigation
+import Main.Ports.SmoothScroll exposing (..)
 import Main.Ports.ThemeSwitch as ThemeSwitch
 import Main.Route as Route exposing (..)
 import Main.Theme exposing (cycleTheme, themeToString)
@@ -287,6 +288,7 @@ updateRoute route =
                     ( { model
                         | model_page = Page_Search
                         , model_search = routeSearch.routeSearch_pattern
+                        , model_route = route
                       }
                     , Cmd.none
                     )
@@ -325,6 +327,7 @@ updateRoute route =
                                                     }
                                                 , pageApp_app = app
                                                 }
+                                        , model_route = route
                                     }
 
                                 Just output ->
@@ -347,6 +350,7 @@ updateRoute route =
                                                     { pageApp_route = routeApp
                                                     , pageApp_app = app
                                                     }
+                                            , model_route = route
                                         }
 
                                     else
@@ -357,14 +361,34 @@ updateRoute route =
                                                     , pageApp_app = app
                                                     }
                                             , model_errors = model.model_errors ++ [ Error_App (ErrorApp_NoSuchOutput output) ]
+                                            , model_route = route
                                         }
 
                         Nothing ->
                             { model
                                 | model_page = Page_Search
                                 , model_errors = model.model_errors ++ [ Error_App (ErrorApp_NotFound routeApp.routeApp_name) ]
+                                , model_route = route
                             }
-                    , Cmd.none
+                    , let
+                        isSameFocus =
+                            case model.model_page of
+                                Page_App oldPageApp ->
+                                    oldPageApp.pageApp_route.routeApp_focusWidget == routeApp.routeApp_focusWidget
+
+                                _ ->
+                                    False
+                      in
+                      if isSameFocus then
+                        Cmd.none
+
+                      else
+                        case routeApp.routeApp_focusWidget of
+                            Just focusId ->
+                                scrollToAndHighlight focusId
+
+                            Nothing ->
+                                Cmd.none
                     )
 
         Route_RecipeOptions routeRecipe ->
@@ -402,13 +426,27 @@ updateRoute route =
                                             |> List.at (routeRecipe.routeRecipeOptions_page - 1)
                                             |> Maybe.withDefault []
                                 }
+                            , model_route = route
                           }
-                        , case routeRecipe.routeRecipeOptions_option of
-                            Nothing ->
-                                Cmd.none
+                        , let
+                            isSameFocus =
+                                case model.model_page of
+                                    Page_RecipeOptions oldRecipePage ->
+                                        oldRecipePage.pageRecipeOptions_route.routeRecipeOptions_option == routeRecipe.routeRecipeOptions_option
 
-                            Just id ->
-                                Task.attempt Update_FocusResult (Dom.focus id)
+                                    _ ->
+                                        False
+                          in
+                          if isSameFocus then
+                            Cmd.none
+
+                          else
+                            case routeRecipe.routeRecipeOptions_option of
+                                Just focusId ->
+                                    scrollToAndHighlight focusId
+
+                                Nothing ->
+                                    Cmd.none
                         )
 
 
