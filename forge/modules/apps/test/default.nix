@@ -17,7 +17,9 @@
 
     script = lib.mkOption {
       type = lib.types.str;
-      default = "";
+      default = ''
+        echo "Test script"
+      '';
       description = ''
         Bash script to run application tests inside a NixOS machine.
 
