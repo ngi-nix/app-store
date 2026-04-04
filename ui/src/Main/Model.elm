@@ -18,7 +18,6 @@ type alias Model =
         , pref_flakes : Bool
         }
     , model_navbarExpanded : Bool
-    , model_route : Route
     , model_RecipeOptions : ModelRecipeOptions
     }
 
@@ -55,3 +54,16 @@ type alias ModelRecipeOptions =
     { modelRecipeOptions_available : NixModuleOptions
     , modelRecipeOptions_filtered : List ( NixName, NixModuleOption )
     }
+
+
+pageToRoute : Page -> Route
+pageToRoute page =
+    case page of
+        Page_Search ->
+            Route_Search { routeSearch_pattern = "" }
+
+        Page_App pageApp ->
+            Route_App pageApp.pageApp_route
+
+        Page_RecipeOptions pageRecipeOptions ->
+            Route_RecipeOptions pageRecipeOptions.pageRecipeOptions_route
