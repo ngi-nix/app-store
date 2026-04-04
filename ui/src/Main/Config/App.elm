@@ -1,5 +1,6 @@
 module Main.Config.App exposing (..)
 
+import Dict exposing (Dict)
 import Json.Decode as Decode exposing (Decoder)
 import Main.Helpers.String exposing (..)
 
@@ -11,13 +12,8 @@ type alias App =
     , app_programs : AppPrograms
     , app_container : AppContainer
     , app_vm : AppNixosVm
-    , app_ngi : AppNgi
+    , app_ngi : Ngi
     , app_links : AppLinks
-    }
-
-
-type alias AppNgi =
-    { grants : AppNgiSubgrants
     }
 
 
@@ -38,21 +34,6 @@ type alias AppContainer =
 
 type alias AppNixosVm =
     { enable : Bool
-    }
-
-
-type alias AppNgiSubgrants =
-    { commons : List String
-    , core : List String
-    , entrust : List String
-    , review : List String
-    }
-
-
-type alias AppLinks =
-    { website : Maybe String
-    , docs : Maybe String
-    , source : Maybe String
     }
 
 
@@ -79,7 +60,7 @@ decodeApp =
         (Decode.field "programs" decodeAppPrograms)
         (Decode.field "container" decodeAppContainer)
         (Decode.field "nixos" decodeAppNixosVm)
-        (Decode.field "ngi" decodeAppNgi)
+        (Decode.field "ngi" decodeNgi)
         (Decode.field "links" decodeAppLinks)
 
 
@@ -114,19 +95,43 @@ decodeAppNixosVm =
         (Decode.field "enable" Decode.bool)
 
 
-decodeAppNgi : Decoder AppNgi
-decodeAppNgi =
-    Decode.map AppNgi
-        (Decode.field "grants" decodeAppNgiSubgrants)
+type alias Ngi =
+    { ngi_grants : NgiGrants
+    }
 
 
-decodeAppNgiSubgrants : Decoder AppNgiSubgrants
-decodeAppNgiSubgrants =
-    Decode.map4 AppNgiSubgrants
-        (Decode.field "Commons" (Decode.list Decode.string))
-        (Decode.field "Core" (Decode.list Decode.string))
-        (Decode.field "Entrust" (Decode.list Decode.string))
-        (Decode.field "Review" (Decode.list Decode.string))
+decodeNgi : Decoder Ngi
+decodeNgi =
+    Decode.map Ngi
+        (Decode.field "grants" decodeNgiGrants)
+
+
+type alias NgiGrants =
+    Dict NgiGrantName NgiSubgrants
+
+
+type alias NgiGrantName =
+    String
+
+
+decodeNgiGrants : Decoder NgiGrants
+decodeNgiGrants =
+    Decode.dict (Decode.list Decode.string)
+
+
+type alias NgiSubgrants =
+    List NgiSubgrantName
+
+
+type alias NgiSubgrantName =
+    String
+
+
+type alias AppLinks =
+    { website : Maybe String
+    , docs : Maybe String
+    , source : Maybe String
+    }
 
 
 decodeAppLinks : Decoder AppLinks

@@ -445,9 +445,12 @@ viewAppNgiGrants : Model -> PageApp -> Html msg
 viewAppNgiGrants model pageApp =
     let
         subgrants =
-            pageApp.pageApp_app.app_ngi.grants
+            pageApp.pageApp_app.app_ngi.ngi_grants
     in
-    if hasAnyGrants subgrants then
+    if subgrants |> Dict.values |> List.concat |> List.isEmpty then
+        text ""
+
+    else
         div
             [ class "box-container target-highlight mb-3"
             , id "grants"
@@ -470,46 +473,34 @@ viewAppNgiGrants model pageApp =
                     []
                 ]
             , div []
-                [ viewGrantCategory "Commons" subgrants.commons
-                , viewGrantCategory "Core" subgrants.core
-                , viewGrantCategory "Entrust" subgrants.entrust
-                , viewGrantCategory "Review" subgrants.review
-                ]
+                (subgrants
+                    |> Dict.toList
+                    |> List.map viewGrantCategory
+                )
             ]
 
-    else
-        text ""
 
-
-hasAnyGrants : AppNgiSubgrants -> Bool
-hasAnyGrants subgrants =
-    not (List.isEmpty subgrants.commons)
-        || not (List.isEmpty subgrants.core)
-        || not (List.isEmpty subgrants.entrust)
-        || not (List.isEmpty subgrants.review)
-
-
-viewGrantCategory : String -> List String -> Html msg
-viewGrantCategory categoryName grants =
-    if List.isEmpty grants then
+viewGrantCategory : ( NgiGrantName, List NgiSubgrantName ) -> Html msg
+viewGrantCategory ( grant, subgrants ) =
+    if List.isEmpty subgrants then
         text ""
 
     else
         div [ class "container row mb-1" ]
-            [ small [ class "col-6" ] [ text categoryName ]
+            [ small [ class "col-6" ] [ text grant ]
             , ul [ class "col" ]
                 (List.map
-                    (\grantName ->
+                    (\subgrant ->
                         li [ class "list-group-item bg-transparent mb-1" ]
                             [ a
-                                [ href ("https://nlnet.nl/project/" ++ grantName ++ "/")
+                                [ href ("https://nlnet.nl/project/" ++ subgrant ++ "/")
                                 , target "_blank"
                                 , rel "noopener noreferrer"
                                 ]
-                                [ text grantName ]
+                                [ text subgrant ]
                             ]
                     )
-                    grants
+                    subgrants
                 )
             ]
 
