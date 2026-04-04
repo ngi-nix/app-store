@@ -2,13 +2,10 @@ import { init as initNavigationPort } from "./Navigation.js";
 import { getInitialTheme, initThemePort } from "./ThemeSwitch.js";
 import { initClipboardListener } from "./Clipboard.js";
 import {
-  getInitialFlakePreference,
-  initFlakePreferencePort,
-} from "./FlakePreference.js";
+  getPreferencesInstall,
+  initPreferences,
+} from "./Preferences.js";
 import { initSmoothScrollPort } from "./SmoothScroll.js";
-
-const startingFlakePreference = getInitialFlakePreference();
-const startingTheme = getInitialTheme();
 
 // work around github pages adding extra trailing slash
 if (
@@ -27,8 +24,8 @@ const app = Elm.Main.init({
   node: document.getElementById("elm-main"),
   flags: {
     href: window.location.href,
-    theme: startingTheme,
-    prefersFlakes: startingFlakePreference,
+    theme: getInitialTheme(),
+    flags_PreferencesInstall: getPreferencesInstall(),
   },
 });
 
@@ -41,7 +38,7 @@ initNavigationPort({
   onNavEvent: app.ports.onNavEvent,
 });
 
-initFlakePreferencePort(app);
+initPreferences(app);
 
 initSmoothScrollPort(app);
 

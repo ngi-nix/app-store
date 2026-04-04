@@ -13,10 +13,7 @@ type alias Model =
     , model_search : String
     , model_page : Page
     , model_errors : List Error
-    , model_preferences :
-        { pref_theme : Theme
-        , pref_flakes : Bool
-        }
+    , model_preferences : Preferences
     , model_navbarExpanded : Bool
     , model_RecipeOptions : ModelRecipeOptions
     }
@@ -67,3 +64,21 @@ pageToRoute page =
 
         Page_RecipeOptions pageRecipeOptions ->
             Route_RecipeOptions pageRecipeOptions.pageRecipeOptions_route
+
+
+type alias Preferences =
+    { preferences_theme : Theme
+    , preferences_install : PreferencesInstall
+    }
+
+
+type PreferencesInstall
+    = PreferencesInstall_NixFlakes
+    | PreferencesInstall_NixTraditional
+
+
+listPreferencesInstall : List PreferencesInstall
+listPreferencesInstall =
+    [ PreferencesInstall_NixFlakes
+    , PreferencesInstall_NixTraditional
+    ]

@@ -28,8 +28,8 @@ viewInstructionsUsage _ pageApp =
         text ""
 
 
-viewInstructionsNixInstall : Model -> PageApp -> Bool -> Html Update
-viewInstructionsNixInstall model pageApp flakes =
+viewInstructionsNixInstall : Model -> PageApp -> Html Update
+viewInstructionsNixInstall model pageApp =
     div [ class "accordion" ]
         [ details [ class "accordion-item" ]
             [ summary [ class "accordion-button accordion-header fw-bold" ]
@@ -38,9 +38,9 @@ viewInstructionsNixInstall model pageApp flakes =
                 ([ ul
                     [ class "nav nav-underline mb-1"
                     ]
-                    [ viewFlakeNavItem model pageApp True
-                    , viewFlakeNavItem model pageApp False
-                    ]
+                    (listPreferencesInstall
+                        |> List.map (viewPreferencesInstall model pageApp)
+                    )
                  , br [] []
                  , p [ class "mb-1" ]
                     [ text "1. Install Nix "
@@ -55,22 +55,23 @@ viewInstructionsNixInstall model pageApp flakes =
                  , codeBlock <|
                     "/nix/nix-installer uninstall"
                  ]
-                    ++ (if flakes then
-                            [ p [ class "mt-3 mb-1" ]
-                                [ text "2. Accept binaries pre-built by Nix Forge (optional, highly recommended) " ]
-                            , codeBlock <|
-                                "export NIX_CONFIG=\"accept-flake-config = true\""
-                            ]
+                    ++ (case model.model_preferences.preferences_install of
+                            PreferencesInstall_NixFlakes ->
+                                [ p [ class "mt-3 mb-1" ]
+                                    [ text "2. Accept binaries pre-built by Nix Forge (optional, highly recommended) " ]
+                                , codeBlock <|
+                                    "export NIX_CONFIG=\"accept-flake-config = true\""
+                                ]
 
-                        else
-                            [ p [ class "mt-3 mb-1" ]
-                                [ text "2. Configure substitutors (optional, highly recommended)" ]
-                            , codeBlock <|
-                                String.join "\n"
-                                    [ "export NIX_CONFIG='substituters = https://cache.nixos.org/ https://ngi.cachix.org/"
-                                    , "trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= ngi.cachix.org-1:n+CAL72ROC3qQuLxIHpV+Tw5t42WhXmMhprAGkRSrOw='"
-                                    ]
-                            ]
+                            PreferencesInstall_NixTraditional ->
+                                [ p [ class "mt-3 mb-1" ]
+                                    [ text "2. Configure substitutors (optional, highly recommended)" ]
+                                , codeBlock <|
+                                    String.join "\n"
+                                        [ "export NIX_CONFIG='substituters = https://cache.nixos.org/ https://ngi.cachix.org/"
+                                        , "trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= ngi.cachix.org-1:n+CAL72ROC3qQuLxIHpV+Tw5t42WhXmMhprAGkRSrOw='"
+                                        ]
+                                ]
                        )
                 )
             ]
@@ -119,25 +120,25 @@ viewPageAppInstructions model pageApp =
 
           else
             div []
-                [ viewInstructionsNixInstall model pageApp model.model_preferences.pref_flakes
+                [ viewInstructionsNixInstall model pageApp
                 , hr [] []
                 , ul
                     [ class "nav nav-underline mb-1"
                     ]
-                    [ viewFlakeNavItem model pageApp True
-                    , viewFlakeNavItem model pageApp False
-                    ]
+                    (listPreferencesInstall
+                        |> List.map (viewPreferencesInstall model pageApp)
+                    )
                 , br [] []
                 , instructions
                 ]
         ]
 
 
-viewFlakeNavItem : Model -> PageApp -> Bool -> Html Update
-viewFlakeNavItem model pageApp isFlakes =
+viewPreferencesInstall : Model -> PageApp -> PreferencesInstall -> Html Update
+viewPreferencesInstall model pageApp preferencesInstall =
     let
         isActive =
-            model.model_preferences.pref_flakes == isFlakes
+            model.model_preferences.preferences_install == preferencesInstall
 
         btnClasses =
             [ "nav-link"
@@ -146,22 +147,24 @@ viewFlakeNavItem model pageApp isFlakes =
 
               else
                 ""
-            , if isFlakes then
-                "text-primary-emphasis"
+            , case preferencesInstall of
+                PreferencesInstall_NixFlakes ->
+                    "text-primary-emphasis"
 
-              else
-                "text-secondary-emphasis"
+                PreferencesInstall_NixTraditional ->
+                    "text-secondary-emphasis"
             ]
                 |> String.join " "
 
         badgeClasses =
             if isActive then
                 "badge rounded-pill "
-                    ++ (if isFlakes then
-                            "text-bg-primary"
+                    ++ (case preferencesInstall of
+                            PreferencesInstall_NixFlakes ->
+                                "text-bg-primary"
 
-                        else
-                            "text-bg-secondary"
+                            PreferencesInstall_NixTraditional ->
+                                "text-bg-secondary"
                        )
 
             else
@@ -171,22 +174,24 @@ viewFlakeNavItem model pageApp isFlakes =
         [ button
             [ class btnClasses
             , style "cursor" "pointer"
-            , onClick (Update_SetFlakePreference isFlakes)
+            , onClick (Update_SavePreferences preferencesInstall)
             ]
             [ text
-                (if isFlakes then
-                    "Flakes "
+                (case preferencesInstall of
+                    PreferencesInstall_NixFlakes ->
+                        "Flakes "
 
-                 else
-                    "Non-Flakes "
+                    PreferencesInstall_NixTraditional ->
+                        "Traditional "
                 )
             , small [ class badgeClasses ]
                 [ text
-                    (if isFlakes then
-                        "Recommended"
+                    (case preferencesInstall of
+                        PreferencesInstall_NixFlakes ->
+                            "Recommended"
 
-                     else
-                        "Classic"
+                        PreferencesInstall_NixTraditional ->
+                            "Classic"
                     )
                 ]
             ]
@@ -212,69 +217,63 @@ nixFlakeForgeInput model =
 
 viewProgramsInstructions : Model -> PageApp -> Html Update
 viewProgramsInstructions model pageApp =
-    let
-        flakes =
-            model.model_preferences.pref_flakes
-    in
     div []
         [ p [ style "margin-bottom" "0em" ]
             [ text "Enter a shell environment with CLI or GUI programs available" ]
         , br [] []
         , codeBlock <|
             String.concat
-                (if flakes then
-                    [ "nix shell "
-                    , nixFlakeForgeInput model
-                    , "#"
-                    , pageApp.pageApp_app |> app_output
-                    ]
+                (case model.model_preferences.preferences_install of
+                    PreferencesInstall_NixFlakes ->
+                        [ "nix shell "
+                        , nixFlakeForgeInput model
+                        , "#"
+                        , pageApp.pageApp_app |> app_output
+                        ]
 
-                 else
-                    [ "nix-shell \\\n"
-                    , nixShellForgeInput model
-                    , "  -p '(import <forge> {})"
-                    , "."
-                    , pageApp.pageApp_app |> app_output
-                    , "' "
-                    ]
+                    PreferencesInstall_NixTraditional ->
+                        [ "nix-shell \\\n"
+                        , nixShellForgeInput model
+                        , "  -p '(import <forge> {})"
+                        , "."
+                        , pageApp.pageApp_app |> app_output
+                        , "' "
+                        ]
                 )
         ]
 
 
 viewContainerInstructions : Model -> PageApp -> Html Update
 viewContainerInstructions model pageApp =
-    let
-        flakes =
-            model.model_preferences.pref_flakes
-    in
     div []
         [ p [ style "margin-bottom" "0em" ] [ text "Run application services in OCI containers" ]
         , br [] []
         , codeBlock <|
             String.join "\n"
-                [ if flakes then
-                    String.concat
-                        [ "nix build "
-                        , nixFlakeForgeInput model
-                        , "#"
-                        , pageApp.pageApp_app |> app_output
-                        , ".container"
-                        ]
+                [ case model.model_preferences.preferences_install of
+                    PreferencesInstall_NixFlakes ->
+                        String.concat
+                            [ "nix build "
+                            , nixFlakeForgeInput model
+                            , "#"
+                            , pageApp.pageApp_app |> app_output
+                            , ".container"
+                            ]
 
-                  else
-                    String.concat
-                        [ "nix-build \\\n"
-                        , nixShellForgeInput model
-                        , "  -E '(import <forge> {})"
-                        , "."
-                        , pageApp.pageApp_app |> app_output
-                        , ".container"
-                        , "' "
-                        ]
+                    PreferencesInstall_NixTraditional ->
+                        String.concat
+                            [ "nix-build \\\n"
+                            , nixShellForgeInput model
+                            , "  -E '(import <forge> {})"
+                            , "."
+                            , pageApp.pageApp_app |> app_output
+                            , ".container"
+                            , "' "
+                            ]
                 , ""
                 , "./result/bin/build-oci"
                 , ""
-                , "podman load < " ++ app_name ++ ".tar"
+                , "podman load < " ++ (pageApp.pageApp_app |> app_output) ++ ".tar"
                 , "podman-compose --profile services --file $(pwd)/result/compose.yaml up"
                 ]
         ]
@@ -282,35 +281,32 @@ viewContainerInstructions model pageApp =
 
 viewVMInstructions : Model -> PageApp -> Html Update
 viewVMInstructions model pageApp =
-    let
-        flakes =
-            model.model_preferences.pref_flakes
-    in
     div []
         [ p [ style "margin-bottom" "0em" ] [ text "Run application services in a NixOS VM" ]
         , br [] []
         , codeBlock <|
-            if flakes then
-                String.concat
-                    [ "nix run "
-                    , nixFlakeForgeInput model
-                    , "#"
-                    , pageApp.pageApp_app |> app_output
-                    , ".vm"
-                    ]
-
-            else
-                String.join "\n"
-                    [ String.concat
-                        [ "nix-build \\\n"
-                        , nixShellForgeInput model
-                        , "  -E '(import <forge> {})"
-                        , "."
+            case model.model_preferences.preferences_install of
+                PreferencesInstall_NixFlakes ->
+                    String.concat
+                        [ "nix run "
+                        , nixFlakeForgeInput model
+                        , "#"
                         , pageApp.pageApp_app |> app_output
                         , ".vm"
-                        , "' "
                         ]
-                    , ""
-                    , "./result/bin/run-" ++ app_name ++ "-vm"
-                    ]
+
+                PreferencesInstall_NixTraditional ->
+                    String.join "\n"
+                        [ String.concat
+                            [ "nix-build \\\n"
+                            , nixShellForgeInput model
+                            , "  -E '(import <forge> {})"
+                            , "."
+                            , pageApp.pageApp_app |> app_output
+                            , ".vm"
+                            , "' "
+                            ]
+                        , ""
+                        , "./result/bin/run-" ++ pageApp.pageApp_app.app_name ++ "-vm"
+                        ]
         ]
