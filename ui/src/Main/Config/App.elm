@@ -11,6 +11,7 @@ type alias App =
     , app_container : AppContainer
     , app_vm : AppNixosVm
     , app_ngi : AppNgi
+    , app_links : AppLinks
     }
 
 
@@ -42,13 +43,20 @@ type alias AppNgiSubgrants =
     }
 
 
+type alias AppLinks =
+    { website : Maybe String
+    , docs : Maybe String
+    , source : Maybe String
+    }
+
+
 type alias AppName =
     String
 
 
 decodeApp : Decoder App
 decodeApp =
-    Decode.map7 App
+    Decode.map8 App
         (Decode.field "name" decodeAppName)
         (Decode.field "description" Decode.string)
         (Decode.field "usage" Decode.string)
@@ -56,6 +64,7 @@ decodeApp =
         (Decode.field "container" decodeAppContainer)
         (Decode.field "nixos" decodeAppNixosVm)
         (Decode.field "ngi" decodeAppNgi)
+        (Decode.field "links" decodeAppLinks)
 
 
 decodeAppName : Decoder AppName
@@ -104,6 +113,14 @@ decodeAppNgiSubgrants =
         (Decode.field "Review" (Decode.list Decode.string))
 
 
+decodeAppLinks : Decoder AppLinks
+decodeAppLinks =
+    Decode.map3 AppLinks
+        (Decode.maybe (Decode.at [ "website", "url" ] Decode.string))
+        (Decode.maybe (Decode.at [ "docs", "url" ] Decode.string))
+        (Decode.maybe (Decode.at [ "source", "url" ] Decode.string))
+
+
 type AppOutput
     = AppOutput_Shell
     | AppOutput_Container
@@ -121,3 +138,22 @@ showAppOutput r =
 
         AppOutput_VM ->
             "VM"
+
+
+type LinkType
+    = Link_Source
+    | Link_Docs
+    | Link_Website
+
+
+showAppLink : LinkType -> String
+showAppLink r =
+    case r of
+        Link_Website ->
+            "Homepage"
+
+        Link_Docs ->
+            "Documentation"
+
+        Link_Source ->
+            "Source Repository"
