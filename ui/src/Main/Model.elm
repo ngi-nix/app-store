@@ -4,8 +4,8 @@ import Main.Config exposing (..)
 import Main.Config.App exposing (..)
 import Main.Error exposing (..)
 import Main.Helpers.Nix exposing (..)
+import Main.Model.Preferences exposing (..)
 import Main.Route exposing (..)
-import Main.Theme exposing (Theme)
 
 
 type alias Model =
@@ -64,21 +64,3 @@ pageToRoute page =
 
         Page_RecipeOptions pageRecipeOptions ->
             Route_RecipeOptions pageRecipeOptions.pageRecipeOptions_route
-
-
-type alias Preferences =
-    { preferences_theme : Theme
-    , preferences_install : PreferencesInstall
-    }
-
-
-type PreferencesInstall
-    = PreferencesInstall_NixFlakes
-    | PreferencesInstall_NixTraditional
-
-
-listPreferencesInstall : List PreferencesInstall
-listPreferencesInstall =
-    [ PreferencesInstall_NixFlakes
-    , PreferencesInstall_NixTraditional
-    ]

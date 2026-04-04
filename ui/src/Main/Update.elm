@@ -10,13 +10,11 @@ import Main.Helpers.Cmd as Cmd
 import Main.Helpers.List as List
 import Main.Helpers.Nix exposing (..)
 import Main.Model exposing (..)
+import Main.Model.Preferences exposing (..)
 import Main.Ports.Clipboard as Clipboard
 import Main.Ports.Navigation
-import Main.Ports.Preferences as Preferences
 import Main.Ports.SmoothScroll exposing (..)
-import Main.Ports.ThemeSwitch as ThemeSwitch
 import Main.Route as Route exposing (..)
-import Main.Theme exposing (cycleTheme, themeToString)
 import Navigation
 import Task
 
@@ -123,13 +121,13 @@ update upd model =
                     model.model_preferences
             in
             ( { model | model_preferences = { model_preferences | preferences_install = prefs_install } }
-            , Preferences.savePreferencesInstall prefs_install
+            , savePreferencesInstall prefs_install
             )
 
         Update_CycleTheme ->
             let
                 nextTheme =
-                    cycleTheme model.model_preferences.preferences_theme
+                    cyclePreferencesTheme model.model_preferences.preferences_theme
 
                 oldPrefs =
                     model.model_preferences
@@ -138,7 +136,7 @@ update upd model =
                     { oldPrefs | preferences_theme = nextTheme }
             in
             ( { model | model_preferences = newPrefs }
-            , ThemeSwitch.saveTheme (themeToString nextTheme)
+            , savePreferencesTheme nextTheme
             )
 
         Update_ToggleNavBar ->

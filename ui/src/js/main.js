@@ -1,8 +1,7 @@
 import { init as initNavigationPort } from "./Navigation.js";
-import { getInitialTheme, initThemePort } from "./ThemeSwitch.js";
 import { initClipboardListener } from "./Clipboard.js";
 import {
-  getPreferencesInstall,
+  getPreferences,
   initPreferences,
 } from "./Preferences.js";
 import { initSmoothScrollPort } from "./SmoothScroll.js";
@@ -24,8 +23,7 @@ const app = Elm.Main.init({
   node: document.getElementById("elm-main"),
   flags: {
     href: window.location.href,
-    theme: getInitialTheme(),
-    flags_PreferencesInstall: getPreferencesInstall(),
+    flags_preferences: getPreferences(),
   },
 });
 
@@ -41,5 +39,3 @@ initNavigationPort({
 initPreferences(app);
 
 initSmoothScrollPort(app);
-
-initThemePort(app);

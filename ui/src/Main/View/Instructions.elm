@@ -8,6 +8,7 @@ import Main.Helpers.Html exposing (..)
 import Main.Helpers.Markdown as Markdown
 import Main.Helpers.Nix exposing (..)
 import Main.Model exposing (..)
+import Main.Model.Preferences exposing (..)
 import Main.Route exposing (..)
 import Main.Update exposing (..)
 

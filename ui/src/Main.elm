@@ -8,10 +8,9 @@ import Json.Encode
 import Main.Config
 import Main.Config.App exposing (..)
 import Main.Model exposing (..)
-import Main.Ports.Preferences exposing (..)
+import Main.Model.Preferences exposing (..)
 import Main.Route exposing (..)
 import Main.Subscriptions
-import Main.Theme exposing (themeFromString)
 import Main.Update exposing (..)
 import Main.View
 import Url
@@ -19,8 +18,7 @@ import Url
 
 type alias Flags =
     { href : String
-    , theme : String
-    , flags_PreferencesInstall : Json.Encode.Value
+    , flags_preferences : Json.Encode.Value
     }
 
 
@@ -43,12 +41,9 @@ init flags =
             , model_page = Page_Search
             , model_errors = []
             , model_preferences =
-                { preferences_theme = themeFromString flags.theme
-                , preferences_install =
-                    flags.flags_PreferencesInstall
-                        |> Json.Decode.decodeValue decodePreferencesInstall
-                        |> Result.withDefault PreferencesInstall_NixFlakes
-                }
+                flags.flags_preferences
+                    |> Json.Decode.decodeValue decodePreferences
+                    |> Result.withDefault defaultPreferences
             , model_navbarExpanded = False
             , model_RecipeOptions =
                 { modelRecipeOptions_available = Dict.empty

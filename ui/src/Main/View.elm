@@ -15,9 +15,9 @@ import Main.Helpers.Markdown as Markdown
 import Main.Helpers.Nix exposing (..)
 import Main.Icons exposing (..)
 import Main.Model exposing (..)
+import Main.Model.Preferences exposing (..)
 import Main.Route as Route exposing (..)
 import Main.Subscriptions exposing (decodeEscapeKey)
-import Main.Theme exposing (Theme(..))
 import Main.Update exposing (..)
 import Main.View.Instructions exposing (..)
 
@@ -212,10 +212,10 @@ viewThemeToggle model =
         , onClick Update_CycleTheme
         ]
         [ case model.model_preferences.preferences_theme of
-            Theme_Dark ->
+            PreferencesTheme_Dark ->
                 iconMoonStarsFill
 
-            Theme_Light ->
+            PreferencesTheme_Light ->
                 iconSunFill
         ]
 
