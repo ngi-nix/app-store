@@ -308,37 +308,22 @@ updateRoute route =
                                                 }
                                     }
 
-                                Just runtime ->
-                                    let
-                                        appHasRequestedRuntime =
-                                            case runtime of
-                                                AppRuntime_Shell ->
-                                                    app.app_programs.enable
+                                Just requestedRuntime ->
+                                    { model
+                                        | model_page =
+                                            Page_App
+                                                { pageApp_route = routeApp
+                                                , pageApp_app = app
+                                                }
+                                        , model_errors =
+                                            model.model_errors
+                                                ++ (if app |> hasAppRuntime requestedRuntime then
+                                                        []
 
-                                                AppRuntime_Container ->
-                                                    app.app_container.enable
-
-                                                AppRuntime_VM ->
-                                                    app.app_vm.enable
-                                    in
-                                    if appHasRequestedRuntime then
-                                        { model
-                                            | model_page =
-                                                Page_App
-                                                    { pageApp_route = routeApp
-                                                    , pageApp_app = app
-                                                    }
-                                        }
-
-                                    else
-                                        { model
-                                            | model_page =
-                                                Page_App
-                                                    { pageApp_route = routeApp
-                                                    , pageApp_app = app
-                                                    }
-                                            , model_errors = model.model_errors ++ [ Error_App (ErrorApp_NoSuchRuntime runtime) ]
-                                        }
+                                                    else
+                                                        [ Error_App (ErrorApp_NoSuchRuntime requestedRuntime) ]
+                                                   )
+                                    }
 
                         Nothing ->
                             { model

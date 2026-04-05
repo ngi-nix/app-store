@@ -148,6 +148,27 @@ type AppRuntime
     | AppRuntime_VM
 
 
+hasAppRuntime : AppRuntime -> App -> Bool
+hasAppRuntime appRuntime app =
+    case appRuntime of
+        AppRuntime_Shell ->
+            app.app_programs.enable
+
+        AppRuntime_Container ->
+            app.app_container.enable
+
+        AppRuntime_VM ->
+            app.app_vm.enable
+
+
+listAppRuntime : List AppRuntime
+listAppRuntime =
+    [ AppRuntime_Shell
+    , AppRuntime_Container
+    , AppRuntime_VM
+    ]
+
+
 listAppRuntimeAvailable : App -> List AppRuntime
 listAppRuntimeAvailable app =
     [ if app.app_programs.enable then
