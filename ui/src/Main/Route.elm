@@ -88,7 +88,7 @@ fromAppUrl url =
 
                 Ok name ->
                     let
-                        ( isRunShown, runOutput, focusId ) =
+                        ( runShown, runOutput, focusId ) =
                             case url.fragment of
                                 Just "run-shell" ->
                                     ( True, Just AppOutput_Shell, Nothing )
@@ -111,7 +111,7 @@ fromAppUrl url =
                     Ok
                         (Route_App
                             { routeApp_name = name
-                            , routeApp_runShown = isRunShown
+                            , routeApp_runShown = runShown
                             , routeApp_runOutput = runOutput
                             , routeApp_focusWidget = focusId
                             }
