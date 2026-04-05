@@ -572,35 +572,35 @@ viewPageAppRun model pageApp =
 viewPageAppRunOutputs : Model -> PageApp -> Html Update
 viewPageAppRunOutputs model pageApp =
     let
-        enabled : AppOutput -> Bool
+        enabled : AppRuntime -> Bool
         enabled tab =
             case tab of
-                AppOutput_Shell ->
+                AppRuntime_Shell ->
                     pageApp.pageApp_app.app_programs.enable
 
-                AppOutput_Container ->
+                AppRuntime_Container ->
                     pageApp.pageApp_app.app_container.enable
 
-                AppOutput_VM ->
+                AppRuntime_VM ->
                     pageApp.pageApp_app.app_vm.enable
     in
     ul [ class "nav nav-pills mb-4" ]
-        ([ AppOutput_Shell
-         , AppOutput_Container
-         , AppOutput_VM
+        ([ AppRuntime_Shell
+         , AppRuntime_Container
+         , AppRuntime_VM
          ]
             |> List.filter enabled
             |> List.map (viewPageAppRunOutput model pageApp)
         )
 
 
-viewPageAppRunOutput : Model -> PageApp -> AppOutput -> Html Update
+viewPageAppRunOutput : Model -> PageApp -> AppRuntime -> Html Update
 viewPageAppRunOutput model pageApp appOutput =
     li [ class "nav-item" ]
         [ a
             [ class
                 ([ "nav-link"
-                 , if Just appOutput == pageApp.pageApp_route.routeApp_runOutput then
+                 , if Just appOutput == pageApp.pageApp_route.routeApp_runRuntime then
                     "active"
 
                    else
@@ -610,14 +610,14 @@ viewPageAppRunOutput model pageApp appOutput =
                 )
             , style "cursor" "pointer"
             , style "border" "none"
-            , id <| "run-" ++ (showAppOutput appOutput |> String.toLower)
+            , id <| "run-" ++ (showAppRuntime appOutput |> String.toLower)
             , let
                 route =
                     pageApp.pageApp_route
               in
-              onClick (Update_RouteWithoutHistory (Route_App { route | routeApp_runOutput = Just appOutput }))
+              onClick (Update_RouteWithoutHistory (Route_App { route | routeApp_runRuntime = Just appOutput }))
             ]
-            [ span [ class "fw-bold" ] [ text <| showAppOutput appOutput ]
+            [ span [ class "fw-bold" ] [ text <| showAppRuntime appOutput ]
             ]
         ]
 

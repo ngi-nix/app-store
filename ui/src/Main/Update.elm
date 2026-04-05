@@ -292,26 +292,26 @@ updateRoute route =
                 \model ->
                     ( case model.model_config.config_apps |> Dict.get routeApp.routeApp_name of
                         Just app ->
-                            case routeApp.routeApp_runOutput of
+                            case routeApp.routeApp_runRuntime of
                                 Nothing ->
                                     { model
                                         | model_page =
                                             Page_App
                                                 { pageApp_route =
                                                     { routeApp
-                                                        | routeApp_runOutput =
+                                                        | routeApp_runRuntime =
                                                             [ if app.app_programs.enable then
-                                                                [ AppOutput_Shell ]
+                                                                [ AppRuntime_Shell ]
 
                                                               else
                                                                 []
                                                             , if app.app_container.enable then
-                                                                [ AppOutput_Container ]
+                                                                [ AppRuntime_Container ]
 
                                                               else
                                                                 []
                                                             , if app.app_vm.enable then
-                                                                [ AppOutput_VM ]
+                                                                [ AppRuntime_VM ]
 
                                                               else
                                                                 []
@@ -323,20 +323,20 @@ updateRoute route =
                                                 }
                                     }
 
-                                Just output ->
+                                Just runtime ->
                                     let
-                                        appHasRequestedOutput =
-                                            case output of
-                                                AppOutput_Shell ->
+                                        appHasRequestedRuntime =
+                                            case runtime of
+                                                AppRuntime_Shell ->
                                                     app.app_programs.enable
 
-                                                AppOutput_Container ->
+                                                AppRuntime_Container ->
                                                     app.app_container.enable
 
-                                                AppOutput_VM ->
+                                                AppRuntime_VM ->
                                                     app.app_vm.enable
                                     in
-                                    if appHasRequestedOutput then
+                                    if appHasRequestedRuntime then
                                         { model
                                             | model_page =
                                                 Page_App
@@ -352,7 +352,7 @@ updateRoute route =
                                                     { pageApp_route = routeApp
                                                     , pageApp_app = app
                                                     }
-                                            , model_errors = model.model_errors ++ [ Error_App (ErrorApp_NoSuchOutput output) ]
+                                            , model_errors = model.model_errors ++ [ Error_App (ErrorApp_NoSuchRuntime runtime) ]
                                         }
 
                         Nothing ->

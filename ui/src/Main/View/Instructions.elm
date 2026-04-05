@@ -83,28 +83,28 @@ viewPageAppInstructions : Model -> PageApp -> Html Update
 viewPageAppInstructions model pageApp =
     let
         instructions =
-            case pageApp.pageApp_route.routeApp_runOutput of
+            case pageApp.pageApp_route.routeApp_runRuntime of
                 Nothing ->
                     text "There is no such output for this application"
 
-                Just output ->
+                Just appRuntime ->
                     div []
-                        [ case output of
-                            AppOutput_Shell ->
+                        [ case appRuntime of
+                            AppRuntime_Shell ->
                                 if pageApp.pageApp_app.app_programs.enable then
                                     viewProgramsInstructions model pageApp
 
                                 else
                                     text ""
 
-                            AppOutput_Container ->
+                            AppRuntime_Container ->
                                 if pageApp.pageApp_app.app_container.enable then
                                     viewContainerInstructions model pageApp
 
                                 else
                                     text ""
 
-                            AppOutput_VM ->
+                            AppRuntime_VM ->
                                 if pageApp.pageApp_app.app_vm.enable then
                                     viewVMInstructions model pageApp
 

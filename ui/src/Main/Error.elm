@@ -59,17 +59,17 @@ showErrorRoute err =
 
 
 type ErrorApp
-    = ErrorApp_NoSuchOutput AppOutput
+    = ErrorApp_NoSuchRuntime AppRuntime
     | ErrorApp_NotFound AppName
 
 
 showErrorApp : ErrorApp -> String
 showErrorApp err =
     case err of
-        ErrorApp_NoSuchOutput output ->
+        ErrorApp_NoSuchRuntime runtime ->
             String.concat
-                [ "No such output: "
-                , output |> showAppOutput
+                [ "No such app runtime: "
+                , runtime |> showAppRuntime
                 , "."
                 ]
 

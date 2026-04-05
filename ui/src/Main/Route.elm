@@ -30,7 +30,7 @@ type alias RouteSearch =
 type alias RouteApp =
     { routeApp_name : AppName
     , routeApp_runShown : Bool
-    , routeApp_runOutput : Maybe AppOutput
+    , routeApp_runRuntime : Maybe AppRuntime
     , routeApp_focusWidget : Maybe String
     }
 
@@ -47,7 +47,7 @@ initRouteApp : AppName -> RouteApp
 initRouteApp name =
     { routeApp_name = name
     , routeApp_runShown = False
-    , routeApp_runOutput = Nothing
+    , routeApp_runRuntime = Nothing
     , routeApp_focusWidget = Nothing
     }
 
@@ -91,13 +91,13 @@ fromAppUrl url =
                         ( runShown, runOutput, focusId ) =
                             case url.fragment of
                                 Just "run-shell" ->
-                                    ( True, Just AppOutput_Shell, Nothing )
+                                    ( True, Just AppRuntime_Shell, Nothing )
 
                                 Just "run-container" ->
-                                    ( True, Just AppOutput_Container, Nothing )
+                                    ( True, Just AppRuntime_Container, Nothing )
 
                                 Just "run-vm" ->
-                                    ( True, Just AppOutput_VM, Nothing )
+                                    ( True, Just AppRuntime_VM, Nothing )
 
                                 Just "run" ->
                                     ( True, Nothing, Nothing )
@@ -112,7 +112,7 @@ fromAppUrl url =
                         (Route_App
                             { routeApp_name = name
                             , routeApp_runShown = runShown
-                            , routeApp_runOutput = runOutput
+                            , routeApp_runRuntime = runOutput
                             , routeApp_focusWidget = focusId
                             }
                         )
@@ -183,19 +183,19 @@ toAppUrl route =
                 if routeApp.routeApp_runShown then
                     Just
                         ("run"
-                            ++ (case routeApp.routeApp_runOutput of
+                            ++ (case routeApp.routeApp_runRuntime of
                                     Nothing ->
                                         ""
 
                                     Just output ->
                                         case output of
-                                            AppOutput_Shell ->
+                                            AppRuntime_Shell ->
                                                 "-shell"
 
-                                            AppOutput_Container ->
+                                            AppRuntime_Container ->
                                                 "-container"
 
-                                            AppOutput_VM ->
+                                            AppRuntime_VM ->
                                                 "-vm"
                                )
                         )
