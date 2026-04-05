@@ -114,7 +114,7 @@ watchman -j <<EOT
 [ "trigger"
 , "$PWD"
 , {
-    "name": "$unit-config",
+    "name": "$unit-backend",
     "command": [ "systemctl", "--user", "restart", "$unit-backend.service"
                ],
     "append_files": false,
