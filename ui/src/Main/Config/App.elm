@@ -54,7 +54,7 @@ getDefaultIconPath =
 decodeApp : Decoder App
 decodeApp =
     Decode.map8 App
-        (Decode.field "name" decodeAppName)
+        (Decode.field "name" (Decode.string |> Decode.map (stripSuffix "-app")))
         (Decode.field "description" Decode.string)
         (Decode.field "usage" Decode.string)
         (Decode.field "programs" decodeAppPrograms)
@@ -62,19 +62,6 @@ decodeApp =
         (Decode.field "nixos" decodeAppNixosVm)
         (Decode.field "ngi" decodeNgi)
         (Decode.field "links" decodeAppLinks)
-
-
-decodeAppName : Decoder AppName
-decodeAppName =
-    Decode.string
-        |> Decode.andThen
-            (\s ->
-                if String.length s > 0 && String.all (\c -> 'a' <= c && c <= 'z' || 'A' <= c && c <= 'Z' || '0' <= c && c <= '9' || c == '-' || c == '_') s then
-                    Decode.succeed <| stripSuffix "-app" <| s
-
-                else
-                    Decode.fail <| "Invalid application name: " ++ s
-            )
 
 
 decodeAppPrograms : Decoder AppPrograms
