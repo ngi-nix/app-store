@@ -27,7 +27,6 @@
 
   container = {
     enable = true;
-    name = "hello";
     tag = "latest";
     requirements = [ pkgs.mypkgs.hello ];
     # Alternatively, we can re-use attributes with `config`:

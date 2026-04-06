@@ -273,11 +273,8 @@ viewVMInstructions model pageApp =
         flakes =
             model.model_preferences.pref_flakes
 
-        -- In nixpkgs nixos/modules/virtualisation/qemu-vm.nix, look for mainProgram
-        -- And in nixos/modules/system/activation/top-level.nix, look for hostName
-        -- Assume we always set hostname to be without -app suffix
-        serviceName =
-            String.dropRight 4 pageApp.pageApp_app.app_name
+        app_name =
+            pageApp.pageApp_app.app_name
     in
     div []
         [ p [ style "margin-bottom" "0em" ] [ text "Run application services in a NixOS VM." ]
@@ -288,7 +285,7 @@ viewVMInstructions model pageApp =
                     [ "nix run "
                     , model.model_config.config_repository
                     , "#"
-                    , pageApp.pageApp_app.app_name
+                    , app_name
                     , ".vm"
                     ]
 
@@ -299,11 +296,11 @@ viewVMInstructions model pageApp =
                         , nixShellForgeInput model
                         , "  -E '(import <forge> {})"
                         , "."
-                        , pageApp.pageApp_app.app_name
+                        , app_name
                         , ".vm"
                         , "' "
                         ]
                     , ""
-                    , "./result/bin/run-" ++ serviceName ++ "-vm"
+                    , "./result/bin/run-" ++ app_name ++ "-vm"
                     ]
         ]

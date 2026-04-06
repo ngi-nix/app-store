@@ -11,12 +11,6 @@
   options = {
     enable = lib.mkEnableOption "NixOS/VM output";
 
-    name = lib.mkOption {
-      type = lib.types.str;
-      default = "nixos-vm";
-      description = "Hostname for the VM.";
-    };
-
     # TODO:
     # - wire this up with nimi
     # - maybe rename to `nimi` or `nimi-settings`?
@@ -159,7 +153,7 @@
           };
 
           networking = {
-            hostName = config.name;
+            hostName = app.name;
             useDHCP = lib.mkForce true;
             firewall.enable = lib.mkForce false;
           };
@@ -186,8 +180,8 @@
                   }
                   // lib.optionalAttrs (config.setup != "") {
                     # make sure services run after setup is done
-                    after = [ "${config.name}-setup.service" ];
-                    requires = [ "${config.name}-setup.service" ];
+                    after = [ "${app.name}-setup.service" ];
+                    requires = [ "${app.name}-setup.service" ];
                   };
                 }
               ))
@@ -197,8 +191,8 @@
           environment.variables = lib.concatMapAttrs (_: value: value.environment) app.services;
         }
         (lib.mkIf (config.setup != "") {
-          systemd.services."${config.name}-setup" = {
-            description = "Setup service for ${config.name}.";
+          systemd.services."${app.name}-setup" = {
+            description = "Setup service for ${app.name}.";
             wantedBy = [ "multi-user.target" ];
             before = [ "multi-user.target" ];
             after = [ "network.target" ];

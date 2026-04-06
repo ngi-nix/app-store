@@ -383,7 +383,6 @@ Builds a single OCI-compliant container image:
 ```nix
 container = {
   enable = true;  # Set to true to enable container image output
-  name = "my-app";
   tag = "latest";  # Optional, defaults to "latest"
 
   requirements = [
@@ -418,7 +417,6 @@ Builds a complete NixOS virtual machine:
 ```nix
 nixos = {
   enable = true;  # Set to true to enable VM output
-  name = "my-vm";
 
   # NixOS system configuration
   # See: https://search.nixos.org/options
@@ -507,7 +505,6 @@ Each app output type can be independently enabled or disabled:
   # Container image
   container = {
     enable = true;
-    name = "python-web";
     tag = "latest";
     requirements = [ pkgs.mypkgs.python-web ];
     imageConfig = {
@@ -520,7 +517,6 @@ Each app output type can be independently enabled or disabled:
   # VM with PostgreSQL
   nixos = {
     enable = true;
-    name = "python-web";
     extraConfig = {
       services.postgresql = {
         enable = true;

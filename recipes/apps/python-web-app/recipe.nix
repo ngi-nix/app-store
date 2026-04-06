@@ -44,7 +44,6 @@
 
   container = {
     enable = true;
-    name = "python-web";
     requirements = [ pkgs.mypkgs.python-web ];
     # Alternatively, we can re-use attributes with `config`:
     #requirements = [ config.services.python-web.command ];
@@ -53,7 +52,6 @@
 
   nixos = {
     enable = true;
-    name = "python-web";
     extraConfig = {
       # database service
       services.postgresql.enable = true;

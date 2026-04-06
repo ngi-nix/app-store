@@ -11,12 +11,6 @@
   options = {
     enable = lib.mkEnableOption "container image output";
 
-    name = lib.mkOption {
-      type = lib.types.str;
-      default = "container";
-      description = "Name of the generated container.";
-    };
-
     tag = lib.mkOption {
       type = lib.types.str;
       default = "latest";
@@ -151,7 +145,7 @@
       cat > $out/bin/build-oci <<EOF
       #!${pkgs.runtimeShell}
       ${config.result.recipe.copyTo}/bin/copy-to \
-        oci-archive:${config.name}.tar:${config.name}:${config.tag}
+        oci-archive:${app.name}.tar:${app.name}:${config.tag}
       EOF
 
       chmod +x $out/bin/build-oci
