@@ -16,6 +16,28 @@ lib.makeExtensible (self: {
     programs.nixfmt.enable = true;
     programs.shfmt.enable = true;
 
+    programs.dprint = {
+      enable = true;
+      includes = [
+        "**/*.{json,jsonc,md,js,ts,yml,yaml}"
+        "*.{json,jsonc,md,js,ts,yml,yaml}"
+      ];
+      excludes = [
+        "**/node_modules"
+        "**/*-lock.json"
+      ];
+      settings = {
+        plugins = pkgs.dprint-plugins.getPluginList (
+          ps: with ps; [
+            dprint-plugin-json
+            dprint-plugin-markdown
+            dprint-plugin-typescript
+            g-plane-pretty_yaml
+          ]
+        );
+      };
+    };
+
     settings.formatter.editorconfig-checker = {
       command = pkgs.editorconfig-checker;
       includes = [ "*" ];
