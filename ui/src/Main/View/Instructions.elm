@@ -269,7 +269,7 @@ viewContainerInstructions model pageApp =
                 , ""
                 , "./result/bin/build-oci"
                 , ""
-                , "podman load < *.tar"
+                , "podman load < " ++ app_name ++ ".tar"
                 , "podman-compose --profile services --file $(pwd)/result/compose.yaml up"
                 ]
         ]
