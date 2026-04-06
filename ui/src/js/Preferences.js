@@ -8,23 +8,17 @@ const getPreferences = () => {
   }
   document.documentElement.setAttribute("data-bs-theme", preferences_theme);
 
-  return
-    { theme = preferences_theme
-    , install = preferences_install
-    };
+  return { theme: preferences_theme, install: preferences_install };
 };
 
-const initPreferences = (app) => {
+const initPreferencesPort = (app) => {
   app.ports.savePreferencesThemeString.subscribe((theme) => {
     localStorage.setItem("preferences_theme", theme);
-    setPreferencesTheme(theme);
+    document.documentElement.setAttribute("data-bs-theme", theme);
   });
   app.ports.savePreferencesInstallString.subscribe((preferences_install) => {
     localStorage.setItem("preferences_install", preferences_install);
   });
 };
 
-export
-  { getPreferences
-  , initPreferences
-  };
+export { getPreferences, initPreferencesPort };

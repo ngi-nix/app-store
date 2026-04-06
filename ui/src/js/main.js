@@ -1,9 +1,6 @@
 import { init as initNavigationPort } from "./Navigation.js";
 import { initClipboardListener } from "./Clipboard.js";
-import {
-  getPreferences,
-  initPreferences,
-} from "./Preferences.js";
+import { getPreferences, initPreferencesPort } from "./Preferences.js";
 import { initSmoothScrollPort } from "./SmoothScroll.js";
 
 // work around github pages adding extra trailing slash
@@ -36,6 +33,6 @@ initNavigationPort({
   onNavEvent: app.ports.onNavEvent,
 });
 
-initPreferences(app);
+initPreferencesPort(app);
 
 initSmoothScrollPort(app);
