@@ -429,7 +429,7 @@ viewAppNgiGrants : Model -> PageApp -> Html msg
 viewAppNgiGrants model pageApp =
     let
         subgrants =
-            pageApp.pageApp_app.app_grants
+            pageApp.pageApp_app.app_ngi.grants
     in
     if hasAnyGrants subgrants then
         div

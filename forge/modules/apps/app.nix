@@ -29,10 +29,10 @@
       default = { };
       description = "Links related to this project";
     };
-    grants = lib.mkOption {
-      type = lib.types.submodule ./ngi/grants.nix;
+    ngi = lib.mkOption {
+      type = lib.types.submodule ./ngi;
       default = { };
-      description = "NGI grants supporting this project.";
+      description = "NGI-specific options.";
     };
 
     # Portable services configuration

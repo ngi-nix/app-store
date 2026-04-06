@@ -10,7 +10,12 @@ type alias App =
     , app_programs : AppPrograms
     , app_container : AppContainer
     , app_vm : AppNixosVm
-    , app_grants : AppNgiSubgrants
+    , app_ngi : AppNgi
+    }
+
+
+type alias AppNgi =
+    { grants : AppNgiSubgrants
     }
 
 
@@ -50,7 +55,7 @@ decodeApp =
         (Decode.field "programs" decodeAppPrograms)
         (Decode.field "container" decodeAppContainer)
         (Decode.field "nixos" decodeAppNixosVm)
-        (Decode.field "grants" decodeAppNgiSubgrants)
+        (Decode.field "ngi" decodeAppNgi)
 
 
 decodeAppName : Decoder AppName
@@ -82,6 +87,12 @@ decodeAppNixosVm : Decoder AppNixosVm
 decodeAppNixosVm =
     Decode.map AppNixosVm
         (Decode.field "enable" Decode.bool)
+
+
+decodeAppNgi : Decoder AppNgi
+decodeAppNgi =
+    Decode.map AppNgi
+        (Decode.field "grants" decodeAppNgiSubgrants)
 
 
 decodeAppNgiSubgrants : Decoder AppNgiSubgrants
