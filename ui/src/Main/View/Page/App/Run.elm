@@ -241,25 +241,16 @@ viewPageAppRunNixInstallPreferences model _ preferencesInstall =
             , style "cursor" "pointer"
             , onClick (Update_SavePreferences preferencesInstall)
             ]
-            [ text
-                (case preferencesInstall of
-                    PreferencesInstall_NixFlakes ->
-                        "Flakes "
+            (case preferencesInstall of
+                PreferencesInstall_NixFlakes ->
+                    [ text "Flakes "
+                    , small [ class badgeClasses ] [ text "Recommended" ]
+                    ]
 
-                    PreferencesInstall_NixTraditional ->
-                        "Traditional "
-                )
-            , small [ class badgeClasses ]
-                [ text
-                    (case preferencesInstall of
-                        PreferencesInstall_NixFlakes ->
-                            "Recommended"
-
-                        PreferencesInstall_NixTraditional ->
-                            "Classic"
-                    )
-                ]
-            ]
+                PreferencesInstall_NixTraditional ->
+                    [ text "Traditional"
+                    ]
+            )
         ]
 
 
