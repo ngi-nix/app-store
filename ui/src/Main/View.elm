@@ -104,7 +104,7 @@ viewTitle =
         ]
         [ img
             [ src "favicon.svg"
-            , width 25
+            , class "brand-logo-responsive"
             ]
             []
         , span

@@ -167,6 +167,16 @@ details.accordion-item[open] > summary.accordion-button::after {
 
 /* navbar */
 
+.brand-logo-responsive {
+  width: 30px;
+}
+
+@media (min-width: 768px) {
+  .brand-logo-responsive {
+    width: 40px;
+  }
+}
+
 .brand-text {
   max-width: 200px;
   opacity: 1;
