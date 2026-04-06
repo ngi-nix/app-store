@@ -3,7 +3,7 @@ module Main.View exposing (..)
 import AppUrl
 import Dict
 import Html exposing (Html, a, button, code, div, footer, h2, h5, h6, header, img, input, li, main_, p, section, small, span, text, ul)
-import Html.Attributes exposing (attribute, class, href, id, name, placeholder, rel, src, style, tabindex, target, title, type_, value, width)
+import Html.Attributes exposing (attribute, class, href, id, placeholder, rel, src, style, tabindex, target, title, type_, value, width)
 import Html.Events exposing (onInput, preventDefaultOn, stopPropagationOn)
 import Json.Decode as Decode
 import Main.Config exposing (..)
@@ -279,8 +279,7 @@ viewPageSearchApp model app =
         , onClick (Update_Route (Route_App (initRouteApp app.app_name)))
         ]
         [ div
-            [ name ("app-" ++ app.app_name)
-            , class "w-100"
+            [ class "w-100"
             , style "display" "flex"
             , style "justify-content" "space-between"
             ]
@@ -385,7 +384,7 @@ viewAppResources model pageApp =
             , a
                 [ class "anchor-link"
                 , href
-                    ((model.model_route |> toAppUrl |> AppUrl.toString)
+                    ((model.model_route |> Route.toString)
                         ++ "#resources"
                     )
                 ]
@@ -444,7 +443,7 @@ viewAppNgiGrants model pageApp =
                 , a
                     [ class "anchor-link"
                     , href
-                        ((model.model_route |> toAppUrl |> AppUrl.toString)
+                        ((model.model_route |> Route.toString)
                             ++ "#grants"
                         )
                     ]

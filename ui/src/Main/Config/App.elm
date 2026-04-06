@@ -46,6 +46,19 @@ type alias AppName =
     String
 
 
+stripAppSuffix : AppName -> String
+stripAppSuffix name =
+    let
+        suffix =
+            "-app"
+    in
+    if String.endsWith suffix name then
+        String.dropRight (String.length suffix) name
+
+    else
+        name
+
+
 decodeApp : Decoder App
 decodeApp =
     Decode.map7 App
@@ -64,7 +77,8 @@ decodeAppName =
         |> Decode.andThen
             (\s ->
                 if String.length s > 0 && String.all (\c -> 'a' <= c && c <= 'z' || 'A' <= c && c <= 'Z' || '0' <= c && c <= '9' || c == '-' || c == '_') s then
-                    Decode.succeed s
+                    -- remove -app suffix
+                    Decode.succeed <| stripAppSuffix s
 
                 else
                     Decode.fail <| "Invalid application name: " ++ s
