@@ -7,10 +7,10 @@
 
 {
   name = "python-web-app";
-  description = "Simple web application with database backend.";
+  description = "Example web API with database backend.";
   usage = ''
-    This is a simple example app which provides a web API to manage a list of
-    users.
+    This is a simple example application that provides a web API for
+    managing a list of users.
 
     * Initialize database
     ```
