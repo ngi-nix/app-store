@@ -7,10 +7,7 @@
 }:
 {
   imports = [
-    # configData
-    (lib.modules.importApply (
-      inputs.nixpkgs + "/nixos/modules/system/service/portable/config-data.nix"
-    ) { inherit pkgs; })
+    (lib.modules.importApply (inputs.nixpkgs + "/lib/services/config-data.nix") { inherit pkgs; })
   ];
 
   options = {
