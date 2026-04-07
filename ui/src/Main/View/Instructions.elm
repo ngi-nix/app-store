@@ -221,7 +221,7 @@ viewProgramsInstructions model pageApp =
     in
     div []
         [ p [ style "margin-bottom" "0em" ]
-            [ text "Create and enter a shell environment for (CLI, GUI) programs." ]
+            [ text "Enter a shell environment with CLI or GUI programs available" ]
         , br [] []
         , codeBlock <|
             String.concat
@@ -255,7 +255,7 @@ viewContainerInstructions model pageApp =
             pageApp.pageApp_app.app_name ++ "-app"
     in
     div []
-        [ p [ style "margin-bottom" "0em" ] [ text "Run application services using OCI containers." ]
+        [ p [ style "margin-bottom" "0em" ] [ text "Run application services in OCI containers" ]
         , br [] []
         , codeBlock <|
             String.join "\n"
@@ -298,7 +298,7 @@ viewVMInstructions model pageApp =
             pageApp.pageApp_app.app_name ++ "-app"
     in
     div []
-        [ p [ style "margin-bottom" "0em" ] [ text "Run application services in a NixOS VM." ]
+        [ p [ style "margin-bottom" "0em" ] [ text "Run application services in a NixOS VM" ]
         , br [] []
         , codeBlock <|
             if flakes then
