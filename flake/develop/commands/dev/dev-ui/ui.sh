@@ -52,6 +52,7 @@ systemctl --user edit --runtime --force --full "$unit"-backend.service --stdin <
 Type=oneshot
 RemainAfterExit=yes
 Slice=$slice.slice
+Environment=PATH=$PATH
 ExecStart=$(command -v nix) build -f "$rootDir" _forge-ui.passthru.bootstrapCss -o "$rootDir/ui/build/bootstrap" --show-trace
 ExecStart=$(command -v nix) build -f "$rootDir" _forge-options -o "$rootDir/ui/build/forge-options.json" --show-trace
 ExecStart=$BACKEND_COMMAND
