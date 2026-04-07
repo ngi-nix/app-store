@@ -269,6 +269,9 @@ error: flake does not provide attribute 'packages.x86_64-linux.<package-name>'
       pkgs.openssl
       pkgs.sqlite
     ];
+    inputs.check = [
+      pkgs.cargo-nextest
+    ];
     cargoHash = "sha256-...";
     cargoBuildFlags = [ "--release" ];
   };
@@ -283,6 +286,7 @@ error: flake does not provide attribute 'packages.x86_64-linux.<package-name>'
 **Inputs options**:
 - `inputs.build`: Build-time tools (pkg-config, bindgenHook)
 - `inputs.run`: Runtime dependencies (openssl, sqlite, etc.)
+- `inputs.check`: Test tools (cargo-nextest)
 
 ## Source Configuration
 
