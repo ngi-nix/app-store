@@ -139,16 +139,16 @@
 
     result.recipe = nimi.mkContainerImage { inherit (config.result.nimi) config; };
 
-    result.imageBuilder = pkgs.runCommand "build-oci" { meta.mainProgram = "build-oci"; } ''
+    result.imageBuilder = pkgs.runCommand "build-oci-image" { meta.mainProgram = "build-oci-image"; } ''
       mkdir -p $out/bin
 
-      cat > $out/bin/build-oci <<EOF
+      cat > $out/bin/build-oci-image <<EOF
       #!${pkgs.runtimeShell}
       ${config.result.recipe.copyTo}/bin/copy-to \
         oci-archive:${app.name}.tar:${app.name}:${config.tag}
       EOF
 
-      chmod +x $out/bin/build-oci
+      chmod +x $out/bin/build-oci-image
 
       ${lib.optionalString (config.composeFile != null) ''
         cp ${config.composeFile} $out/compose.yaml
