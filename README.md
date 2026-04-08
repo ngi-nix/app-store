@@ -4,16 +4,15 @@
 
 ## Features
 
-* Simple, type checked configuration recipes for **packages** and
+- Simple, type checked configuration recipes for **packages** and
   **mutli-component applications** using
   [module system](https://nix.dev/tutorials/module-system/index.html)
 
-* [Web UI](https://ngi-nix.github.io/forge)
+- [Web UI](https://ngi-nix.github.io/forge)
 
-* [LLMs support](./AGENTS.md)
+- [LLMs support](./AGENTS.md)
 
-* Easy [self hosting](#self-hosting)
-
+- Easy [self hosting](#self-hosting)
 
 ### Conceptual diagram
 
@@ -67,23 +66,21 @@ graph TB
 
 ## Self hosting
 
-* Initiate new Nix Forge instance from template
+- Initiate new Nix Forge instance from template
 
 ```bash
 nix flake init --template github:ngi-nix/forge#example
 ```
 
-* Set `repositoryUrl` attribute in `flake.nix` to your repository
+- Set `repositoryUrl` attribute in `flake.nix` to your repository
 
-* Add all new files to git
+- Add all new files to git
 
-* Start creating recipes  in `recipes` directory
-
+- Start creating recipes in `recipes` directory
 
 ## LLM agents
 
 LLM agents, read [these instructions](./AGENTS.md) first.
-
 
 ## Credits
 

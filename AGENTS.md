@@ -16,14 +16,15 @@ This specification guides LLMs in generating Nix Forge recipes - declarative con
 6. **Autotools-based projects** - Projects with `configure` or `configure.ac` (use `standardBuilder`)
 7. **Makefile-based projects** - Projects with standard `Makefile` targets (use `standardBuilder`)
 
-
 ## Recipe File Structure
 
 ### Location
+
 - **Packages**: `recipes/packages/<package-name>/recipe.nix`
 - **Apps**: `recipes/apps/<app-name>/recipe.nix`
 
 ### Basic Template
+
 ```nix
 {
   config,
@@ -59,6 +60,7 @@ This follows the same pattern as accessing nixpkgs packages (e.g., `pkgs.sqlite`
 **CRITICAL**: All new recipe files MUST be added to git before they can be used by the Nix flake system.
 
 After creating a new recipe file, you must run:
+
 ```bash
 git add recipes/packages/<package-name>/recipe.nix
 # or for apps:
@@ -66,6 +68,7 @@ git add recipes/apps/<app-name>/recipe.nix
 ```
 
 The flake uses `import-tree` to automatically discover recipes, but it only sees files tracked by git. Without adding the file to git, the package will not be recognized and `nix build .#<package-name>` will fail with an error like:
+
 ```
 error: flake does not provide attribute 'packages.x86_64-linux.<package-name>'
 ```
@@ -73,6 +76,7 @@ error: flake does not provide attribute 'packages.x86_64-linux.<package-name>'
 ## Package Recipes
 
 ### Required Fields
+
 ```nix
 {
   name = "package-name";           # String, lowercase with hyphens
@@ -92,6 +96,7 @@ error: flake does not provide attribute 'packages.x86_64-linux.<package-name>'
 ```
 
 ### Optional but Recommended Fields
+
 ```nix
 {
   homePage = "https://project-website.org";
@@ -102,6 +107,7 @@ error: flake does not provide attribute 'packages.x86_64-linux.<package-name>'
 ## Builder Types
 
 ### 1. standardBuilder (Most Common)
+
 **When to use**: Standard autotools/cmake/make-based projects
 
 ```nix
@@ -124,11 +130,13 @@ error: flake does not provide attribute 'packages.x86_64-linux.<package-name>'
 ```
 
 **Characteristics**:
+
 - Automatic configure, build, install phases
 - Follows standard build conventions
 - Use for: C/C++ projects with configure scripts or CMake
 
 ### 2. pythonAppBuilder (Python Applications)
+
 **When to use**: Python applications with pyproject.toml that provide executable programs
 
 ```nix
@@ -157,12 +165,14 @@ error: flake does not provide attribute 'packages.x86_64-linux.<package-name>'
 ```
 
 **Characteristics**:
+
 - Uses `buildPythonApplication` internally
 - Creates standalone applications with entry points
 - Prevents the package from being used as a dependency by other Python packages
 - Use for: CLI tools, web applications, standalone Python programs
 
 **Additional Options** (same as pythonPackageBuilder):
+
 - **optional-dependencies**: PEP-621 optional dependency groups (extras)
   - Maps to nixpkgs: `optional-dependencies`
 - **importsCheck**: List of modules to verify can be imported
@@ -173,6 +183,7 @@ error: flake does not provide attribute 'packages.x86_64-linux.<package-name>'
   - Maps to nixpkgs: `disabledTests`
 
 ### 3. pythonPackageBuilder (Python Libraries)
+
 **When to use**: Python libraries/packages with pyproject.toml that other packages depend on
 
 ```nix
@@ -201,12 +212,14 @@ error: flake does not provide attribute 'packages.x86_64-linux.<package-name>'
 ```
 
 **Characteristics**:
+
 - Uses `buildPythonPackage` internally
 - Creates reusable Python libraries
 - Can be used as dependencies by other Python packages
 - Use for: Python libraries, frameworks, utility modules
 
 **Additional Options**:
+
 - **optional-dependencies**: PEP-621 optional dependency groups (extras)
   - Maps to nixpkgs: `optional-dependencies`
 - **importsCheck**: List of modules to verify can be imported
@@ -219,10 +232,12 @@ error: flake does not provide attribute 'packages.x86_64-linux.<package-name>'
 **Note**: Use pkgs.python3Packages.* for Python dependencies
 
 **Choosing between pythonAppBuilder and pythonPackageBuilder**:
+
 - **pythonAppBuilder**: For programs meant to be run (`mypy`, `black`, `fio`)
 - **pythonPackageBuilder**: For libraries meant to be imported (`requests`, `numpy`, `attrs`)
 
 ### 4. goPackageBuilder (Go Modules)
+
 **When to use**: Go projects using Go modules
 
 ```nix
@@ -245,16 +260,19 @@ error: flake does not provide attribute 'packages.x86_64-linux.<package-name>'
 ```
 
 **Characteristics**:
+
 - Uses `buildGoModule` from nixpkgs
 - Supports vendoring and proxy vendoring
 - Can build multiple packages via `subPackages`
 
 **Inputs options**:
+
 - `inputs.build`: Build-time tools (pkg-config, installShellFiles)
 - `inputs.run`: CGO dependencies (openssl, sqlite)
 - `inputs.check`: Test tools (gotestsum)
 
 ### 5. rustPackageBuilder (Rust Crates)
+
 **When to use**: Rust projects with Cargo
 
 ```nix
@@ -279,11 +297,13 @@ error: flake does not provide attribute 'packages.x86_64-linux.<package-name>'
 ```
 
 **Characteristics**:
+
 - Uses `rustPlatform.buildRustPackage` from nixpkgs
 - Supports cargo hash verification
 - Handles native build inputs via bindgenHook for crates with C bindings
 
 **Inputs options**:
+
 - `inputs.build`: Build-time tools (pkg-config, bindgenHook)
 - `inputs.run`: Runtime dependencies (openssl, sqlite, etc.)
 - `inputs.check`: Test tools (cargo-nextest)
@@ -291,6 +311,7 @@ error: flake does not provide attribute 'packages.x86_64-linux.<package-name>'
 ## Source Configuration
 
 ### Git Sources
+
 **Format**: `forge:owner/repository/revision`
 
 ```nix
@@ -304,6 +325,7 @@ source = {
 **Supported forges**: github, gitlab, codeberg
 
 ### URL Sources
+
 ```nix
 source = {
   url = "https://releases.example.com/package-1.0.0.tar.gz";
@@ -313,6 +335,7 @@ source = {
 ```
 
 ### Patches
+
 Apply patch files to the source code before building:
 
 ```nix
@@ -327,6 +350,7 @@ source = {
 ```
 
 **Notes**:
+
 - Patches are applied in the order specified
 - Patch files must be relative paths (e.g., `./fix.patch`)
 - Patches are applied using the standard `patch` command
@@ -346,6 +370,7 @@ test = {
 ```
 
 **Best practices**:
+
 - Test main functionality
 - Verify version output
 - Check help/usage works
@@ -381,6 +406,7 @@ build.extraAttrs = {
 ```
 
 **Common use cases**:
+
 - `preConfigure`: Set environment before configure
 - `postInstall`: Wrap binaries, add extra files
 - `patches`: Apply source patches
@@ -389,6 +415,7 @@ build.extraAttrs = {
 ## Application Recipes
 
 ### Structure
+
 ```nix
 {
   name = "app-name";
@@ -436,6 +463,7 @@ Apps can optionally specify a custom icon in SVG format. When creating app recip
    - A default icon will be used automatically
 
 **Example with icon:**
+
 ```nix
 {
   name = "my-app";
@@ -450,6 +478,7 @@ Apps can optionally specify a custom icon in SVG format. When creating app recip
 **IMPORTANT:** Apps are always included in the packages output. However, individual outputs (programs bundle, container, VM) are only generated when their respective `enable` option is set to `true`. If all three options are disabled, the app package will be available but will have no functional outputs.
 
 ### Services (Portable Services)
+
 Services define processes that run within the application. They can be used across all output types (container, VM, etc.):
 
 ```nix
@@ -471,6 +500,7 @@ services = {
 ```
 
 ### Programs (Shell Bundle)
+
 Creates a shell bundle with all required packages available in PATH:
 
 ```nix
@@ -487,6 +517,7 @@ programs = {
 **Access:** `nix shell .#<app>` or `nix build .#<app>`
 
 ### Container (OCI Image)
+
 Builds a single OCI-compliant container image:
 
 ```nix
@@ -521,6 +552,7 @@ container = {
 **Note:** Services defined in the `services` section are automatically included in the container configuration.
 
 ### NixOS VM
+
 Builds a complete NixOS virtual machine:
 
 ```nix
@@ -568,7 +600,8 @@ Each app output type can be independently enabled or disabled:
 - **nixos.enable**: Controls the virtual machine (accessed via `nix build .#<app>.vm`)
 
 **Complete example with all outputs:**
-```nix
+
+````nix
 {
   config,
   lib,
@@ -635,12 +668,14 @@ Each app output type can be independently enabled or disabled:
     vm.forwardPorts = [ "5000:5000" ];
   };
 }
-```
+````
 
 ## LLM Generation Guidelines
 
 ### 1. Information Gathering
+
 Before generating a recipe, determine:
+
 - **Software name and version**
 - **Programming language/build system**
 - **Source location** (GitHub URL, release tarball)
@@ -649,6 +684,7 @@ Before generating a recipe, determine:
 - **Main executable name**
 
 ### 2. Builder Selection Logic
+
 ```
 IF Python project with pyproject.toml:
   IF provides CLI tools/executables (has [project.scripts] or entry_points):
@@ -662,19 +698,23 @@ ELSE IF has configure script OR uses CMake OR standard Makefile:
 ```
 
 ### 3. Dependency Resolution
+
 - **Build tools**: cmake, pkg-config, autoconf → `inputs.build`
 - **Libraries**: openssl, zlib, curl → `inputs.run`
 - **Python packages**: Use `pkgs.python3Packages.*`
 - **Unknown packages**: Use `pkgs.<package-name>`
 
 ### 4. Hash Determination
+
 When hash is unknown:
+
 ```nix
 source.hash = "";  # Leave empty initially
 # Nix will error with correct hash, then update recipe
 ```
 
 ### 5. Validation Checklist
+
 - [ ] Exactly one builder enabled (standardBuilder, pythonAppBuilder, or pythonPackageBuilder)
 - [ ] For Python projects: correct builder chosen (pythonAppBuilder for apps, pythonPackageBuilder for libraries)
 - [ ] Source has git XOR url (not both)
@@ -687,6 +727,7 @@ source.hash = "";  # Leave empty initially
 ## Common Patterns
 
 ### Pattern 1: Simple GitHub Project
+
 ```nix
 {
   config,
@@ -724,6 +765,7 @@ source.hash = "";  # Leave empty initially
 ```
 
 ### Pattern 2: C Project with Dependencies
+
 ```nix
 {
   config,
@@ -764,6 +806,7 @@ source.hash = "";  # Leave empty initially
 ```
 
 ### Pattern 3: Python Application
+
 ```nix
 {
   config,
@@ -803,6 +846,7 @@ source.hash = "";  # Leave empty initially
 ```
 
 ### Pattern 4: Python Library
+
 ```nix
 {
   config,
@@ -848,15 +892,19 @@ source.hash = "";  # Leave empty initially
 ### Common Issues and Solutions
 
 **Issue**: "source.git or source.url must be defined"
+
 - **Solution**: Ensure exactly one source method is specified
 
 **Issue**: "Only one builder can be enabled"
+
 - **Solution**: Set only one `build.*.enable = true`
 
 **Issue**: Hash mismatch
+
 - **Solution**: Update hash with value from error message
 
 **Issue**: Missing dependency
+
 - **Solution**: Add to inputs.build or inputs.run
 
 ## Naming Conventions
@@ -869,6 +917,7 @@ source.hash = "";  # Leave empty initially
 ## Summary for LLMs
 
 When generating a Nix Forge recipe:
+
 1. **Identify** the software and gather information
 2. **Choose** appropriate builder based on build system
 3. **Define** source (git or url with hash)
@@ -928,12 +977,14 @@ Check for these files in the repository (in order of priority):
 **IMPORTANT:** The current `source.git` implementation does NOT fetch git submodules.
 
 Check for submodules:
+
 ```bash
 # Look for .gitmodules file in the repository
 # Check repository structure for empty/missing subdirectories
 ```
 
 **If git submodules exist:**
+
 - Note that dependencies may be missing
 - Consider that the build might fail due to missing submodule content
 - May need to provide vendored dependencies separately via `nativeBuildInputs`
@@ -1015,6 +1066,7 @@ Nix builds in a sandbox without network access. You must:
 - README.md usage examples (e.g., `$ geodiff --help`)
 
 **Set in recipe:**
+
 ```nix
 mainProgram = "executable-name";  # Just the binary name, not the path
 ```
@@ -1045,6 +1097,7 @@ mainProgram = "executable-name";  # Just the binary name, not the path
 ### Issue 1: "CMakeLists.txt not found"
 
 **Error message:**
+
 ```
 CMake Error: The source directory does not appear to contain CMakeLists.txt
 ```
@@ -1052,6 +1105,7 @@ CMake Error: The source directory does not appear to contain CMakeLists.txt
 **Diagnosis:** Build files are in a subdirectory, not the root.
 
 **Solution:**
+
 ```nix
 build.extraAttrs = {
   sourceRoot = "source/<subdirectory>";
@@ -1059,6 +1113,7 @@ build.extraAttrs = {
 ```
 
 **Example:**
+
 ```nix
 build.extraAttrs = {
   sourceRoot = "source/geodiff";  # For geodiff/geodiff/CMakeLists.txt
@@ -1068,6 +1123,7 @@ build.extraAttrs = {
 ### Issue 2: "Cannot download during build"
 
 **Error message:**
+
 ```
 CMake Error at CMakeLists.txt:104 (INCLUDE):
   INCLUDE could not find requested file:
@@ -1075,6 +1131,7 @@ CMake Error at CMakeLists.txt:104 (INCLUDE):
 ```
 
 **Diagnosis:**
+
 - CMake tries to download dependencies with `ExternalProject_Add()` or `FetchContent`
 - Git submodules not fetched
 - Build downloads external resources
@@ -1106,6 +1163,7 @@ CMake Error at CMakeLists.txt:104 (INCLUDE):
 ### Issue 3: "Python dependency version mismatch"
 
 **Error message:**
+
 ```
 ERROR Missing dependencies:
   cython~=3.0.2
@@ -1114,6 +1172,7 @@ ERROR Missing dependencies:
 **Diagnosis:** Python package requires specific version, but nixpkgs has different version.
 
 **Solution:** Relax version constraint by patching pyproject.toml:
+
 ```nix
 build.extraAttrs = {
   postPatch = ''
@@ -1126,6 +1185,7 @@ build.extraAttrs = {
 ### Issue 4: "Missing Python runtime dependencies"
 
 **Error message:**
+
 ```
 Checking runtime dependencies for package.whl
   - attrs not installed
@@ -1135,6 +1195,7 @@ Checking runtime dependencies for package.whl
 **Diagnosis:** Python package has runtime dependencies not listed in recipe.
 
 **Solution:** Add missing packages to dependencies:
+
 ```nix
 build.pythonAppBuilder = {
   inputs = {
@@ -1154,6 +1215,7 @@ build.pythonAppBuilder = {
 **Solutions:**
 
 For CMake:
+
 ```nix
 build.extraAttrs = {
   cmakeFlags = [ "-DENABLE_TESTS=OFF" "-DBUILD_TESTING=OFF" ];
@@ -1161,6 +1223,7 @@ build.extraAttrs = {
 ```
 
 For Meson:
+
 ```nix
 build.extraAttrs = {
   mesonFlags = [ "-Dtests=false" ];
@@ -1168,6 +1231,7 @@ build.extraAttrs = {
 ```
 
 For Autotools:
+
 ```nix
 build.extraAttrs = {
   configureFlags = [ "--disable-tests" ];
@@ -1213,32 +1277,32 @@ START: What type of project is this?
 ### C/C++ Libraries
 
 | If build system looks for | Nix package to add |
-|---------------------------|-------------------|
-| SQLite, sqlite3, sqlite | `pkgs.sqlite` |
-| GDAL, gdal | `pkgs.gdal` |
-| PostgreSQL, libpq, pq | `pkgs.postgresql` |
-| OpenSSL, ssl | `pkgs.openssl` |
-| CURL, curl, libcurl | `pkgs.curl` |
-| zlib, z | `pkgs.zlib` |
-| Boost, boost | `pkgs.boost` |
-| GEOS, geos | `pkgs.geos` |
-| PROJ, proj | `pkgs.proj` |
-| libxml2, xml2 | `pkgs.libxml2` |
-| expat | `pkgs.expat` |
+| ------------------------- | ------------------ |
+| SQLite, sqlite3, sqlite   | `pkgs.sqlite`      |
+| GDAL, gdal                | `pkgs.gdal`        |
+| PostgreSQL, libpq, pq     | `pkgs.postgresql`  |
+| OpenSSL, ssl              | `pkgs.openssl`     |
+| CURL, curl, libcurl       | `pkgs.curl`        |
+| zlib, z                   | `pkgs.zlib`        |
+| Boost, boost              | `pkgs.boost`       |
+| GEOS, geos                | `pkgs.geos`        |
+| PROJ, proj                | `pkgs.proj`        |
+| libxml2, xml2             | `pkgs.libxml2`     |
+| expat                     | `pkgs.expat`       |
 
 ### Python Packages
 
-| If pyproject.toml/requirements has | Nix package to add |
-|-----------------------------------|-------------------|
-| click | `pkgs.python3Packages.click` |
-| requests | `pkgs.python3Packages.requests` |
-| numpy | `pkgs.python3Packages.numpy` |
-| attrs | `pkgs.python3Packages.attrs` |
-| certifi | `pkgs.python3Packages.certifi` |
-| setuptools | `pkgs.python3Packages.setuptools` |
-| cython | `pkgs.python3Packages.cython` |
-| wheel | `pkgs.python3Packages.wheel` |
-| pytest | `pkgs.python3Packages.pytest` (test only) |
+| If pyproject.toml/requirements has | Nix package to add                        |
+| ---------------------------------- | ----------------------------------------- |
+| click                              | `pkgs.python3Packages.click`              |
+| requests                           | `pkgs.python3Packages.requests`           |
+| numpy                              | `pkgs.python3Packages.numpy`              |
+| attrs                              | `pkgs.python3Packages.attrs`              |
+| certifi                            | `pkgs.python3Packages.certifi`            |
+| setuptools                         | `pkgs.python3Packages.setuptools`         |
+| cython                             | `pkgs.python3Packages.cython`             |
+| wheel                              | `pkgs.python3Packages.wheel`              |
+| pytest                             | `pkgs.python3Packages.pytest` (test only) |
 
 ### Build Tools (always in inputs.build)
 

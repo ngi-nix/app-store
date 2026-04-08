@@ -1,11 +1,13 @@
 # How to develop
 
 Enter a development shell provisioning the toolchain:
+
 ```bash
 nix -L develop
 ```
 
 Alternatively, use [`direnv`](https://direnv.net/):
+
 ```bash
 echo -e "watch_dir flake/develop/\nuse nix" >.envrc
 direnv allow
@@ -20,6 +22,7 @@ first get out of the `direnv` with `direnv deny` to avoid problems.
 Run `elm-watch` and `esbuild` systemd user services,
 along with a `watchman` rebuilding the JSON files provided by the backend,
 with:
+
 ```bash
 dev-ui
 ```
@@ -27,6 +30,7 @@ dev-ui
 End the services by sending them a SIGINT (usually Ctrl-C).
 
 You can supervise those services with:
+
 ```bash
 systemctl --user status ngi_nix_dev-'*'.service
 ```

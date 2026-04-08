@@ -5,13 +5,12 @@ import { initSmoothScroll } from "./SmoothScroll.js";
 
 // work around github pages adding extra trailing slash
 if (
-  window.location.pathname.endsWith("/") &&
-  window.location.pathname !== "/"
+  window.location.pathname.endsWith("/")
+  && window.location.pathname !== "/"
 ) {
-  const cleanUrl =
-    window.location.pathname.slice(0, -1) +
-    window.location.search +
-    window.location.hash;
+  const cleanUrl = window.location.pathname.slice(0, -1)
+    + window.location.search
+    + window.location.hash;
   window.history.replaceState(null, "", cleanUrl);
 }
 

@@ -22,7 +22,7 @@ jobs:
       - uses: cachix/cachix-action@v16
         with:
           name: ngi-forge
-          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+          authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
 
       - name: Create test directory
         run: |
