@@ -124,14 +124,14 @@ viewPageAppRunInstructions model pageApp =
                             text ""
 
                     AppRuntime_Container ->
-                        if pageApp.pageApp_app.app_container.enable then
+                        if pageApp.pageApp_app.app_services.appServices_runtimes.appServicesRuntimes_container.enable then
                             viewPageAppRunContainer model pageApp
 
                         else
                             text ""
 
                     AppRuntime_VM ->
-                        if pageApp.pageApp_app.app_vm.enable then
+                        if pageApp.pageApp_app.app_services.appServices_runtimes.appServicesRuntimes_nixos.enable then
                             viewPageAppRunVM model pageApp
 
                         else

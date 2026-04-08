@@ -10,8 +10,7 @@ type alias App =
     , app_description : String
     , app_usage : String
     , app_programs : AppPrograms
-    , app_container : AppContainer
-    , app_vm : AppNixosVm
+    , app_services : AppServices
     , app_ngi : Ngi
     , app_links : AppLinks
     }
@@ -22,23 +21,77 @@ app_output app =
     app.app_name ++ "-app"
 
 
+decodeApp : Decoder App
+decodeApp =
+    Decode.map7 App
+        (Decode.field "name" (Decode.string |> Decode.map (stripSuffix "-app")))
+        (Decode.field "description" Decode.string)
+        (Decode.field "usage" Decode.string)
+        (Decode.field "programs" decodeAppPrograms)
+        (Decode.field "services" decodeAppServices)
+        (Decode.field "ngi" decodeNgi)
+        (Decode.field "links" decodeAppLinks)
+
+
+type alias AppName =
+    String
+
+
 type alias AppPrograms =
     { enable : Bool
     }
 
 
-type alias AppContainer =
+decodeAppPrograms : Decoder AppPrograms
+decodeAppPrograms =
+    Decode.map AppPrograms
+        (Decode.field "enable" Decode.bool)
+
+
+type alias AppServices =
+    { appServices_runtimes : AppServicesRuntimes
+    }
+
+
+decodeAppServices : Decoder AppServices
+decodeAppServices =
+    Decode.map AppServices
+        (Decode.field "runtimes" decodeAppServicesRuntimes)
+
+
+decodeAppServicesRuntimes : Decoder AppServicesRuntimes
+decodeAppServicesRuntimes =
+    Decode.map2 AppServicesRuntimes
+        (Decode.field "container" decodeAppServicesRuntimesContainer)
+        (Decode.field "nixos" decodeAppServicesRuntimesNixos)
+
+
+type alias AppServicesRuntimes =
+    { appServicesRuntimes_container : AppServicesRuntimesContainer
+    , appServicesRuntimes_nixos : AppServicesRuntimesNixos
+    }
+
+
+type alias AppServicesRuntimesContainer =
     { enable : Bool
     }
 
 
-type alias AppNixosVm =
+decodeAppServicesRuntimesContainer : Decoder AppServicesRuntimesContainer
+decodeAppServicesRuntimesContainer =
+    Decode.map AppServicesRuntimesContainer
+        (Decode.field "enable" Decode.bool)
+
+
+type alias AppServicesRuntimesNixos =
     { enable : Bool
     }
 
 
-type alias AppName =
-    String
+decodeAppServicesRuntimesNixos : Decoder AppServicesRuntimesNixos
+decodeAppServicesRuntimesNixos =
+    Decode.map AppServicesRuntimesNixos
+        (Decode.field "enable" Decode.bool)
 
 
 getAppIconPath : AppName -> String
@@ -51,34 +104,15 @@ getDefaultIconPath =
     "resources/apps/app-icon.svg"
 
 
-decodeApp : Decoder App
-decodeApp =
-    Decode.map8 App
-        (Decode.field "name" (Decode.string |> Decode.map (stripSuffix "-app")))
-        (Decode.field "description" Decode.string)
-        (Decode.field "usage" Decode.string)
-        (Decode.field "programs" decodeAppPrograms)
-        (Decode.field "container" decodeAppContainer)
-        (Decode.field "nixos" decodeAppNixosVm)
-        (Decode.field "ngi" decodeNgi)
-        (Decode.field "links" decodeAppLinks)
-
-
-decodeAppPrograms : Decoder AppPrograms
-decodeAppPrograms =
-    Decode.map AppPrograms
-        (Decode.field "enable" Decode.bool)
-
-
-decodeAppContainer : Decoder AppContainer
+decodeAppContainer : Decoder AppServicesRuntimesContainer
 decodeAppContainer =
-    Decode.map AppContainer
+    Decode.map AppServicesRuntimesContainer
         (Decode.field "enable" Decode.bool)
 
 
-decodeAppNixosVm : Decoder AppNixosVm
+decodeAppNixosVm : Decoder AppServicesRuntimesNixos
 decodeAppNixosVm =
-    Decode.map AppNixosVm
+    Decode.map AppServicesRuntimesNixos
         (Decode.field "enable" Decode.bool)
 
 
@@ -127,10 +161,10 @@ hasAppRuntime appRuntime app =
             app.app_programs.enable
 
         AppRuntime_Container ->
-            app.app_container.enable
+            app.app_services.appServices_runtimes.appServicesRuntimes_container.enable
 
         AppRuntime_VM ->
-            app.app_vm.enable
+            app.app_services.appServices_runtimes.appServicesRuntimes_nixos.enable
 
 
 listAppRuntime : List AppRuntime
@@ -148,12 +182,12 @@ listAppRuntimeAvailable app =
 
       else
         []
-    , if app.app_container.enable then
+    , if app.app_services.appServices_runtimes.appServicesRuntimes_container.enable then
         [ AppRuntime_Container ]
 
       else
         []
-    , if app.app_vm.enable then
+    , if app.app_services.appServices_runtimes.appServicesRuntimes_nixos.enable then
         [ AppRuntime_VM ]
 
       else

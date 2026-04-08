@@ -311,12 +311,12 @@ viewPageAppSearchApp _ app =
 
                       else
                         []
-                    , if app.app_container.enable then
+                    , if app.app_services.appServices_runtimes.appServicesRuntimes_container.enable then
                         [ span [ class "badge bg-secondary me-1" ] [ text "container" ] ]
 
                       else
                         []
-                    , if app.app_vm.enable then
+                    , if app.app_services.appServices_runtimes.appServicesRuntimes_nixos.enable then
                         [ span [ class "badge bg-secondary me-1" ] [ text "vm" ] ]
 
                       else

@@ -2,7 +2,6 @@ import json
 import os
 import sys
 import random
-import string
 from pathlib import Path
 
 sys.path.append("@devUIDir@")
@@ -25,15 +24,6 @@ os.makedirs(out_file.parents[0], exist_ok=True)
 print(f"Generating {total_apps} apps...")
 
 
-def generate_hash():
-    chars = string.ascii_lowercase + string.digits
-    return "".join(random.choices(chars, k=32))
-
-
-def fake_store_path():
-    return f"/nix/store/{generate_hash()}-{fake.word()}-1.0.0"
-
-
 def generate_grants():
     # Initialize empty categories
     grants = {"Commons": [], "Core": [], "Entrust": [], "Review": []}
@@ -53,24 +43,9 @@ def generate_app(index: int):
 
     description = " ".join(fake.sentences(nb=random.randint(1, 3)))
 
-    # Extracting variables keeps lines under the 79-character limit for flake8
-    req_path = fake_store_path()
-    cmd_path = fake_store_path()
-    compose_file = f"/nix/store/{generate_hash()}-compose.yaml"
-    greeting_env = f"GREETING={fake.sentence()}"
-
     return {
         "name": app_name,
         "description": description,
-        "container": {
-            "composeFile": compose_file,
-            "enable": fake.boolean(),
-            "imageConfig": {"Env": [greeting_env]},
-            "name": app_name,
-            "requirements": [req_path],
-            "result": "container",
-            "tag": "latest",
-        },
         "ngi": {
             "grants": generate_grants(),
         },
@@ -85,31 +60,19 @@ def generate_app(index: int):
                 "url": fake.url(),
             },
         },
-        "nixos": {
-            "enable": fake.boolean(),
-            "extraConfig": {},
-            "name": f"{app_name}-nixos",
-            "result": "nixos-vm-config",
-            "settings": {},
-            "vm": {
-                "cores": random.choice([2, 4, 8]),
-                "diskSize": random.choice([2048, 4096, 8192]),
-                "forwardPorts": [],
-                "memorySize": random.choice([1024, 2048, 4096]),
-            },
-        },
-        "programs": {"enable": True, "requirements": [req_path]},
+        "programs": {"enable": fake.boolean()},
         "services": {
-            app_name: {
-                "argv": [],
-                "command": cmd_path,
-                "configData": {},
-                "environment": {},
-                "result": {
-                    "configData": {},
-                    "process": {"argv": [f"{cmd_path}/bin/{app_name}"]},
+            "components": {
+                app_name: {},
+            },
+            "runtimes": {
+                "container": {
+                    "enable": fake.boolean(),
                 },
-            }
+                "nixos": {
+                    "enable": fake.boolean(),
+                },
+            },
         },
         "usage": fake.text(),
     }
