@@ -1,0 +1,33 @@
+name: Test
+
+on:
+  push:
+    branches: ["master"]
+  pull_request:
+    branches: ["master"]
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Run tests (Nix Portable)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      # - name: Get more storage space
+      #   uses: wimpysworld/nothing-but-nix@main
+
+      - name: Install Nix Portable
+        run: |
+          wget -nv https://github.com/DavHau/nix-portable/releases/download/v012/nix-portable-x86_64
+          mv nix-portable-x86_64 nix-portable
+          chmod +x nix-portable
+
+      # NOTE: accept-flake-config auto enables using ngi-forge cachix as read-only
+      # NOTE: nix portable comes with a old nix version, use the latest nix from nixpkgs
+      - name: Run checks
+        run: |
+          env NP_GIT=$(which git) NP_RUMTIME=bwrap \
+            ./nix-portable nix run github:nixos/nixpkgs/nixpkgs-unstable#nix -- flake check --accept-flake-config --show-trace
