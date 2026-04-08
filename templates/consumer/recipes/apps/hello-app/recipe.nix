@@ -5,7 +5,7 @@
   ...
 }:
 
-pkgs.mypkgs.hello-app.extend {
+{
   container = {
     imageConfig.CMD = lib.mkForce [
       "hola"

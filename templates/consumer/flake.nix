@@ -12,6 +12,7 @@
     nixpkgs.follows = "nix-forge/nixpkgs";
     flake-parts.follows = "nix-forge/flake-parts";
     nix-forge.url = "github:ngi-nix/forge";
+    elm2nix.follows = "nix-forge/elm2nix";
     nix-utils.follows = "nix-forge/nix-utils";
     nimi.follows = "nix-forge/nimi";
   };
@@ -22,11 +23,16 @@
       systems = [ "x86_64-linux" ];
       imports = [ nix-forge.flakeModules.default ];
 
+      debug = true;
+
       perSystem =
-        { system, pkgs, ... }:
+        { system, lib, ... }:
         {
           _module.args.nimi = inputs.nimi.packages.${system}.nimi;
-          _module.args.pkgs = pkgs.extend (final: prev: { mypkgs = inputs.nix-forge.packages.${system}; });
+
+          # forge.apps = lib.attrValues (
+          #   lib.filterAttrs (name: value: lib.hasSuffix "-app" name) inputs.nix-forge.packages.${system}
+          # );
 
           forge = {
             repositoryUrl = "github:me/my-forge";
