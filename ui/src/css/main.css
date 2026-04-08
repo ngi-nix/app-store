@@ -3,6 +3,17 @@ body {
   height: 100%;
   margin: 0;
 }
+
+@media (prefers-color-scheme: light) {
+  .initial-bg-color {
+    background-color: #ffffff;
+  }
+}
+
+.initial-bg-color {
+  background-color: #212529;
+}
+
 #elm-main {
   height: 100vh;
 }
