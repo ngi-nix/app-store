@@ -303,7 +303,7 @@ viewPageAppRunContainer model pageApp =
                             , "' "
                             ]
                 , ""
-                , "./result/bin/build-oci"
+                , "./result/bin/build-oci-image"
                 , ""
                 , "podman load < " ++ (pageApp.pageApp_app |> app_output) ++ ".tar"
                 , "podman-compose --profile services --file $(pwd)/result/compose.yaml up"
