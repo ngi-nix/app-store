@@ -1,6 +1,7 @@
 {
   config,
   lib,
+  extendModules,
 
   inputs,
   nimi,
@@ -111,6 +112,24 @@
       };
       default = { };
       description = "Test configuration.";
+    };
+
+    result = {
+      extend = lib.mkOption {
+        internal = true;
+        readOnly = true;
+        default = module: (extendModules { modules = [ module ]; }).config;
+      };
+
+      # HACK:
+      # Prevent toJSON from attempting to convert the `eval` option,
+      # which won't work because it's a whole NixOS evaluation.
+      __toString = lib.mkOption {
+        internal = true;
+        readOnly = true;
+        type = with lib.types; functionTo str;
+        default = self: "nixos-vm-config";
+      };
     };
   };
 }

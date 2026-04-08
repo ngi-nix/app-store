@@ -34,7 +34,7 @@
     };
 
     extraConfig = lib.mkOption {
-      type = with lib.types; lazyAttrsOf (either attrs anything);
+      type = with lib.types; deferredModule;
       default = { };
       description = ''
         NixOS system configuration

@@ -68,13 +68,23 @@ in
                 passthru = appPassthru app appDrv;
               });
 
-            appPassthru =
-              # finalApp parameter is currently not used in this function
-              app: finalApp:
-              { }
+            mkPassthru =
+              app:
+              {
+                config = app;
+                extend =
+                  module:
+                  let
+                    appExtended = app.result.extend module;
+                  in
+                  shellBundle appExtended;
+              }
               // lib.optionalAttrs (app.test.script != "") { test = app.test.result.build; }
               // lib.optionalAttrs app.container.enable { container = app.container.result.imageBuilder; }
               // lib.optionalAttrs app.nixos.enable { vm = app.nixos.result.build; };
+
+            # finalApp parameter is currently not used in this function
+            appPassthru = app: finalApp: mkPassthru app;
 
             allApps = lib.listToAttrs (
               map (app: {
