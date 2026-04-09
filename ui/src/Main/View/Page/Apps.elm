@@ -65,6 +65,7 @@ viewPageAppsApp _ app =
         [ href (onClickRoute |> Route.toString)
         , class "card m-item-card shadow-sm p-3"
         , style "text-decoration" "none"
+        , attribute "data-testid" "app-result"
         , onClick (Update_Route onClickRoute)
         ]
         [ div
