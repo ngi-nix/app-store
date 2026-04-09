@@ -35,7 +35,7 @@ mkdir -p "$rootDir/ui/build/js"
 # by using `-o`, or to copy files out of the Nix store.
 # Otherwise the GC can remove the results at any moment.
 
-if [ @mockBackend@ = "true" ]; then
+if [ "@mockBackend@" = "true" ]; then
   # Using the explicit path from your devshell environment
   BACKEND_COMMAND="$DEVSHELL_DIR/bin/mock-forge-config @numApps@ \"$rootDir/ui/build/forge-config.json\""
 else

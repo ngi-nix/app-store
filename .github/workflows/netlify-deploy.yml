@@ -1,0 +1,133 @@
+name: Netlify Deploy
+
+on:
+  workflow_run:
+    workflows: ["Test"]
+    types:
+      - completed
+
+jobs:
+  deploy-preview:
+    name: Push Preview to Netlify
+    runs-on: ubuntu-latest
+    if: >
+      (github.event.workflow_run.event == 'pull_request' || github.event.workflow_run.event == 'workflow_dispatch') &&
+      github.event.workflow_run.conclusion == 'success'
+
+    steps:
+      - name: Download PR artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: ui-build-preview
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Read PR context
+        run: |
+          if [ -f pr-number.txt ]; then
+            echo "PR_NUMBER=$(cat pr-number.txt)" >> "$GITHUB_ENV"
+            echo "PR_REV=$(cat pr-rev.txt)" >> "$GITHUB_ENV"
+          fi
+
+      - name: Set Pending Status
+        if: env.PR_REV != ''
+        uses: actions/github-script@v8
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: process.env.PR_REV,
+              state: 'pending',
+              context: 'Netlify PR Preview',
+              description: 'Deploying UI preview...',
+              target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
+            });
+
+      - name: Install Netlify CLI
+        if: env.PR_NUMBER != ''
+        run: npm install -g netlify-cli
+
+      - name: Deploy to Netlify
+        if: env.PR_NUMBER != ''
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        run: |
+          netlify deploy \
+            --dir=deploy_dist \
+            --alias="pr-${{ env.PR_NUMBER }}" \
+            --message="PR Preview for PR #${{ env.PR_NUMBER }}" \
+            | tee deploy_output.txt
+
+          PREVIEW_URL=$(grep 'Draft URL:' deploy_output.txt | awk '{print $3}' | tr -d '<>')
+          echo "PREVIEW_URL=$PREVIEW_URL" >> "$GITHUB_ENV"
+
+      - name: Post PR Comment
+        if: env.PR_NUMBER != ''
+        uses: actions/github-script@v8
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const prNumber = parseInt(process.env.PR_NUMBER, 10);
+            const previewUrl = process.env.PREVIEW_URL;
+            const time = new Date().toUTCString();
+            const messageBody = `🚀 **PR Preview Deployed!**\n\nYou can view the UI changes for this PR here: [${previewUrl}](${previewUrl})\n\n*(Last updated: ${time})*`;
+
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+            });
+
+            const existingComment = comments.data.find(c => c.body && c.body.includes('PR Preview Deployed!'));
+
+            if (existingComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existingComment.id,
+                body: messageBody
+              });
+            } else {
+              await github.rest.issues.createComment({
+                issue_number: prNumber,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: messageBody
+              });
+            }
+
+      - name: Set Success Status
+        if: env.PR_REV != ''
+        uses: actions/github-script@v8
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: process.env.PR_REV,
+              state: 'success',
+              context: 'Netlify PR Preview',
+              description: 'Preview ready!',
+              target_url: process.env.PREVIEW_URL
+            });
+
+      - name: Set Failure Status
+        # Only runs if a previous step failed, ensuring the PR isn't stuck "pending"
+        if: failure() && env.PR_REV != ''
+        uses: actions/github-script@v8
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: process.env.PR_REV,
+              state: 'error',
+              context: 'Netlify PR Preview',
+              description: 'Deployment failed. Click details for logs.',
+              target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
+            });
