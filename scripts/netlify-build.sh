@@ -18,7 +18,7 @@ export NP_GIT="$(which git)"
 export NP_RUNTIME=bwrap
 
 echo "Run nix flake check..."
-./nix-portable nix run github:nixos/nixpkgs/nixpkgs-unstable#nix -- flake check --accept-flake-config --show-trace
+./nix-portable nix run github:nixos/nixpkgs/nixpkgs-unstable#nix -- flake check
 
 echo "Building UI..."
 out="$(./nix-portable nix build .#_forge-ui --accept-flake-config --print-out-paths)"
