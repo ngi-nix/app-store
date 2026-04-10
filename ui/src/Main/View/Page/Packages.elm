@@ -69,9 +69,11 @@ viewPagePackagesItem model pagePackages package =
                     | routePackages_focus = Just <| RoutePackagesFocus_Package itemId
                 }
     in
-    div
+    a
         [ class "list-item list-group-item list-group-item-action flex-column align-items-start"
         , id itemId
+        , href (onClickRoute |> Route.toString)
+        , onClick (Update_Route onClickRoute)
         ]
         [ div
             []
@@ -87,12 +89,6 @@ viewPagePackagesItem model pagePackages package =
                         , style "margin-left" "1em"
                         ]
                         [ text package.package_version ]
-                    , a
-                        [ class "anchor-link"
-                        , href (onClickRoute |> Route.toString)
-                        , onClick (Update_Route onClickRoute)
-                        ]
-                        []
                     ]
                 ]
             , div []
