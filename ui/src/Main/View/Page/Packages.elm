@@ -85,10 +85,11 @@ viewPagePackagesItem model pagePackages package =
                         [ text package.package_name
                         ]
                     , span
-                        [ style "font-variant" "italic"
+                        [ style "font-size" ".8rem"
+                        , style "font-style" "italic"
                         , style "margin-left" "1em"
                         ]
-                        [ text package.package_version ]
+                        [ text ("v" ++ package.package_version) ]
                     ]
                 ]
             , div []
