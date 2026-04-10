@@ -20,10 +20,10 @@
 
   build.standardBuilder = {
     enable = true;
-    inputs.build = [
+    packages.build = [
       pkgs.cmake
     ];
-    inputs.run = [
+    packages.run = [
       pkgs.proj
     ];
   };

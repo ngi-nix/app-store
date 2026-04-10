@@ -38,7 +38,7 @@ type alias AppName =
 
 
 type alias AppProgramsComponents =
-    { requirements : List String
+    { packages : List String
     }
 
 
@@ -68,7 +68,7 @@ decodeAppPrograms =
 decodeAppProgramsComponent : Decoder AppProgramsComponents
 decodeAppProgramsComponent =
     Decode.map AppProgramsComponents
-        (Decode.field "requirements" (Decode.list Decode.string))
+        (Decode.field "packages" (Decode.list Decode.string))
 
 
 decodeAppProgramsRuntimes : Decoder AppProgramsRuntimes
