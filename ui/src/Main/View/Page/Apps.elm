@@ -90,7 +90,7 @@ viewPageAppsApp _ app =
             ]
             [ small []
                 (List.concat
-                    [ if app.app_services.appServices_runtimes.appServicesRuntimes_container.enable then
+                    [ if app.app_programs.appPrograms_runtimes.appProgramsRuntimes_shell.enable then
                         [ span [ class "badge bg-secondary me-1" ] [ text "shell" ] ]
 
                       else
