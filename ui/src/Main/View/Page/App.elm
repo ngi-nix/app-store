@@ -85,6 +85,7 @@ viewPageAppDescription : Model -> PageApp -> Html Update
 viewPageAppDescription model pageApp =
     div []
         [ p [ class "lead" ] [ text pageApp.pageApp_app.app_description ]
+        , viewPageAppUsage model pageApp
         ]
 
 
