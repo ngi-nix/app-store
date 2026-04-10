@@ -23,7 +23,7 @@
 
   build.standardBuilder = {
     enable = true;
-    inputs.build = [
+    packages.build = [
       pkgs.cmake
       pkgs.ninja
     ];
