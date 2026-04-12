@@ -13,9 +13,10 @@ import Main.Icons exposing (..)
 import Main.Model exposing (..)
 import Main.Model.Page exposing (..)
 import Main.Model.Preferences exposing (..)
-import Main.Route as Route exposing (..)
+import Main.Route exposing (..)
 import Main.Subscriptions exposing (decodeEscapeKey)
 import Main.Update exposing (..)
+import Main.Update.Types exposing (..)
 import Main.View.Errors exposing (..)
 import Main.View.Page exposing (..)
 import Main.View.Page.App exposing (..)
@@ -93,7 +94,7 @@ viewTitle =
             Route_Apps defaultRouteApps
     in
     a
-        [ href (onClickRoute |> Route.toString)
+        [ href (onClickRoute |> routeToString)
         , class "d-flex align-items-center m-0"
         , style "color" "inherit"
         , style "text-decoration" "none"

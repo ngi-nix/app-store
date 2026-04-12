@@ -13,6 +13,7 @@ import Main.Model.Preferences exposing (..)
 import Main.Route exposing (..)
 import Main.Subscriptions
 import Main.Update exposing (..)
+import Main.Update.Types exposing (..)
 import Main.View
 import Url
 
