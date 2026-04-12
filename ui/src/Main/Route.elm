@@ -96,7 +96,8 @@ showRoutePackagesFocus x =
 
 
 type alias RouteRecipeOptions =
-    { routeRecipeOptions_search : String
+    { routeRecipeOptions_searchPattern : String
+    , routeRecipeOptions_searchPath : List NixName
     , routeRecipeOptions_focus : Maybe RouteRecipeOptionsFocus
     , routeRecipeOptions_pagination : RoutePagination
     }
@@ -115,7 +116,8 @@ showRouteRecipeOptionsFocus x =
 
 defaultRouteRecipeOptions : RouteRecipeOptions
 defaultRouteRecipeOptions =
-    { routeRecipeOptions_search = ""
+    { routeRecipeOptions_searchPattern = ""
+    , routeRecipeOptions_searchPath = []
     , routeRecipeOptions_focus = Nothing
     , routeRecipeOptions_pagination = defaultRoutePagination
     }
@@ -295,11 +297,17 @@ fromAppUrl url =
         [ "recipe", "options" ] ->
             Ok <|
                 Route_RecipeOptions
-                    { routeRecipeOptions_search =
+                    { routeRecipeOptions_searchPattern =
                         url.queryParameters
                             |> Dict.get "q"
                             |> Maybe.andThen List.head
                             |> Maybe.withDefault ""
+                    , routeRecipeOptions_searchPath =
+                        url.queryParameters
+                            |> Dict.get "p"
+                            |> Maybe.andThen List.head
+                            |> Maybe.map splitNixName
+                            |> Maybe.withDefault []
                     , routeRecipeOptions_pagination = url |> appUrlToRoutePagination
                     , routeRecipeOptions_focus =
                         url.fragment
@@ -384,12 +392,20 @@ toAppUrl route =
             { path = deployPath ++ [ "recipe", "options" ]
             , queryParameters =
                 [ ( "q"
-                  , case routeRecipe.routeRecipeOptions_search of
+                  , case routeRecipe.routeRecipeOptions_searchPattern of
                         "" ->
                             []
 
                         q ->
                             [ q ]
+                  )
+                , ( "p"
+                  , case routeRecipe.routeRecipeOptions_searchPath of
+                        [] ->
+                            []
+
+                        p ->
+                            [ p |> joinNixNames ]
                   )
                 ]
                     |> Dict.fromList

@@ -29,6 +29,21 @@ type alias NixName =
     String
 
 
+splitNixName : NixName -> List NixName
+splitNixName name =
+    case name of
+        "" ->
+            []
+
+        _ ->
+            name |> String.split "."
+
+
+joinNixNames : List NixName -> NixName
+joinNixNames =
+    String.join "."
+
+
 type alias NixModuleOptions =
     Dict NixName NixModuleOption
 

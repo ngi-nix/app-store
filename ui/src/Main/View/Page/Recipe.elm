@@ -1,7 +1,8 @@
 module Main.View.Page.Recipe exposing (..)
 
-import Html exposing (Html, a, button, code, div, h5, span, text)
+import Html exposing (Html, a, button, code, div, h5, main_, nav, span, text)
 import Html.Attributes exposing (attribute, class, disabled, href, id, style, title)
+import List.Extra as List
 import Main.Config exposing (..)
 import Main.Config.App exposing (..)
 import Main.Helpers.AppUrl exposing (..)
@@ -16,6 +17,7 @@ import Main.Route as Route exposing (..)
 import Main.Update exposing (..)
 import Main.View.Page.App exposing (..)
 import Main.View.Pagination exposing (..)
+import Set
 
 
 viewPageRecipeOptionsLink : Html Update
@@ -40,20 +42,104 @@ viewPageRecipeOptionsLink =
 
 viewPageRecipeOptions : Model -> PageRecipeOptions -> Html Update
 viewPageRecipeOptions model pageRecipeOptions =
-    viewPagination
-        pageRecipeOptions.pageRecipeOptions_pagination
-        (viewPageRecipeOptionsItem model pageRecipeOptions)
-        (\modifyRoutePagination ->
-            let
-                routeRecipeOptions =
-                    pageRecipeOptions.pageRecipeOptions_route
-            in
-            Route_RecipeOptions
-                { routeRecipeOptions
-                    | routeRecipeOptions_pagination = routeRecipeOptions.routeRecipeOptions_pagination |> modifyRoutePagination
-                    , routeRecipeOptions_focus = Nothing
-                }
-        )
+    div
+        [ style "display" "flex"
+        , style "flex-direction" "column"
+        , style "gap" "1rem"
+        ]
+        [ nav [] <|
+            List.concat
+                [ [ text "in " ]
+                , pageRecipeOptions.pageRecipeOptions_ancestors
+                    |> List.inits
+                    |> List.indexedMap
+                        (\idx path ->
+                            let
+                                route =
+                                    pageRecipeOptions.pageRecipeOptions_route
+
+                                onClickRoute =
+                                    Route_RecipeOptions { route | routeRecipeOptions_searchPath = path }
+                            in
+                            code
+                                []
+                                [ text <|
+                                    if idx == 0 then
+                                        ""
+
+                                    else
+                                        "."
+                                , a
+                                    [ href (onClickRoute |> Route.toString)
+                                    , onClick (Update_Route onClickRoute)
+                                    ]
+                                    [ text <|
+                                        if idx == 0 then
+                                            "<recipe>"
+
+                                        else
+                                            path |> List.last |> Maybe.withDefault ""
+                                    ]
+                                ]
+                        )
+                , [ text ":" ]
+                ]
+        , div
+            [ style "display" "flex"
+            , style "flex-direction" "row"
+            , style "gap" "1rem"
+            ]
+            [ nav
+                [ style "display" "flex"
+                , style "flex-direction" "column"
+                ]
+                (pageRecipeOptions.pageRecipeOptions_children
+                    |> Set.toList
+                    |> List.map
+                        (\child ->
+                            let
+                                route =
+                                    pageRecipeOptions.pageRecipeOptions_route
+
+                                onClickRoute =
+                                    Route_RecipeOptions
+                                        { route
+                                            | routeRecipeOptions_searchPath =
+                                                pageRecipeOptions.pageRecipeOptions_ancestors
+                                                    ++ [ child ]
+                                        }
+                            in
+                            code
+                                []
+                                [ text "."
+                                , a
+                                    [ href (onClickRoute |> Route.toString)
+                                    , onClick (Update_Route onClickRoute)
+                                    ]
+                                    [ text child ]
+                                ]
+                        )
+                )
+            , main_
+                [ style "flex-grow" "1"
+                ]
+                [ viewPagination
+                    pageRecipeOptions.pageRecipeOptions_pagination
+                    (viewPageRecipeOptionsItem model pageRecipeOptions)
+                    (\modifyRoutePagination ->
+                        let
+                            routeRecipeOptions =
+                                pageRecipeOptions.pageRecipeOptions_route
+                        in
+                        Route_RecipeOptions
+                            { routeRecipeOptions
+                                | routeRecipeOptions_pagination = routeRecipeOptions.routeRecipeOptions_pagination |> modifyRoutePagination
+                                , routeRecipeOptions_focus = Nothing
+                            }
+                    )
+                ]
+            ]
+        ]
 
 
 viewPageRecipeOptionsItem : Model -> PageRecipeOptions -> ( NixName, NixModuleOption ) -> Html Update

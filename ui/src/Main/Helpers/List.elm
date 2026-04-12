@@ -1,5 +1,9 @@
 module Main.Helpers.List exposing (..)
 
+import List.Extra as List
+import Tuple exposing (first)
+
+
 {-| @'paginationOf' n@ splits a list into length-n pieces. The last
 piece will be shorter if @n@ does not evenly divide the length of
 the list. If @n <= 0@, @'paginationOf' n l@ returns an infinite list
@@ -8,8 +12,6 @@ of empty lists.
 AdaptedFrom: <https://hackage.haskell.org/package/split/docs/Data-List-Split.html#v:paginationOf>
 
 -}
-
-
 paginationOf : Int -> List a -> List (List a)
 paginationOf n xs =
     case xs of
@@ -68,3 +70,22 @@ at n xs =
 
     else
         xs |> List.drop n |> List.head
+
+
+{-| `longestCommonPrefix l` returns the longest prefix common to all `List`s in `l`.
+-}
+longestCommonPrefix : List (List a) -> List a
+longestCommonPrefix l =
+    case l of
+        [] ->
+            []
+
+        _ ->
+            let
+                go l1 l2 =
+                    List.zip l1 l2
+                        |> List.takeWhile (\( x, y ) -> x == y)
+                        |> List.map first
+            in
+            List.foldr1 go l
+                |> Maybe.withDefault []
