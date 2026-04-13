@@ -8,6 +8,7 @@ import Main.Helpers.List as List
 import Main.Helpers.Nix exposing (..)
 import Main.Model.Preferences exposing (..)
 import Main.Route exposing (..)
+import Set exposing (Set)
 
 
 type Page
@@ -74,6 +75,8 @@ defaultPagePackages routePagination packages =
 type alias PageRecipeOptions =
     { pageRecipeOptions_route : RouteRecipeOptions
     , pageRecipeOptions_pagination : PagePagination ( NixName, NixModuleOption )
+    , pageRecipeOptions_ancestors : List NixName
+    , pageRecipeOptions_children : Set NixName
     }
 
 
