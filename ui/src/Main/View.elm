@@ -81,7 +81,7 @@ view model =
             [ class "flex-grow-1" ]
             [ section [] [ viewPage model ] ]
         , footer
-            [ class "mt-auto py-3 border-top" ]
+            [ class "mt-3 py-3 border-top" ]
             [ viewPoweredBy model ]
         ]
 
