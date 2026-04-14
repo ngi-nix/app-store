@@ -60,12 +60,14 @@ showRouteAppFocus x =
 
 type alias RouteApps =
     { routeApps_search : String
+    , routeApps_pagination : RoutePagination
     }
 
 
 defaultRouteApps : RouteApps
 defaultRouteApps =
     { routeApps_search = ""
+    , routeApps_pagination = defaultRoutePagination
     }
 
 
@@ -206,7 +208,11 @@ fromAppUrl : AppUrl -> Result ErrorRoute Route
 fromAppUrl url =
     case url.path |> List.drop (List.length deployPath) of
         [] ->
-            Ok <| Route_Apps { routeApps_search = "" }
+            Ok <|
+                Route_Apps
+                    { routeApps_search = ""
+                    , routeApps_pagination = url |> appUrlToRoutePagination
+                    }
 
         [ "app", appName ] ->
             Ok <|
@@ -266,10 +272,14 @@ fromAppUrl url =
                 Route_Apps <|
                     case url.queryParameters |> Dict.get "q" |> Maybe.andThen List.uncons of
                         Nothing ->
-                            { routeApps_search = "" }
+                            { routeApps_search = ""
+                            , routeApps_pagination = url |> appUrlToRoutePagination
+                            }
 
                         Just ( q, _ ) ->
-                            { routeApps_search = q }
+                            { routeApps_search = q
+                            , routeApps_pagination = url |> appUrlToRoutePagination
+                            }
 
         [ "packages" ] ->
             Ok <|
@@ -351,13 +361,18 @@ toAppUrl route =
             case routeApps.routeApps_search of
                 "" ->
                     { path = deployPath
-                    , queryParameters = Dict.empty
+                    , queryParameters =
+                        Dict.empty
+                            |> Dict.union (routePaginationToQueryParameters routeApps.routeApps_pagination)
                     , fragment = Nothing
                     }
 
                 q ->
                     { path = deployPath ++ [ "apps" ]
-                    , queryParameters = [ ( "q", [ q ] ) ] |> Dict.fromList
+                    , queryParameters =
+                        [ ( "q", [ q ] ) ]
+                            |> Dict.fromList
+                            |> Dict.union (routePaginationToQueryParameters routeApps.routeApps_pagination)
                     , fragment = Nothing
                     }
 

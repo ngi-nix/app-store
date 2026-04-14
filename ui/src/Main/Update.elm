@@ -301,8 +301,47 @@ updateRoute route =
         Route_Apps routeApps ->
             updateConfig <|
                 \model ->
-                    ( { model
-                        | model_page = Page_Apps { pageApps_route = routeApps }
+                    ( let
+                        search =
+                            routeApps.routeApps_search |> String.toLower
+
+                        filterMatches =
+                            List.filter
+                                (\app ->
+                                    let
+                                        -- Case Insensitive search
+                                        app_name =
+                                            String.toLower app.app_name
+
+                                        app_description =
+                                            String.toLower app.app_description
+
+                                        name_matches =
+                                            String.contains search app_name
+
+                                        desc_matches =
+                                            String.contains search app_description
+                                    in
+                                    name_matches || desc_matches
+                                )
+
+                        availableItems =
+                            model.model_config.config_apps
+                                |> Dict.values
+
+                        filteredItems =
+                            availableItems
+                                |> filterMatches
+                      in
+                      { model
+                        | model_page =
+                            Page_Apps
+                                { pageApps_route = routeApps
+                                , pageApps_pagination =
+                                    defaultPagePagination
+                                        routeApps.routeApps_pagination
+                                        filteredItems
+                                }
                         , model_search = routeApps.routeApps_search
                       }
                     , Cmd.none
@@ -336,19 +375,8 @@ updateRoute route =
                                 )
 
                         availableItems =
-                            case model.model_page of
-                                Page_Packages pagePackages ->
-                                    if String.contains pagePackages.pagePackages_route.routePackages_search search then
-                                        pagePackages.pagePackages_pagination.pagePagination_list
-                                            |> List.concat
-
-                                    else
-                                        model.model_config.config_packages
-                                            |> Dict.values
-
-                                _ ->
-                                    model.model_config.config_packages
-                                        |> Dict.values
+                            model.model_config.config_packages
+                                |> Dict.values
 
                         filteredItems =
                             availableItems
@@ -405,19 +433,8 @@ updateRoute route =
                                     )
 
                             availableItems =
-                                case model.model_page of
-                                    Page_RecipeOptions pageRecipe ->
-                                        if String.contains pageRecipe.pageRecipeOptions_route.routeRecipeOptions_search search then
-                                            pageRecipe.pageRecipeOptions_pagination.pagePagination_list
-                                                |> List.concat
-
-                                        else
-                                            model.model_RecipeOptions.recipeOptions_available
-                                                |> Dict.toList
-
-                                    _ ->
-                                        model.model_RecipeOptions.recipeOptions_available
-                                            |> Dict.toList
+                                model.model_RecipeOptions.recipeOptions_available
+                                    |> Dict.toList
 
                             filteredItems =
                                 availableItems
@@ -474,15 +491,22 @@ updateConfig up model =
 routeSearch : Model -> Search -> Route
 routeSearch model search =
     case model.model_page of
-        Page_App pageApp ->
-            Route_Apps { routeApps_search = search }
+        Page_App _ ->
+            Route_Apps { defaultRouteApps | routeApps_search = search }
 
         Page_Apps pageApps ->
             let
                 routeApps =
                     pageApps.pageApps_route
+
+                routePagination =
+                    routeApps.routeApps_pagination
             in
-            Route_Apps { routeApps | routeApps_search = search }
+            Route_Apps
+                { routeApps
+                    | routeApps_search = search
+                    , routeApps_pagination = { routePagination | routePagination_current = Nothing }
+                }
 
         Page_Packages pagePackages ->
             let

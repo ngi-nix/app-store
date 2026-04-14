@@ -19,7 +19,7 @@ type Page
 
 defaultPage : Page
 defaultPage =
-    Page_Apps defaultPageApps
+    Page_Apps (defaultPageApps defaultRoutePagination [])
 
 
 isPageSearch : Page -> Bool
@@ -49,12 +49,14 @@ type alias PageApp =
 
 type alias PageApps =
     { pageApps_route : RouteApps
+    , pageApps_pagination : PagePagination App
     }
 
 
-defaultPageApps : PageApps
-defaultPageApps =
+defaultPageApps : RoutePagination -> List App -> PageApps
+defaultPageApps routePagination apps =
     { pageApps_route = defaultRouteApps
+    , pageApps_pagination = defaultPagePagination routePagination apps
     }
 
 

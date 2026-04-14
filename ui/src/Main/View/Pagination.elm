@@ -28,11 +28,15 @@ viewPagination pagePagination viewItem reRoute =
 viewPaginationContent : PagePagination a -> (a -> Html Update) -> Html Update
 viewPaginationContent pagePagination viewItem =
     div [ class "list-group" ]
-        (pagePagination.pagePagination_list
-            |> List.at (pagePagination.pagePagination_current - 1)
-            |> Maybe.withDefault []
-            |> List.map viewItem
-        )
+        (viewPaginationItems pagePagination viewItem)
+
+
+viewPaginationItems : PagePagination a -> (a -> Html Update) -> List (Html Update)
+viewPaginationItems pagePagination viewItem =
+    pagePagination.pagePagination_list
+        |> List.at (pagePagination.pagePagination_current - 1)
+        |> Maybe.withDefault []
+        |> List.map viewItem
 
 
 viewPaginationNavigation : ((RoutePagination -> RoutePagination) -> Route) -> PagePagination a -> Html Update

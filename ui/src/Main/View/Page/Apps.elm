@@ -1,6 +1,5 @@
 module Main.View.Page.Apps exposing (..)
 
-import Dict
 import Html exposing (Html, a, div, h5, img, p, small, span, text)
 import Html.Attributes exposing (attribute, class, href, src, style)
 import Main.Config exposing (..)
@@ -15,48 +14,36 @@ import Main.Model.Preferences exposing (..)
 import Main.Route as Route exposing (..)
 import Main.Update exposing (..)
 import Main.View.Page.App exposing (..)
+import Main.View.Pagination exposing (viewPaginationItems, viewPaginationNavigation)
 
 
 viewPageApps : Model -> PageApps -> Html Update
-viewPageApps model _ =
-    div
-        [ class "m-item-grid"
-        ]
-        (model.model_config.config_apps
-            |> Dict.values
-            |> (case model.model_search of
-                    "" ->
-                        identity
-
-                    _ ->
-                        List.filter
-                            (\app ->
-                                let
-                                    -- Case Insensitive search
-                                    model_search =
-                                        String.toLower model.model_search
-
-                                    app_name =
-                                        String.toLower app.app_name
-
-                                    app_description =
-                                        String.toLower app.app_description
-
-                                    name_matches =
-                                        String.contains model_search app_name
-
-                                    desc_matches =
-                                        String.contains model_search app_description
-                                in
-                                name_matches || desc_matches
-                            )
-               )
-            |> List.map (viewPageAppsApp model)
+viewPageApps model pageApps =
+    viewPageAppsPagination
+        pageApps.pageApps_pagination
+        (viewPageAppsApp model pageApps)
+        (\modifyRoutePagination ->
+            let
+                routeApps =
+                    pageApps.pageApps_route
+            in
+            Route_Apps
+                { routeApps
+                    | routeApps_pagination = routeApps.routeApps_pagination |> modifyRoutePagination
+                }
         )
 
 
-viewPageAppsApp : Model -> App -> Html Update
-viewPageAppsApp _ app =
+viewPageAppsPagination : PagePagination a -> (a -> Html Update) -> ((RoutePagination -> RoutePagination) -> Route) -> Html Update
+viewPageAppsPagination pagePagination viewItem reRoute =
+    div []
+        [ div [ class "m-item-grid" ] (viewPaginationItems pagePagination viewItem)
+        , viewPaginationNavigation reRoute pagePagination
+        ]
+
+
+viewPageAppsApp : Model -> PageApps -> App -> Html Update
+viewPageAppsApp _ _ app =
     let
         onClickRoute =
             Route_App { defaultRouteApp | routeApp_name = app.app_name }
