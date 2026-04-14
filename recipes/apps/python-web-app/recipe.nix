@@ -96,13 +96,15 @@
   };
 
   test.script = ''
-    curl -X POST localhost:5000/init
+    curl="curl --retry 5 --retry-max-time 120 --retry-all-errors"
 
-    curl -X POST \
+    $curl -X POST localhost:5000/init
+
+    $curl -X POST \
       --header "Content-Type: application/json" \
       --data '{"name":"username"}' \
       localhost:5000/users
 
-    curl localhost:5000/users
+    $curl localhost:5000/users
   '';
 }
