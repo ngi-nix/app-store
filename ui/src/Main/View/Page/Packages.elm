@@ -95,8 +95,14 @@ viewPagePackagesItem model pagePackages package =
             , div []
                 (package.package_description |> Markdown.render)
             ]
-        , div []
+        , div [ class "d-flex gap-3" ]
             [ a
+                [ href package.package_license.license_url
+                , target "_blank"
+                , rel "noopener"
+                ]
+                [ text package.package_license.license_spdxId ]
+            , a
                 [ href <| showPackageRecipeLink model package
                 , target "_blank"
                 , rel "noopener"
