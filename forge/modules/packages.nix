@@ -124,6 +124,16 @@ in
                             '';
                             example = "sha256-jZkUKv2SV28wsM18tCqNxoCZmLxdYH2Idh9RLibH2yA=";
                           };
+                          submodules = lib.mkOption {
+                            type = lib.types.bool;
+                            default = false;
+                            description = ''
+                              Fetch git submodules along with the repository source.
+
+                              Only applicable when using `source.git`.
+                            '';
+                            example = true;
+                          };
                           patches = lib.mkOption {
                             type = lib.types.listOf lib.types.path;
                             default = [ ];

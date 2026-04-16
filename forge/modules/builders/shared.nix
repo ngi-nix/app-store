@@ -78,6 +78,7 @@ in
                       lib.recursiveUpdate queryAttrs {
                         inherit url;
                         hash = pkg.source.hash;
+                        fetchSubmodules = pkg.source.submodules;
                       }
                     )
                   else
@@ -91,6 +92,7 @@ in
                     forges.${forge} (
                       lib.recursiveUpdate sourceAttrs {
                         hash = pkg.source.hash;
+                        fetchSubmodules = pkg.source.submodules;
                       }
                     );
 
