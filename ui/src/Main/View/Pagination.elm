@@ -1,7 +1,7 @@
 module Main.View.Pagination exposing (..)
 
 import Html exposing (Html, button, div, span, text)
-import Html.Attributes exposing (class, disabled, style)
+import Html.Attributes exposing (attribute, class, disabled, style)
 import Main.Config exposing (..)
 import Main.Config.Package exposing (..)
 import Main.Helpers.AppUrl exposing (..)
@@ -81,8 +81,10 @@ viewPaginationNavigation visibility reRoute pagePagination =
         in
         div [ class "d-flex justify-content-center align-items-center my-2" ]
             [ button
-                (class "btn me-2 border-0"
-                    :: (case routePagePreviousMaybe of
+                ([ class "btn me-2 border-0"
+                 , attribute "data-testid" "pagination-prev"
+                 ]
+                    ++ (case routePagePreviousMaybe of
                             Nothing ->
                                 [ disabled True ]
 
@@ -94,6 +96,7 @@ viewPaginationNavigation visibility reRoute pagePagination =
             , span
                 [ style "width" "2rem"
                 , style "text-align" "center"
+                , attribute "data-testid" "pagination-current"
                 ]
                 [ text (pagePagination.pagePagination_current |> String.fromInt) ]
             , text " / "
@@ -103,8 +106,10 @@ viewPaginationNavigation visibility reRoute pagePagination =
                 ]
                 [ text (pagePagination.pagePagination_last |> String.fromInt) ]
             , button
-                (class "btn ms-2 border-0"
-                    :: (case routePageNextMaybe of
+                ([ class "btn me-2 border-0"
+                 , attribute "data-testid" "pagination-next"
+                 ]
+                    ++ (case routePageNextMaybe of
                             Nothing ->
                                 [ disabled True ]
 
