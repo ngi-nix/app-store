@@ -94,8 +94,7 @@ viewPagePackagesItem model pagePackages package =
                         [ text ("v" ++ package.package_version) ]
                     ]
                 ]
-            , div []
-                (package.package_description |> Markdown.render)
+            , package.package_description |> Markdown.render
             ]
         , div [ class "d-flex gap-3" ]
             [ a
