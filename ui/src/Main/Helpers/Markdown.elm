@@ -1,6 +1,7 @@
 module Main.Helpers.Markdown exposing (..)
 
-import Html exposing (Html, text)
+import Html exposing (Html, div, text)
+import Html.Attributes exposing (class)
 import Main.Helpers.Html exposing (..)
 import Main.Update exposing (..)
 import Markdown.Parser
@@ -11,7 +12,7 @@ type alias Markdown =
     String
 
 
-render : Markdown -> List (Html Update)
+render : Markdown -> Html Update
 render input =
     input
         |> Markdown.Parser.parse
@@ -25,6 +26,7 @@ render input =
             )
         |> Result.andThen (Markdown.Renderer.render renderer)
         |> Result.withDefault [ text "Error rendering markdown." ]
+        |> div [ class "markdown-content" ]
 
 
 renderer : Renderer (Html Update)

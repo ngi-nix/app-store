@@ -96,10 +96,8 @@ viewPageAppUsage _ pageApp =
         div [ id "usage", class "mt-4" ]
             [ hr [] []
             , h4 [ class "mb-3" ] [ text "Usage Instructions" ]
-            , div [ class "markdown-content" ]
-                (pageApp.pageApp_app.app_usage
-                    |> Markdown.render
-                )
+            , pageApp.pageApp_app.app_usage
+                |> Markdown.render
             ]
 
     else
