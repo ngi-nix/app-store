@@ -120,7 +120,5 @@ showPackageRecipeLink model package =
     String.join "/"
         [ model.model_config.config_repository |> showNixUrl
         , "blob/" ++ commit
-        , model.model_config.config_recipe.configRecipe_packages
-        , package.package_name
-        , "recipe.nix"
+        , package.package_recipePath
         ]

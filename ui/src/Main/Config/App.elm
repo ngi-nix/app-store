@@ -13,20 +13,25 @@ type alias App =
     , app_services : AppServices
     , app_ngi : Ngi
     , app_links : AppLinks
+    , app_recipePath : String
     }
 
 
 decodeApp : Decoder App
 decodeApp =
-    Decode.map8 App
-        (Decode.field "name" Decode.string)
-        (Decode.field "displayName" Decode.string)
-        (Decode.field "description" Decode.string)
-        (Decode.field "usage" Decode.string)
-        (Decode.field "programs" decodeAppPrograms)
-        (Decode.field "services" decodeAppServices)
-        (Decode.field "ngi" decodeNgi)
-        (Decode.field "links" decodeAppLinks)
+    Decode.map2 (\app recipePath -> { app | app_recipePath = recipePath })
+        (Decode.map8 App
+            (Decode.field "name" Decode.string)
+            (Decode.field "displayName" Decode.string)
+            (Decode.field "description" Decode.string)
+            (Decode.field "usage" Decode.string)
+            (Decode.field "programs" decodeAppPrograms)
+            (Decode.field "services" decodeAppServices)
+            (Decode.field "ngi" decodeNgi)
+            (Decode.field "links" decodeAppLinks)
+            |> Decode.map (\f -> f "")
+        )
+        (Decode.field "recipePath" Decode.string)
 
 
 type alias AppName =

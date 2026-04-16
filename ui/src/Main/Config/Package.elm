@@ -12,12 +12,13 @@ type alias Package =
     , package_mainProgram : String
     , package_license : PackageLicense
     , package_source : PackageSource
+    , package_recipePath : String
     }
 
 
 decodePackage : Decoder Package
 decodePackage =
-    Decode.map7 Package
+    Decode.map8 Package
         (Decode.field "name" Decode.string)
         (Decode.field "description" Decode.string)
         (Decode.field "version" Decode.string)
@@ -25,6 +26,7 @@ decodePackage =
         (Decode.field "mainProgram" Decode.string)
         (Decode.field "license" decodeLicense)
         (Decode.field "source" decodeSource)
+        (Decode.field "recipePath" Decode.string)
 
 
 type alias PackageName =
