@@ -1,106 +1,229 @@
-import json
-import os
 import sys
-import random
+import subprocess
+import shutil
+import tempfile
 from pathlib import Path
-
-sys.path.append("@devUIDir@")
 from faker import Faker
-from build_app_resources import populate_resources_dir
 
 fake = Faker()
 
-try:
-    total_apps = int(sys.argv[1]) if len(sys.argv) > 1 else 5000
-except ValueError:
-    print("Error: Please provide a valid integer for the number of apps.")
-    sys.exit(1)
-
-out_file = sys.argv[2] if len(sys.argv) > 2 else "ui/build/forge-config.json"
-out_file = Path(out_file)
-
-os.makedirs(out_file.parents[0], exist_ok=True)
-
-print(f"Generating {total_apps} apps...")
-
 
 def generate_grants():
-    # Initialize empty categories
     grants = {"Commons": [], "Core": [], "Entrust": [], "Review": []}
-    categories = list(grants.keys())
-
-    # Randomly distribute 1 to 5 grants across the categories
-    for _ in range(random.randint(1, 5)):
-        random_category = random.choice(categories)
-        grants[random_category].append(fake.word())
-
+    for _ in range(fake.random_int(min=1, max=3)):
+        grants[fake.random_element(elements=list(grants.keys()))].append(fake.word())
     return grants
 
 
-def generate_app(index: int):
-    base_name = f"{fake.word()}-{fake.word()}".lower().replace("'", "")
-    display_name = f"{base_name}-{index}"
-    app_name = f"{base_name}-{index}-app"
+def generate_package_recipe(name, index):
+    return f"""{{
+  config,
+  lib,
+  pkgs,
+  ...
+}}:
 
-    description = " ".join(fake.sentences(nb=random.randint(1, 3)))
+{{
+  name = "{name}";
+  version = "0.0.{index}";
+  description = "{fake.sentence()}";
+  homePage = "{fake.url()}";
+  mainProgram = "{name}";
+  license = lib.licenses.mit;
 
-    return {
-        "name": app_name,
-        "description": description,
-        "displayName": display_name,
-        "ngi": {
-            "grants": generate_grants(),
-        },
-        "links": {
-            "website": {
-                "url": fake.url(),
-            },
-            "docs": {
-                "url": fake.url(),
-            },
-            "source": {
-                "url": fake.url(),
-            },
-        },
-        "programs": {
-            "runtimes": {
-                "shell": {
-                    "enable": fake.boolean(),
-                },
-            },
-        },
-        "recipePath": fake.file_path(extension=[]),
-        "services": {
-            "components": {
-                app_name: {},
-            },
-            "runtimes": {
-                "container": {
-                    "enable": fake.boolean(),
-                },
-                "nixos": {
-                    "enable": fake.boolean(),
-                },
-            },
-        },
-        "usage": fake.text(),
-    }
+  source.url = "https://example.com/{name}.tar.gz";
+  source.hash = lib.fakeHash;
+
+  build.standardBuilder.enable = true;
+}}
+"""
 
 
-fake_data = {
-    "apps": [generate_app(i) for i in range(total_apps)],
-    "packages": [],
-    "recipeDirs": {"apps": "recipes/apps", "packages": "recipes/packages"},
-    "repositoryUrl": "github:ngi-nix/forge",
-}
+def generate_app_recipe(name, index, is_test_app=False):
+    grants = generate_grants()
 
-# remove if existing symlink by dev-ui exists
-out_file.unlink(missing_ok=True)
+    grant_lines = []
+    for cat, items in grants.items():
+        if items:
+            vals = " ".join(f'"{v}"' for v in items)
+            grant_lines.append(f"    {cat} = [ {vals} ];")
 
-with open(out_file, "w") as f:
-    json.dump(fake_data, f)
+    grants_nix = "{\n" + "\n".join(grant_lines) + "\n  }"
 
-print(f"Done! Wrote to {out_file}")
+    # Force enable all runtimes for the test app
+    shell_en = "true" if is_test_app else str(fake.boolean()).lower()
+    container_en = "true" if is_test_app else str(fake.boolean()).lower()
+    nixos_vm_en = "true" if is_test_app else str(fake.boolean()).lower()
+
+    return f"""{{
+  config,
+  lib,
+  pkgs,
+  ...
+}}:
+
+{{
+  name = "{name}";
+  description = "{fake.sentence()}";
+  usage = "{fake.text()}";
+
+  links = {{
+    website = "{fake.url()}";
+    docs = "{fake.url()}";
+    source = "{fake.url()}";
+  }};
+
+  ngi.grants = {grants_nix};
+
+  services = {{
+    components.{name} = {{
+      command = pkgs.hello;
+    }};
+    runtimes = {{
+      container = {{
+        enable = {container_en};
+        packages = [ pkgs.hello ];
+      }};
+      nixos = {{
+        enable = {nixos_vm_en};
+        extraConfig = {{ }};
+      }};
+    }};
+  }};
+
+  programs = {{
+    packages = [ pkgs.hello ];
+    runtimes.shell.enable = {shell_en};
+  }};
+}}
+"""
 
 
-populate_resources_dir()
+def main():
+    try:
+        num_apps = int(sys.argv[1]) if len(sys.argv) > 1 else 20
+        num_packages = int(sys.argv[2]) if len(sys.argv) > 2 else 20
+        out_path = Path(
+            sys.argv[3] if len(sys.argv) > 3 else "ui/build/forge-config.json"
+        )
+    except (ValueError, IndexError):
+        print("Usage: mock-forge-config <num_apps> <num_packages> <out_path>")
+        sys.exit(1)
+
+    git_root = Path(
+        subprocess.check_output(
+            ["git", "rev-parse", "--show-toplevel"], text=True
+        ).strip()
+    )
+    if not out_path.is_absolute():
+        out_path = git_root / out_path
+
+    print(f"Generating {num_apps} apps and {num_packages} package recipes...")
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        temp_path = Path(temp_dir)
+        _ = subprocess.run(
+            [
+                "git",
+                "archive",
+                "--format=tar",
+                "HEAD",
+                "-o",
+                str(temp_path / "repo.tar"),
+            ],
+            cwd=str(git_root),
+            check=True,
+        )
+        _ = subprocess.run(["tar", "-xf", "repo.tar"], cwd=str(temp_path), check=True)
+
+        mock_recipes_root = temp_path / "recipes"
+        if mock_recipes_root.exists():
+            shutil.rmtree(mock_recipes_root)
+
+        apps_dir, pkgs_dir = mock_recipes_root / "apps", mock_recipes_root / "packages"
+        apps_dir.mkdir(parents=True), pkgs_dir.mkdir(parents=True)
+
+        # Generate an unchanging test app
+        test_app_name = "mock-test-app"
+        (apps_dir / test_app_name).mkdir(parents=True)
+        with open(apps_dir / test_app_name / "recipe.nix", "w") as f:
+            f.write(generate_app_recipe(test_app_name, 0, is_test_app=True))
+
+        for i in range(num_apps):
+            app_name = f"mock-app-{i}"
+            (apps_dir / app_name).mkdir(parents=True)
+            with open(apps_dir / app_name / "recipe.nix", "w") as f:
+                f.write(generate_app_recipe(app_name, i))
+
+        # Generate a unchanging test package
+        test_pkg_name = "mock-test-package"
+        (pkgs_dir / test_pkg_name).mkdir(parents=True)
+        with open(pkgs_dir / test_pkg_name / "recipe.nix", "w") as f:
+            f.write(generate_package_recipe(test_pkg_name, 0))
+
+        for i in range(num_packages):
+            pkg_name = f"mock-package-{i}"
+            (pkgs_dir / pkg_name).mkdir(parents=True)
+            with open(pkgs_dir / pkg_name / "recipe.nix", "w") as f:
+                f.write(generate_package_recipe(pkg_name, i))
+
+        _ = subprocess.run(
+            ["git", "init"], cwd=str(temp_path), check=True, capture_output=True
+        )
+        _ = subprocess.run(
+            ["git", "config", "user.email", "foo@example.com"],
+            cwd=str(temp_path),
+            check=True,
+        )
+        _ = subprocess.run(
+            ["git", "config", "user.name", "foo"],
+            cwd=str(temp_path),
+            check=True,
+        )
+        _ = subprocess.run(
+            ["git", "add", "."], cwd=str(temp_path), check=True, capture_output=True
+        )
+        _ = subprocess.run(
+            ["git", "commit", "-m", "gen mock recipes"],
+            cwd=str(temp_path),
+            check=True,
+            capture_output=True,
+        )
+
+        try:
+            result = subprocess.run(
+                ["nix", "eval", ".#_forge-config.text", "--raw"],
+                cwd=str(temp_path),
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            config_text = result.stdout
+        except subprocess.CalledProcessError as e:
+            print(f"Nix evaluation failed in temp repo:\n{e.stderr}")
+            sys.exit(1)
+
+    tmp_dir = git_root / "ui/build/.tmp"
+    tmp_dir.mkdir(parents=True, exist_ok=True)
+    real_file = tmp_dir / "mock-forge-config.json"
+    with open(real_file, "w") as f:
+        f.write(config_text)
+
+    if out_path.exists() or out_path.is_symlink():
+        out_path.unlink()
+
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.symlink_to(real_file.relative_to(out_path.parent))
+    print(f"Mock config symlinked: {out_path} -> {real_file}")
+
+    sys.path.append("@devUIDir@")
+    try:
+        from build_app_resources import populate_resources_dir
+
+        populate_resources_dir()
+    except ImportError:
+        pass
+
+
+if __name__ == "__main__":
+    main()
