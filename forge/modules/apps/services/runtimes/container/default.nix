@@ -104,7 +104,7 @@
               # { K = "V"; } -> [ "K=V" ]
               envAttrsToList = attrs: lib.mapAttrsToList (n: v: "${n}=${v}") attrs;
 
-              appEnv = lib.concatMapAttrs (_: value: value.environment) app.services.components;
+              appEnv = lib.concatMapAttrs (_: value: envListToAttrs value.environment) app.services.components;
               containerEnv = envListToAttrs config.imageConfig.Env or [ ];
 
               # NOTE: we merge Attrs to remove duplicate keys

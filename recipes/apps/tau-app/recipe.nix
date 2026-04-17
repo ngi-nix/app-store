@@ -38,9 +38,9 @@
   };
 
   ngi.grants = {
-      Core = [
-        "Tau"
-      ];
+    Core = [
+      "Tau"
+    ];
   };
 
   programs = {

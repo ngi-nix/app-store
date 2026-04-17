@@ -62,19 +62,6 @@
         example = lib.literalExpression ''
           [ "10022:22" "5432:5432" "8000:80" ]
         '';
-        apply =
-          self:
-          map (
-            portRange:
-            let
-              portSplit = lib.splitString ":" portRange;
-            in
-            {
-              from = "host";
-              host.port = lib.toInt (lib.elemAt portSplit 0);
-              guest.port = lib.toInt (lib.elemAt portSplit 1);
-            }
-          ) self;
       };
     };
 
@@ -136,7 +123,26 @@
           };
         }) app.services.components;
 
-        environment.variables = lib.concatMapAttrs (_: value: value.environment) app.services.components;
+        environment.variables =
+          let
+            /*
+              Convert a list of environment variables to an attribute set.
+
+              Example:
+                [ "K=V" ] -> { K = "V"; }
+            */
+            envListToAttrs =
+              list:
+              lib.pipe list [
+                (map (envPair: lib.splitString "=" envPair))
+                (map (envPairSplit: {
+                  name = lib.head envPairSplit;
+                  value = lib.concatStringsSep "=" (lib.tail envPairSplit);
+                }))
+                (lib.listToAttrs)
+              ];
+          in
+          lib.concatMapAttrs (_: value: envListToAttrs value.environment) app.services.components;
       }
       (lib.mkIf (config.setup != "") {
         systemd.services."${app.name}-setup" = {
@@ -168,9 +174,23 @@
               inherit (config.vm)
                 cores
                 diskSize
-                forwardPorts
                 memorySize
                 ;
+
+              forwardPorts = map (
+                portRange:
+                if builtins.isString portRange then
+                  let
+                    portSplit = lib.splitString ":" portRange;
+                  in
+                  {
+                    from = "host";
+                    host.port = lib.toInt (lib.elemAt portSplit 0);
+                    guest.port = lib.toInt (lib.elemAt portSplit 1);
+                  }
+                else
+                  portRange
+              ) config.vm.forwardPorts;
             };
           }
         )

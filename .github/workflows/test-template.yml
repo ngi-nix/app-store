@@ -1,4 +1,4 @@
-name: Test template
+name: Test templates
 
 on:
   push:
@@ -6,61 +6,37 @@ on:
   pull_request:
     branches: ["master"]
   workflow_dispatch:
+    inputs:
+      template:
+        description: "Template to test"
+        required: true
+        type: choice
+        options:
+          - provider
+          - consumer
 
 jobs:
-  test-template:
-    name: Test flake template
-    runs-on: ubuntu-latest
+  test-provider:
+    name: Test provider template
+    uses: ./.github/workflows/build-template.yml
+    if: github.event_name != 'workflow_dispatch' || github.event.inputs.template == 'provider'
+    with:
+      template: provider
+      package: hello-nix
+      app: hello-app
+      test_shell: true
+      test_container: true
+      test_vm: true
+      test_forge_ui: true
 
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v6
-
-      - name: Install Nix
-        uses: cachix/install-nix-action@19effe9fe722874e6d46dd7182e4b8b7a43c4a99 # v31.10.0
-
-      - uses: cachix/cachix-action@v16
-        with:
-          name: ngi-forge
-          authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
-
-      - name: Create test directory
-        run: |
-          mkdir -p /tmp/template-test
-
-      - name: Initialize git repository
-        working-directory: /tmp/template-test
-        run: |
-          git init
-
-      - name: Initialize provider template
-        working-directory: /tmp/template-test
-        run: |
-          nix flake init -t ${{ github.workspace }}#provider
-          sed -i 's|ngi-forge.url = .*;|ngi-forge.url = "path:${{ github.workspace }}";|g' flake.nix
-          git add ./*
-
-      - name: Show flake info
-        working-directory: /tmp/template-test
-        run: |
-          nix flake metadata
-          nix flake show
-
-      - name: Build hello-nix package
-        working-directory: /tmp/template-test
-        run: |
-          nix build .#hello-nix --accept-flake-config
-
-      - name: Build hello-app
-        working-directory: /tmp/template-test
-        run: |
-          nix build .#hello-app --accept-flake-config
-          nix build .#hello-app.container --accept-flake-config
-          nix build .#hello-app.vm --accept-flake-config
-
-      - name: Build _forge-ui
-        working-directory: /tmp/template-test
-        run: |
-          nix build .#_forge-ui --accept-flake-config
-          test -f result/index.html
-          test -f result/forge-config.json
+  test-consumer:
+    name: Test consumer template
+    uses: ./.github/workflows/build-template.yml
+    if: github.event_name != 'workflow_dispatch' || github.event.inputs.template == 'consumer'
+    with:
+      template: consumer
+      app: python-web-app
+      test_shell: true
+      test_container: true
+      test_vm: true
+      test_forge_ui: false

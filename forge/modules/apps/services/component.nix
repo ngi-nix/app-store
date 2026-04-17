@@ -27,27 +27,6 @@
       type = lib.types.listOf lib.types.str;
       default = [ ];
       description = "Environment variables.";
-      apply =
-        self:
-        let
-          /*
-            Convert a list of environment variables to an attribute set.
-
-            Example:
-              [ "K=V" ] -> { K = "V"; }
-          */
-          envListToAttrs =
-            list:
-            lib.pipe list [
-              (map (envPair: lib.splitString "=" envPair))
-              (map (envPairSplit: {
-                name = lib.head envPairSplit;
-                value = lib.concatStringsSep "=" (lib.tail envPairSplit);
-              }))
-              (lib.listToAttrs)
-            ];
-        in
-        envListToAttrs self;
     };
   };
 }
