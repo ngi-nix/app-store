@@ -165,9 +165,7 @@ showAppRecipeLink model app =
     String.join "/"
         [ model.model_config.config_repository |> showNixUrl
         , "blob/" ++ commit
-        , model.model_config.config_recipe.configRecipe_apps
-        , app.app_name
-        , "recipe.nix"
+        , app.app_recipePath
         ]
 
 
