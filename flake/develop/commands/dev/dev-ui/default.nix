@@ -12,7 +12,8 @@
 
   mockBackend ? "false",
   defaultListenPort ? 3000,
-  numApps ? 5000,
+  numApps ? 20,
+  numPackages ? 20,
   name ? "dev-ui",
   description ? "UI dev script",
 }:
@@ -28,6 +29,7 @@ let
         mockBackend
         defaultListenPort
         numApps
+        numPackages
         ;
     };
   };

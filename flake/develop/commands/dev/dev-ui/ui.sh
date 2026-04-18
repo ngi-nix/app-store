@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2050
-set -u
+set -eu
 
 rootDir="$(git rev-parse --show-toplevel)"
 cd "$rootDir"
@@ -11,17 +11,15 @@ unit=ngi_nix_dev-"$listenPort"
 slice=session-"$unit"
 
 function clean {
-  set +e
-  systemctl --user stop "$slice".slice
+  systemctl --user stop "$slice".slice || true
   rm -f /run/user/"$UID"/systemd/user/"$unit"-*
   rm -rf "$rootDir"/ui/build
 }
 
 function onExit {
-  set +e
   clean
-  watchman trigger-del . "$unit"-backend
-  watchman watch-del .
+  watchman trigger-del . "$unit"-backend || true
+  watchman watch-del . || true
 }
 
 trap onExit EXIT
@@ -37,8 +35,8 @@ mkdir -p "$rootDir/ui/build/js"
 # Otherwise the GC can remove the results at any moment.
 
 if [ "@mockBackend@" = "true" ]; then
-  # Using the explicit path from your devshell environment
-  BACKEND_COMMAND="$DEVSHELL_DIR/bin/mock-forge-config @numApps@ \"$rootDir/ui/build/forge-config.json\""
+  # Using the explicit path from our devshell environment
+  BACKEND_COMMAND="$DEVSHELL_DIR/bin/mock-forge-config @numApps@ @numPackages@ \"$rootDir/ui/build/forge-config.json\""
 else
   BACKEND_COMMAND="$(command -v nix) build -f \"$rootDir\" _forge-config -o \"$rootDir/ui/build/forge-config.json\" --show-trace"
 fi

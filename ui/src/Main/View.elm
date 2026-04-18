@@ -44,6 +44,7 @@ view model =
                 , button
                     [ class "navbar-toggler d-md-none border-0 p-1"
                     , type_ "button"
+                    , attribute "data-testid" "navbar-toggler"
                     , attribute "aria-expanded"
                         (if model.model_navbarExpanded then
                             "true"
@@ -149,6 +150,7 @@ viewSearchInput model =
                         "Search options"
             , value model.model_search
             , id "main-search-bar"
+            , attribute "data-testid" "main-search-bar"
             , onInput (\pattern -> Update_Search pattern)
             , preventDefaultOn "keydown"
                 (decodeEscapeKey
@@ -166,6 +168,7 @@ viewThemeToggle model =
         , style "cursor" "pointer"
         , title "Toggle theme"
         , attribute "aria-label" "Toggle theme"
+        , attribute "data-testid" "theme-toggle-btn"
         , onClick Update_CycleTheme
         ]
         [ case model.model_preferences.preferences_theme of

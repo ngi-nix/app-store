@@ -1,6 +1,7 @@
 module Main.Icons exposing (..)
 
 import Html exposing (Html)
+import Html.Attributes exposing (attribute)
 import Svg exposing (path, svg)
 import Svg.Attributes exposing (class, d, fill, fillRule, height, viewBox, width)
 
@@ -21,6 +22,7 @@ iconMoonStarsFill =
         , height "16"
         , fill "currentColor"
         , class "bi bi-moon-stars-fill"
+        , attribute "data-testid" "icon-moon"
         , viewBox "0 0 16 16"
         ]
         [ path
@@ -41,6 +43,7 @@ iconSunFill =
         , height "16"
         , fill "currentColor"
         , class "bi bi-sun-fill"
+        , attribute "data-testid" "icon-sun"
         , viewBox "0 0 16 16"
         ]
         [ path
