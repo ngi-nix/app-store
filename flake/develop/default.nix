@@ -25,6 +25,7 @@
         python3
         self'.packages.elm-watch
         self'.packages.elm2nix
+        playwright-test
         systemd-manager-tui
         watchman
         podman-compose

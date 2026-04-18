@@ -74,6 +74,7 @@ viewPagePackagesItem model pagePackages package =
         [ class "list-item list-group-item list-group-item-action flex-column align-items-start"
         , id itemId
         , href (onClickRoute |> Route.toString)
+        , attribute "data-testid" "package-result"
         , onClick (Update_Route onClickRoute)
         ]
         [ div
