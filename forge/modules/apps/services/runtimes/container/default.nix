@@ -133,6 +133,8 @@
           }
         ];
       }) app.services.components;
+
+      ordering = app.services.ordering;
     };
 
     result.nimi.eval = nimi.passthru.evalNimiModule { inherit (config.result.nimi) config; };
