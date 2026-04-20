@@ -93,7 +93,7 @@ in
               })
               // lib.optionalAttrs (app.test.script != "") { test = app.test.result.build; }
               // lib.optionalAttrs app.services.runtimes.container.enable {
-                container = app.services.runtimes.container.result.imageBuilder;
+                container = app.services.runtimes.container.result.build;
               }
               // lib.optionalAttrs app.services.runtimes.nixos.enable {
                 vm = app.services.runtimes.nixos.result.build;
