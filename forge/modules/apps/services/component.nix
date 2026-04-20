@@ -1,4 +1,5 @@
 {
+  name,
   inputs,
   pkgs,
 
@@ -27,6 +28,21 @@
       type = lib.types.listOf lib.types.str;
       default = [ ];
       description = "Environment variables.";
+    };
+
+    preStart = lib.mkOption {
+      description = ''
+        Script to run before each start of this service.
+
+        Runs before every start attempt, including restarts.
+        If the script exits with a non-zero status, the service
+        is considered failed and the restart policy applies.
+
+        Set to `null` to disable.
+      '';
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+      apply = self: if self != null then pkgs.writeShellScript "${name}-pre-start" self else null;
     };
   };
 }
