@@ -39,6 +39,7 @@
                 in
                 [ command ] ++ service.argv;
               configData = service.configData;
+              preStart = service.preStart;
             };
           }
         ) self;

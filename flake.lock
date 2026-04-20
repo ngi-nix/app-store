@@ -99,11 +99,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1776191855,
-        "narHash": "sha256-F+dH5LUBY27zIfA6aPQ5jGQSVMoy+4fiuv2oIKdlVcE=",
+        "lastModified": 1776448905,
+        "narHash": "sha256-Lmazo4/snwAsqWhGD9IQyPXrf5sbvzKslIqZ4IcuUp0=",
         "owner": "ngi-nix",
         "repo": "nimi",
-        "rev": "6ab31237f98bd39e2659a24db12316a37d560d32",
+        "rev": "258fd20856c128040b2932a89ed3b22fa5d613e8",
         "type": "github"
       },
       "original": {
