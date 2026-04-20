@@ -14,6 +14,7 @@ import Main.Model.Page exposing (..)
 import Main.Model.Preferences exposing (..)
 import Main.Route exposing (..)
 import Main.Update exposing (..)
+import Main.Update.Types exposing (..)
 
 
 type PaginationVisibility

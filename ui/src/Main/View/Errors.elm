@@ -15,6 +15,7 @@ import Main.Model exposing (..)
 import Main.Model.Preferences exposing (..)
 import Main.Route exposing (..)
 import Main.Update exposing (..)
+import Main.Update.Types exposing (..)
 import Main.View.Page.App exposing (..)
 import Main.View.Page.Recipe exposing (..)
 

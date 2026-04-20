@@ -8,6 +8,7 @@ import Main.Model.Page exposing (..)
 import Main.Ports.Navigation
 import Main.Route exposing (..)
 import Main.Update exposing (..)
+import Main.Update.Types exposing (..)
 import Navigation
 
 

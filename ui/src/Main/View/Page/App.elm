@@ -13,8 +13,9 @@ import Main.Icons exposing (..)
 import Main.Model exposing (..)
 import Main.Model.Page exposing (..)
 import Main.Model.Preferences exposing (..)
-import Main.Route as Route exposing (..)
+import Main.Route exposing (..)
 import Main.Update exposing (..)
+import Main.Update.Types exposing (..)
 import Main.View.Page.App.Run exposing (..)
 
 
@@ -96,10 +97,8 @@ viewPageAppUsage _ pageApp =
         div [ id "usage", class "mt-4" ]
             [ hr [] []
             , h4 [ class "mb-3" ] [ text "Usage Instructions" ]
-            , div [ class "markdown-content" ]
-                (pageApp.pageApp_app.app_usage
-                    |> Markdown.render
-                )
+            , pageApp.pageApp_app.app_usage
+                |> Markdown.render
             ]
 
     else
@@ -126,7 +125,7 @@ viewPageAppResources model pageApp =
                 , href
                     ({ routeApp | routeApp_focus = Just RouteAppFocus_Resources }
                         |> Route_App
-                        |> Route.toString
+                        |> routeToString
                     )
                 ]
                 []
@@ -198,7 +197,7 @@ viewPageAppNgiGrants _ pageApp =
                     , href
                         ({ routeApp | routeApp_focus = Just RouteAppFocus_Grants }
                             |> Route_App
-                            |> Route.toString
+                            |> routeToString
                         )
                     ]
                     []
