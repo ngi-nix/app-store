@@ -11,6 +11,12 @@
   options = {
     enable = lib.mkEnableOption "container image output";
 
+    setup = lib.mkOption {
+      type = lib.types.str;
+      default = "";
+      description = "Script to run once at startup.";
+    };
+
     tag = lib.mkOption {
       type = lib.types.str;
       default = "latest";
@@ -32,12 +38,6 @@
       '';
     };
 
-    setup = lib.mkOption {
-      type = lib.types.str;
-      default = "";
-      description = "Script to run once at startup.";
-    };
-
     composeFile = lib.mkOption {
       type = lib.types.nullOr lib.types.path;
       default = null;
@@ -45,10 +45,17 @@
     };
 
     result = {
-      nimi = lib.mkOption {
+      modules = lib.mkOption {
         internal = true;
         type = with lib.types; lazyAttrsOf (either attrs anything);
         description = "Nimi configuraton.";
+      };
+
+      eval = lib.mkOption {
+        internal = true;
+        readOnly = true;
+        type = with lib.types; lazyAttrsOf (either attrs anything);
+        description = "NixOS system evaluation.";
       };
 
       recipe = lib.mkOption {
@@ -58,7 +65,7 @@
         description = "Script that builds container image recipe.";
       };
 
-      imageBuilder = lib.mkOption {
+      build = lib.mkOption {
         internal = true;
         type = lib.types.nullOr lib.types.package;
         default = null;
@@ -78,7 +85,7 @@
   };
 
   config = {
-    result.nimi.config = {
+    result.modules = {
       settings.container = {
         copyToRoot = pkgs.buildEnv {
           name = "runtime-bins";
@@ -135,11 +142,11 @@
       }) app.services.components;
     };
 
-    result.nimi.eval = nimi.passthru.evalNimiModule { inherit (config.result.nimi) config; };
+    result.eval = nimi.passthru.evalNimiModule { config = config.result.modules; };
 
-    result.recipe = nimi.mkContainerImage { inherit (config.result.nimi) config; };
+    result.recipe = nimi.mkContainerImage { config = config.result.modules; };
 
-    result.imageBuilder = pkgs.runCommand "build-oci-image" { meta.mainProgram = "build-oci-image"; } ''
+    result.build = pkgs.runCommand "build-oci-image" { meta.mainProgram = "build-oci-image"; } ''
       mkdir -p $out/bin
 
       cat > $out/bin/build-oci-image <<EOF
