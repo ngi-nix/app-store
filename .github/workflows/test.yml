@@ -34,6 +34,26 @@ jobs:
       - name: Run checks
         run: nix flake check --accept-flake-config
 
+  lint:
+    name: Run format checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@19effe9fe722874e6d46dd7182e4b8b7a43c4a99 # v31.10.0
+
+      - uses: cachix/cachix-action@v16
+        with:
+          name: ngi-forge
+
+      - name: Run checks
+        run: |
+          nix build --accept-flake-config .#formatter.x86_64-linux
+          ./result/bin/treefmt --ci
+
   build-preview-ui:
     name: Build UI artifact
     runs-on: ubuntu-latest
