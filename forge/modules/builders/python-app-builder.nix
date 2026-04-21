@@ -36,6 +36,26 @@ in
                         description = "PEP-517 build system dependencies.";
                         example = lib.literalExpression "[ pkgs.python3Packages.setuptools pkgs.python3Packages.wheel ]";
                       };
+                      build = lib.mkOption {
+                        type = lib.types.listOf lib.types.package;
+                        default = [ ];
+                        description = ''
+                          Native build-time dependencies.
+
+                          Use this for tools needed during the build, such as pkg-config or compilers.
+                        '';
+                        example = lib.literalExpression "[ pkgs.pkg-config pkgs.kaitai-struct-compiler ]";
+                      };
+                      run = lib.mkOption {
+                        type = lib.types.listOf lib.types.package;
+                        default = [ ];
+                        description = ''
+                          Native runtime dependencies.
+
+                          Use this for non-Python libraries or tools needed at runtime.
+                        '';
+                        example = lib.literalExpression "[ pkgs.openssl pkgs.sqlite ]";
+                      };
                       dependencies = lib.mkOption {
                         type = lib.types.listOf lib.types.package;
                         default = [ ];
@@ -56,6 +76,17 @@ in
                             redis = [ pkgs.python3Packages.redis ];
                           }
                         '';
+                      };
+                      check = lib.mkOption {
+                        type = lib.types.listOf lib.types.package;
+                        default = [ ];
+                        description = ''
+                          Test dependencies.
+
+                          Packages needed to run the test suite. When non-empty, tests are
+                          automatically enabled (doCheck = true).
+                        '';
+                        example = lib.literalExpression "[ pkgs.python3Packages.pytestCheckHook ]";
                       };
                     };
                     importsCheck = lib.mkOption {
@@ -125,8 +156,12 @@ in
                         src = sharedBuildAttrs.pkgSource pkg;
                         patches = pkg.source.patches;
                         build-system = pkg.build.pythonAppBuilder.packages.build-system;
+                        nativeBuildInputs = pkg.build.pythonAppBuilder.packages.build;
+                        buildInputs = pkg.build.pythonAppBuilder.packages.run;
                         dependencies = pkg.build.pythonAppBuilder.packages.dependencies;
                         optional-dependencies = pkg.build.pythonAppBuilder.packages.optional-dependencies;
+                        nativeCheckInputs = pkg.build.pythonAppBuilder.packages.check;
+                        doCheck = pkg.build.pythonAppBuilder.packages.check != [ ];
                         pythonImportsCheck = pkg.build.pythonAppBuilder.importsCheck;
                         pythonRelaxDeps = pkg.build.pythonAppBuilder.relaxDeps;
                         disabledTests = pkg.build.pythonAppBuilder.disabledTests;
