@@ -124,25 +124,7 @@
         }) app.services.components;
 
         environment.variables =
-          let
-            /*
-              Convert a list of environment variables to an attribute set.
-
-              Example:
-                [ "K=V" ] -> { K = "V"; }
-            */
-            envListToAttrs =
-              list:
-              lib.pipe list [
-                (map (envPair: lib.splitString "=" envPair))
-                (map (envPairSplit: {
-                  name = lib.head envPairSplit;
-                  value = lib.concatStringsSep "=" (lib.tail envPairSplit);
-                }))
-                (lib.listToAttrs)
-              ];
-          in
-          lib.concatMapAttrs (_: value: envListToAttrs value.environment) app.services.components;
+          lib.concatMapAttrs (_: value: value.environment) app.services.components;
       }
       (lib.mkIf (config.setup != "") {
         systemd.services."${app.name}-setup" = {

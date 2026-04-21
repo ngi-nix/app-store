@@ -22,11 +22,16 @@
       description = "List of arguments that will be passed to the main program.";
     };
 
-    # NOTE: this is a list so we're consistent with the container's `imageConfig.Env`
     environment = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
-      default = [ ];
+      type = lib.types.attrsOf lib.types.str;
+      default = { };
       description = "Environment variables.";
+      example = lib.literalExpression ''
+        {
+          DEBUG = "1";
+          LOG_LEVEL = "info";
+        }
+      '';
     };
   };
 }

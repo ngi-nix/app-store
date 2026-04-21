@@ -494,10 +494,10 @@ services = {
   my-service = {
     command = pkgs.mypkgs.my-package;  # Package or string
     argv = [ "--port" "8080" ];        # Additional arguments
-    environment = [                     # Environment variables
-      "DATABASE_URL=postgresql://localhost/db"
-      "LOG_LEVEL=info"
-    ];
+    environment = {                     # Environment variables
+      DATABASE_URL = "postgresql://localhost/db";
+      LOG_LEVEL = "info";
+    };
   };
 
   another-service = {
@@ -648,7 +648,9 @@ Each app output type can be independently enabled or disabled:
   services.python-web = {
     command = pkgs.mypkgs.python-web;
     argv = [ "--host" "0.0.0.0" ];
-    environment = [ "FLASK_ENV=production" ];
+    environment = {
+      FLASK_ENV = "production";
+    };
   };
 
   # Shell bundle with additional tools
