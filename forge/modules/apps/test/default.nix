@@ -7,6 +7,11 @@
   ...
 }:
 {
+  imports = [
+    ./nixos.nix
+    ./container.nix
+  ];
+
   options = {
     packages = lib.mkOption {
       type = lib.types.listOf lib.types.package;
@@ -15,16 +20,37 @@
       example = lib.literalExpression "[ pkgs.curl pkgs.jq ]";
     };
 
+    sandbox = lib.mkOption {
+      type = lib.types.bool;
+      default = true;
+      description = ''
+        Enable the Nix sandbox when running tests.
+
+        Set to false to allow internet access during tests, which may be
+        required when tests need to download additional resources at runtime,
+        such as container images pulled by compose files.
+
+        When disabled, tests must be launched with Nix sandbox relaxed.
+
+          - nix build .#<app>.test --option sandbox relaxed --builders ""
+          - nix build .#<app>.test-container --option sandbox relaxed --builders ""
+
+        Disable sandbox only when necessary.
+      '';
+    };
+
     script = lib.mkOption {
       type = lib.types.str;
       default = ''
         echo "Test script"
       '';
       description = ''
-        Bash script to run application tests inside a NixOS machine.
+        Bash script to test application services inside a NixOS machine
+        or container.
 
-        The application's services are available in the machine.
-        Run with: nix build .#<app>.test
+        Launch tests with:
+          - nix build .#<app>.test
+          - nix build .#<app>.test-container
       '';
       example = lib.literalExpression ''
         '''
@@ -33,49 +59,16 @@
       '';
     };
 
-    testScript = lib.mkOption {
-      internal = true;
-      type = lib.types.str;
-      default = ''
-        machine.start()
-        machine.wait_for_unit("multi-user.target")
-        ${lib.concatMapAttrsStringSep "\n" (
-          name: _: "machine.wait_for_unit(\"${name}.service\")"
-        ) app.services.components}
-        machine.succeed("${pkgs.writeShellScript "${app.name}-test-script" config.script}")
-      '';
-      description = "Python test script passed to the NixOS test driver.";
-    };
-
     result = {
-      build = lib.mkOption {
-        internal = true;
-        readOnly = true;
-        type = lib.types.package;
-        description = "NixOS test derivation.";
-      };
-
       # HACK:
-      # Prevent toJSON from attempting to convert the `build` option,
-      # which won't work because it's a whole NixOS test evaluation.
+      # Prevent toJSON from attempting to convert the `build` options,
+      # which won't work because they are whole NixOS test evaluations.
       __toString = lib.mkOption {
         internal = true;
         readOnly = true;
         type = with lib.types; functionTo str;
         default = self: "nixos-test";
       };
-    };
-  };
-
-  config = {
-    result.build = pkgs.testers.runNixOSTest {
-      name = "${app.name}-test";
-      nodes.machine = {
-        imports = app.services.runtimes.nixos.result.modules;
-        system.stateVersion = "25.11";
-        environment.systemPackages = app.programs.packages ++ config.packages;
-      };
-      inherit (config) testScript;
     };
   };
 }
