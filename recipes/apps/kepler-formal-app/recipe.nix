@@ -56,9 +56,9 @@
   };
 
   programs = {
-      packages = [
-        pkgs.mypkgs.kepler-formal
-      ];
+    packages = [
+      pkgs.mypkgs.kepler-formal
+    ];
 
     runtimes.shell = {
       enable = true;
