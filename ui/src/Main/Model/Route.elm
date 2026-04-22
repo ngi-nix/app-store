@@ -102,21 +102,21 @@ showRoutePackagesFocus x =
 type alias RouteRecipeOptions =
     { routeRecipeOptions_searchPattern : String
     , routeRecipeOptions_focus : Maybe RouteRecipeOptionsFocus
-    , routeRecipeOptions_scope : NixPath
-    , routeRecipeOptions_unfolds : Set NixPath
+    , routeRecipeOptions_scope : NixAttrPath
+    , routeRecipeOptions_unfolds : Set NixAttrPath
     , routeRecipeOptions_pagination : RoutePagination
     }
 
 
 type RouteRecipeOptionsFocus
-    = RouteRecipeOptionsFocus_Option NixPath
+    = RouteRecipeOptionsFocus_Option NixAttrPath
 
 
 showRouteRecipeOptionsFocus : RouteRecipeOptionsFocus -> String
 showRouteRecipeOptionsFocus x =
     case x of
         RouteRecipeOptionsFocus_Option s ->
-            s |> joinNixPath
+            s |> joinNixAttrPath
 
 
 defaultRouteRecipeOptions : RouteRecipeOptions
@@ -320,7 +320,7 @@ appUrlToRoute url =
                             |> Dict.get "s"
                             |> Maybe.andThen List.head
                             |> Maybe.withDefault ""
-                            |> splitNixName
+                            |> splitNixAttrId
                 in
                 Route_RecipeOptions
                     { routeRecipeOptions_searchPattern =
@@ -333,7 +333,7 @@ appUrlToRoute url =
                         url.queryParameters
                             |> Dict.get "p"
                             |> Maybe.withDefault []
-                            |> List.map splitNixName
+                            |> List.map splitNixAttrId
                             |> Set.fromList
                             |> Set.insert scope
                     , routeRecipeOptions_pagination = url |> appUrlToRoutePagination
@@ -343,7 +343,7 @@ appUrlToRoute url =
                                 (\fragment ->
                                     case fragment of
                                         optionId ->
-                                            RouteRecipeOptionsFocus_Option (optionId |> splitNixName)
+                                            RouteRecipeOptionsFocus_Option (optionId |> splitNixAttrId)
                                 )
                     }
 
@@ -435,7 +435,7 @@ routeToAppUrl route =
                             []
 
                         xs ->
-                            xs |> List.map joinNixPath
+                            xs |> List.map joinNixAttrPath
                   )
                 , ( "q"
                   , case routeRecipe.routeRecipeOptions_searchPattern of
@@ -451,7 +451,7 @@ routeToAppUrl route =
                             []
 
                         xs ->
-                            [ xs |> joinNixPath ]
+                            [ xs |> joinNixAttrPath ]
                   )
                 ]
                     |> Dict.fromList
@@ -462,7 +462,7 @@ routeToAppUrl route =
                         (\focus ->
                             case focus of
                                 RouteRecipeOptionsFocus_Option s ->
-                                    s |> joinNixPath
+                                    s |> joinNixAttrPath
                         )
             }
 

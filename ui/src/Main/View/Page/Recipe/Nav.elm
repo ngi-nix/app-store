@@ -195,7 +195,7 @@ viewPageRecipeOptionsNavNodeName page inh tree node =
         ]
 
 
-routePageRecipeOptionsNavNodeName : PageRecipeOptions -> NixPath -> Route
+routePageRecipeOptionsNavNodeName : PageRecipeOptions -> NixAttrPath -> Route
 routePageRecipeOptionsNavNodeName page path =
     let
         route =
@@ -211,7 +211,7 @@ routePageRecipeOptionsNavNodeName page path =
         }
 
 
-routePageRecipeOptionsNavNodeToggle : PageRecipeOptions -> NixPath -> Route
+routePageRecipeOptionsNavNodeToggle : PageRecipeOptions -> NixAttrPath -> Route
 routePageRecipeOptionsNavNodeToggle page path =
     let
         route =
@@ -243,13 +243,13 @@ routePageRecipeOptionsNavNodeToggle page path =
 
 
 type alias InhRecipeOptionsNav =
-    { inhRecipeOptionsNav_pathReversed : NixPath
+    { inhRecipeOptionsNav_pathReversed : NixAttrPath
     , inhRecipeOptionsNav_unfolded : Bool
     , inhRecipeOptionsNav_children : List (Tree NodeNixOption)
     }
 
 
-pathPageRecipeOptionsNav : InhRecipeOptionsNav -> Tree NodeNixOption -> NixPath
+pathPageRecipeOptionsNav : InhRecipeOptionsNav -> Tree NodeNixOption -> NixAttrPath
 pathPageRecipeOptionsNav inh tree =
     let
         name =

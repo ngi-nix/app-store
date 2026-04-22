@@ -78,22 +78,22 @@ defaultPagePackages routePagination packages =
 
 type alias PageRecipeOptions =
     { pageRecipeOptions_route : RouteRecipeOptions
-    , pageRecipeOptions_pagination : PagePagination ( NixPath, NixModuleOption )
+    , pageRecipeOptions_pagination : PagePagination ( NixAttrPath, NixModuleOption )
     , pageRecipeOptions_trees : List (Tree NodeNixOption)
-    , pageRecipeOptions_unfolds : Set NixPath
+    , pageRecipeOptions_unfolds : Set NixAttrPath
     }
 
 
 type alias NodeNixOption =
-    ( NixName, List NixModuleOption )
+    ( NixAttrName, List NixModuleOption )
 
 
 type NodeNixOptionFiltered
     = NodeNixOptionFiltered_In NodeNixOption
-    | NodeNixOptionFiltered_Out NixName
+    | NodeNixOptionFiltered_Out NixAttrName
 
 
-nodeNixOptionFiltered_name : NodeNixOptionFiltered -> NixName
+nodeNixOptionFiltered_name : NodeNixOptionFiltered -> NixAttrName
 nodeNixOptionFiltered_name node =
     case node of
         NodeNixOptionFiltered_In ( n, _ ) ->

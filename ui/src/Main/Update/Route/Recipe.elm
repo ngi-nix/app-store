@@ -86,7 +86,7 @@ getRecipeOptions up model =
         model |> up
 
 
-scopeRecipeOptions : NixPath -> Trees NodeNixOption -> Trees NodeNixOptionFiltered
+scopeRecipeOptions : NixAttrPath -> Trees NodeNixOption -> Trees NodeNixOptionFiltered
 scopeRecipeOptions path trees =
     case path of
         [] ->
@@ -114,7 +114,7 @@ scopeRecipeOptions path trees =
                     )
 
 
-filterRecipeOptions : RouteRecipeOptions -> NixPath -> Trees NodeNixOptionFiltered -> Trees NodeNixOptionFiltered
+filterRecipeOptions : RouteRecipeOptions -> NixAttrPath -> Trees NodeNixOptionFiltered -> Trees NodeNixOptionFiltered
 filterRecipeOptions route path trees =
     trees
         |> List.map
@@ -141,7 +141,7 @@ filterRecipeOptions route path trees =
             )
 
 
-filterRecipeOption : RouteRecipeOptions -> NixPath -> NixModuleOption -> Bool
+filterRecipeOption : RouteRecipeOptions -> NixAttrPath -> NixModuleOption -> Bool
 filterRecipeOption route optionPath option =
     let
         searchPattern =
@@ -149,7 +149,7 @@ filterRecipeOption route optionPath option =
 
         -- Case Insensitive searchPattern
         option_name =
-            optionPath |> joinNixPath |> String.toLower
+            optionPath |> joinNixAttrPath |> String.toLower
 
         option_description =
             option.nixModuleOption_description |> String.toLower
@@ -189,7 +189,7 @@ paginateRecipeOptions model route =
         )
 
 
-listRecipeOptionsItems : InhRouteOptionsItem -> Tree NodeNixOptionFiltered -> List ( NixPath, NixModuleOption )
+listRecipeOptionsItems : InhRouteOptionsItem -> Tree NodeNixOptionFiltered -> List ( NixAttrPath, NixModuleOption )
 listRecipeOptionsItems inh tree =
     let
         name =
@@ -225,11 +225,11 @@ listRecipeOptionsItems inh tree =
 
 
 type alias InhRouteOptionsItem =
-    { inhRouteRecipeOptionsItem_pathReversed : NixPath
+    { inhRouteRecipeOptionsItem_pathReversed : NixAttrPath
     }
 
 
-pathRecipeOption : InhRouteOptionsItem -> Tree NodeNixOptionFiltered -> NixPath
+pathRecipeOption : InhRouteOptionsItem -> Tree NodeNixOptionFiltered -> NixAttrPath
 pathRecipeOption inh tree =
     let
         name =

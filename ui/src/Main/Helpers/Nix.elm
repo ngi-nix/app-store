@@ -4,7 +4,7 @@ import Dict exposing (Dict)
 import Json.Decode as Decode exposing (Decoder, field, string)
 import List.Extra as List
 import Main.Helpers.List as List
-import Main.Helpers.Tree as Tree
+import Main.Helpers.Tree as Tree exposing (Trees)
 import String
 import Tree
 
@@ -30,16 +30,26 @@ showGithubRepoSlug url =
     String.dropLeft 7 url
 
 
-type alias NixName =
+{-| Eg. `"apps.*.services"`
+-}
+type alias NixAttrId =
     String
 
 
-type alias NixPath =
-    List String
+{-| Eg. `["apps", "*", "services"]`
+-}
+type alias NixAttrPath =
+    List NixAttrName
 
 
-splitNixName : NixName -> NixPath
-splitNixName name =
+{-| Eg. `"services"`
+-}
+type alias NixAttrName =
+    String
+
+
+splitNixAttrId : NixAttrId -> NixAttrPath
+splitNixAttrId name =
     case name of
         "" ->
             []
@@ -48,13 +58,13 @@ splitNixName name =
             name |> String.split "."
 
 
-joinNixPath : NixPath -> NixName
-joinNixPath =
+joinNixAttrPath : NixAttrPath -> NixAttrId
+joinNixAttrPath =
     String.join "."
 
 
 type alias NixModuleOptions =
-    Dict NixName NixModuleOption
+    Dict NixAttrId NixModuleOption
 
 
 decodeNixModuleOptions : Decoder NixModuleOptions
@@ -96,14 +106,14 @@ decodeLiteralExpression =
         (field "text" string)
 
 
-nixOptionsTrees : List.Assoc NixName opt -> Tree.Trees ( NixName, List opt )
+nixOptionsTrees : List.Assoc NixAttrId opt -> Trees ( NixAttrName, List opt )
 nixOptionsTrees opts =
     opts
         |> List.map
             (\( n, opt ) ->
                 let
                     path =
-                        n |> splitNixName
+                        n |> splitNixAttrId
                 in
                 ( path, opt )
             )
