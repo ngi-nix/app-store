@@ -54,6 +54,8 @@
     ];
   };
 
+  icon = ./icon.svg;
+
   services = {
     components.mox = {
       configData."mox.conf" = {
