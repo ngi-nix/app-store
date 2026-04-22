@@ -15,6 +15,7 @@ import Main.Model.Route exposing (..)
 import Main.Ports.SmoothScroll exposing (..)
 import Main.Update.Focus exposing (..)
 import Main.Update.Types exposing (..)
+import Set
 import String
 import Tree exposing (Tree)
 import Tuple exposing (first, mapSecond)
@@ -30,6 +31,23 @@ updateRouteRecipeOptions route =
                         trees =
                             model.model_RecipeOptions.recipeOptions_available
                                 |> nixModuleOptionsToTrees
+
+                        unfolds =
+                            route.routeRecipeOptions_unfolds
+                                |> Set.insert route.routeRecipeOptions_scope
+                                |> (case route.routeRecipeOptions_focus of
+                                        Just (RouteRecipeOptionsFocus_Option optionPath) ->
+                                            Set.insert optionPath
+
+                                        _ ->
+                                            identity
+                                   )
+
+                        unfoldsWithAncestors =
+                            unfolds
+                                |> Set.toList
+                                |> List.concatMap List.inits
+                                |> Set.fromList
                     in
                     Page_RecipeOptions
                         { pageRecipeOptions_route = route
@@ -39,7 +57,7 @@ updateRouteRecipeOptions route =
                                 |> filterRecipeOptions route []
                                 |> List.concatMap (listRecipeOptionsItems [])
                                 |> paginateRecipeOptions model route
-                        , pageRecipeOptions_unfolds = route.routeRecipeOptions_unfolds
+                        , pageRecipeOptions_unfolds = unfoldsWithAncestors
                         , pageRecipeOptions_trees = trees
                         }
                 , model_search = route.routeRecipeOptions_searchPattern

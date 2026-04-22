@@ -191,8 +191,8 @@ viewNodeName page inh tree =
      else
         a
             << (++)
-                [ href (routeNodeName page path |> routeToString)
-                , onClick (Update_Route (routeNodeName page path))
+                [ href (routeNodeName page tree path |> routeToString)
+                , onClick (Update_Route (routeNodeName page tree path))
                 ]
     )
         (if path == page.pageRecipeOptions_route.routeRecipeOptions_scope then
@@ -218,8 +218,8 @@ viewNodeName page inh tree =
         ]
 
 
-routeNodeName : PageRecipeOptions -> NixAttrPath -> Route
-routeNodeName page path =
+routeNodeName : PageRecipeOptions -> Tree NodeNixOption -> NixAttrPath -> Route
+routeNodeName page tree path =
     let
         route =
             page.pageRecipeOptions_route
@@ -229,7 +229,12 @@ routeNodeName page path =
             | routeRecipeOptions_scope = path
             , routeRecipeOptions_unfolds =
                 route.routeRecipeOptions_unfolds
-                    |> Set.insert path
+                    |> (if tree |> Tree.children |> List.isEmpty then
+                            identity
+
+                        else
+                            Set.insert path
+                       )
             , routeRecipeOptions_focus = Nothing
         }
 
@@ -241,10 +246,10 @@ routeNodeToggle page path =
             page.pageRecipeOptions_route
     in
     Route_RecipeOptions <|
-        if route.routeRecipeOptions_unfolds |> Set.member path then
+        if page.pageRecipeOptions_unfolds |> Set.member path then
             { route
                 | routeRecipeOptions_unfolds =
-                    route.routeRecipeOptions_unfolds
+                    page.pageRecipeOptions_route.routeRecipeOptions_unfolds
                         |> Set.filter (List.isPrefixOf path >> not)
                         |> Set.insert (path |> List.dropLast |> Maybe.withDefault [])
                 , routeRecipeOptions_scope =
@@ -259,7 +264,7 @@ routeNodeToggle page path =
         else
             { route
                 | routeRecipeOptions_unfolds =
-                    route.routeRecipeOptions_unfolds
+                    page.pageRecipeOptions_route.routeRecipeOptions_unfolds
                         |> Set.insert path
                 , routeRecipeOptions_focus = Nothing
             }

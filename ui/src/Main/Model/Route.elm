@@ -5,6 +5,7 @@ import Dict
 import List.Extra as List
 import Main.Config.App exposing (..)
 import Main.Config.Package exposing (..)
+import Main.Helpers.List as List
 import Main.Helpers.Nix exposing (..)
 import Main.Model.Error exposing (..)
 import Main.Model.Preferences exposing (..)
@@ -330,6 +331,13 @@ appUrlToRoute url =
                                         optionId ->
                                             RouteRecipeOptionsFocus_Option (optionId |> splitNixAttrId)
                                 )
+
+                    unfolds =
+                        url.queryParameters
+                            |> Dict.get "p"
+                            |> Maybe.withDefault []
+                            |> List.map splitNixAttrId
+                            |> Set.fromList
                 in
                 Route_RecipeOptions
                     { routeRecipeOptions_searchPattern =
@@ -338,21 +346,7 @@ appUrlToRoute url =
                             |> Maybe.andThen List.head
                             |> Maybe.withDefault ""
                     , routeRecipeOptions_scope = scope
-                    , routeRecipeOptions_unfolds =
-                        url.queryParameters
-                            |> Dict.get "p"
-                            |> Maybe.withDefault []
-                            |> List.map splitNixAttrId
-                            |> (::) scope
-                            |> (case focus of
-                                    Just (RouteRecipeOptionsFocus_Option optionPath) ->
-                                        (::) optionPath
-
-                                    _ ->
-                                        identity
-                               )
-                            |> List.concatMap List.inits
-                            |> Set.fromList
+                    , routeRecipeOptions_unfolds = unfolds
                     , routeRecipeOptions_pagination = url |> appUrlToRoutePagination
                     , routeRecipeOptions_focus = focus
                     }
@@ -439,8 +433,37 @@ routeToAppUrl route =
         Route_RecipeOptions routeRecipe ->
             { path = deployPath ++ [ "recipe", "options" ]
             , queryParameters =
+                let
+                    unfolds : Set NixAttrPath
+                    unfolds =
+                        routeRecipe.routeRecipeOptions_unfolds
+                            |> Set.remove routeRecipe.routeRecipeOptions_scope
+                            |> (case routeRecipe.routeRecipeOptions_focus of
+                                    Just (RouteRecipeOptionsFocus_Option optionPath) ->
+                                        Set.remove optionPath
+
+                                    _ ->
+                                        identity
+                               )
+
+                    unfoldsWithoutAncestors : Set NixAttrPath
+                    unfoldsWithoutAncestors =
+                        unfolds
+                            |> Set.toList
+                            |> List.foldl
+                                (\optionPath acc ->
+                                    Set.diff acc
+                                        (optionPath
+                                            |> List.dropLast
+                                            |> Maybe.withDefault []
+                                            |> List.inits
+                                            |> Set.fromList
+                                        )
+                                )
+                                unfolds
+                in
                 [ ( "p"
-                  , case routeRecipe.routeRecipeOptions_unfolds |> Set.remove [] |> Set.toList of
+                  , case unfoldsWithoutAncestors |> Set.toList of
                         [] ->
                             []
 
