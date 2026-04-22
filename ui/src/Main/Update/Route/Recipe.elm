@@ -17,7 +17,7 @@ import Main.Update.Focus exposing (..)
 import Main.Update.Types exposing (..)
 import String
 import Tree exposing (Tree)
-import Tuple exposing (first, mapSecond, second)
+import Tuple exposing (first, mapSecond)
 
 
 updateRouteRecipeOptions : RouteRecipeOptions -> Updater
@@ -37,7 +37,7 @@ updateRouteRecipeOptions route =
                             trees
                                 |> scopeRecipeOptions route.routeRecipeOptions_scope
                                 |> filterRecipeOptions route []
-                                |> List.concatMap (listRecipeOptionsItems { inhRouteRecipeOptionsItem_pathReversed = [] })
+                                |> List.concatMap (listRecipeOptionsItems [])
                                 |> paginateRecipeOptions model route
                         , pageRecipeOptions_unfolds = route.routeRecipeOptions_unfolds
                         , pageRecipeOptions_trees = trees
@@ -184,29 +184,32 @@ paginateRecipeOptions model route =
         )
 
 
-listRecipeOptionsItems : InhRouteOptionsItem -> Tree ( NixAttrName, NixModuleOptionFiltered ) -> List ( NixAttrPath, NixModuleOption )
-listRecipeOptionsItems inh tree =
+listRecipeOptionsItems :
+    NixAttrPath
+    -> Tree ( NixAttrName, NixModuleOptionFiltered )
+    -> List ( NixAttrPath, NixModuleOption )
+listRecipeOptionsItems parentPath tree =
     let
-        name =
-            tree |> Tree.label |> first
+        ( attrName, filteredOption ) =
+            tree |> Tree.label
 
-        childrenInh =
-            { inh | inhRouteRecipeOptionsItem_pathReversed = name :: inh.inhRouteRecipeOptionsItem_pathReversed }
+        path =
+            parentPath ++ [ attrName ]
 
         ( nodeChildrenLeaves, nodeChildrenBranches ) =
             tree |> Tree.children |> List.partition (Tree.children >> List.isEmpty)
 
         synLeaves =
-            nodeChildrenLeaves |> List.map (listRecipeOptionsItems childrenInh)
+            nodeChildrenLeaves |> List.map (listRecipeOptionsItems path)
 
         synBranches =
-            nodeChildrenBranches |> List.map (listRecipeOptionsItems childrenInh)
+            nodeChildrenBranches |> List.map (listRecipeOptionsItems path)
     in
     List.concat
         [ if (synLeaves |> List.isEmpty) && (synBranches |> List.isEmpty) then
-            case tree |> Tree.label |> second of
+            case filteredOption of
                 NixModuleOptionFiltered_In opt ->
-                    [ ( pathRecipeOption inh tree, opt ) ]
+                    [ ( path, opt ) ]
 
                 NixModuleOptionFiltered_Out ->
                     []
@@ -216,17 +219,3 @@ listRecipeOptionsItems inh tree =
         , synLeaves |> List.concat
         , synBranches |> List.concat
         ]
-
-
-type alias InhRouteOptionsItem =
-    { inhRouteRecipeOptionsItem_pathReversed : NixAttrPath
-    }
-
-
-pathRecipeOption : InhRouteOptionsItem -> Tree ( NixAttrName, NixModuleOptionFiltered ) -> NixAttrPath
-pathRecipeOption inh tree =
-    let
-        name =
-            tree |> Tree.label |> first
-    in
-    (name :: inh.inhRouteRecipeOptionsItem_pathReversed) |> List.reverse
