@@ -91,13 +91,16 @@ in
                 extendRecipe =
                   module: lib.filterAttrsRecursive (name: _: name != "result") (self.extend module).config;
               })
-              // lib.optionalAttrs (app.test.script != "") { test = app.test.result.build; }
               // lib.optionalAttrs app.services.runtimes.container.enable {
                 container = app.services.runtimes.container.result.build;
               }
               // lib.optionalAttrs app.services.runtimes.nixos.enable {
                 vm = app.services.runtimes.nixos.result.build;
-              };
+                nixos = {
+                  modules = app.services.runtimes.nixos.result.modules;
+                };
+              }
+              // lib.optionalAttrs (app.test.script != "") { test = app.test.result.build; };
 
             # finalApp parameter is currently not used in this function
             appPassthru = app: finalApp: mkPassthru app;
