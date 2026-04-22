@@ -321,6 +321,15 @@ appUrlToRoute url =
                             |> Maybe.andThen List.head
                             |> Maybe.withDefault ""
                             |> splitNixAttrId
+
+                    focus =
+                        url.fragment
+                            |> Maybe.map
+                                (\fragment ->
+                                    case fragment of
+                                        optionId ->
+                                            RouteRecipeOptionsFocus_Option (optionId |> splitNixAttrId)
+                                )
                 in
                 Route_RecipeOptions
                     { routeRecipeOptions_searchPattern =
@@ -334,17 +343,18 @@ appUrlToRoute url =
                             |> Dict.get "p"
                             |> Maybe.withDefault []
                             |> List.map splitNixAttrId
+                            |> (::) scope
+                            |> (case focus of
+                                    Just (RouteRecipeOptionsFocus_Option optionPath) ->
+                                        (::) optionPath
+
+                                    _ ->
+                                        identity
+                               )
+                            |> List.concatMap List.inits
                             |> Set.fromList
-                            |> Set.insert scope
                     , routeRecipeOptions_pagination = url |> appUrlToRoutePagination
-                    , routeRecipeOptions_focus =
-                        url.fragment
-                            |> Maybe.map
-                                (\fragment ->
-                                    case fragment of
-                                        optionId ->
-                                            RouteRecipeOptionsFocus_Option (optionId |> splitNixAttrId)
-                                )
+                    , routeRecipeOptions_focus = focus
                     }
 
         _ ->

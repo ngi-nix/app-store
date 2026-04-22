@@ -43,12 +43,6 @@ viewPageRecipeOptionsBrowser _ page =
 viewNodes : PageRecipeOptions -> Inh -> Tree NodeNixOption -> Html Update
 viewNodes page inh tree =
     let
-        unfoldedAncestorsOrSelf =
-            page.pageRecipeOptions_unfolds
-                |> Set.toList
-                |> List.concatMap List.inits
-                |> Set.fromList
-
         ( name, _ ) =
             tree |> Tree.label
 
@@ -80,7 +74,7 @@ viewNodes page inh tree =
             unfolded || inh.inh_parentUnfolded
 
         unfolded =
-            Set.member path unfoldedAncestorsOrSelf
+            Set.member path page.pageRecipeOptions_unfolds
                 || autoUnfolded
 
         autoUnfolded =
