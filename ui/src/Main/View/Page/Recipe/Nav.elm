@@ -114,7 +114,7 @@ viewPageRecipeOptionsNavNode page inh tree node =
         ]
         [ span [ style "white-space" "pre" ] <|
             [ viewPageRecipeOptionsNavNodeToggle page inh tree node
-            , viewPageRecipeOptionsNavNodeName page inh tree node
+            , viewPageRecipeOptionsNavNodeName page inh tree
             ]
         ]
 
@@ -149,8 +149,8 @@ viewPageRecipeOptionsNavNodeToggle page inh tree node =
         ]
 
 
-viewPageRecipeOptionsNavNodeName : PageRecipeOptions -> InhRecipeOptionsNav -> Tree NodeNixOption -> NodeRecipeOptionsNav -> Html Update
-viewPageRecipeOptionsNavNodeName page inh tree node =
+viewPageRecipeOptionsNavNodeName : PageRecipeOptions -> InhRecipeOptionsNav -> Tree NodeNixOption -> Html Update
+viewPageRecipeOptionsNavNodeName page inh tree =
     let
         name =
             tree |> Tree.label |> first
@@ -160,21 +160,30 @@ viewPageRecipeOptionsNavNodeName page inh tree node =
     in
     span []
         [ a
-            [ href (routePageRecipeOptionsNavNodeName page path |> routeToString)
-            , onClick (Update_Route (routePageRecipeOptionsNavNodeName page path))
-            , class <|
-                if tree |> Tree.children |> (==) [] then
-                    "text-secondary-emphasis"
+            (List.concat
+                [ [ href (routePageRecipeOptionsNavNodeName page path |> routeToString)
+                  , onClick (Update_Route (routePageRecipeOptionsNavNodeName page path))
+                  ]
+                , if path == page.pageRecipeOptions_route.routeRecipeOptions_scope then
+                    [ style "font-weight" "bold"
+                    , class <|
+                        if tree |> Tree.children |> (/=) [] then
+                            "text-primary-emphasis"
 
-                else
-                    "text-primary"
-            , style "text-decoration" <|
-                if path == page.pageRecipeOptions_route.routeRecipeOptions_scope then
-                    "underline"
+                        else
+                            "text-secondary-emphasis"
+                    ]
 
-                else
-                    "none"
-            ]
+                  else
+                    [ class <|
+                        if tree |> Tree.children |> (/=) [] then
+                            "text-primary"
+
+                        else
+                            "text-secondary"
+                    ]
+                ]
+            )
             [ text name
             ]
         ]

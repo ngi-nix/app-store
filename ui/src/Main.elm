@@ -2,7 +2,6 @@ module Main exposing (main)
 
 import AppUrl
 import Browser
-import Dict
 import Json.Decode
 import Json.Encode
 import Main.Config
