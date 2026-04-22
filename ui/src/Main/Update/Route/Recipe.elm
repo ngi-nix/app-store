@@ -24,17 +24,12 @@ updateRouteRecipeOptions : RouteRecipeOptions -> Updater
 updateRouteRecipeOptions route =
     getRecipeOptions <|
         \model ->
-            let
-                availableItems =
-                    model.model_RecipeOptions.recipeOptions_available
-                        |> Dict.toList
-            in
             { model
                 | model_page =
                     let
                         trees =
-                            availableItems
-                                |> nixOptionsTrees
+                            model.model_RecipeOptions.recipeOptions_available
+                                |> nixModuleOptionsToTrees
                     in
                     Page_RecipeOptions
                         { pageRecipeOptions_route = route
@@ -120,22 +115,22 @@ filterRecipeOptions route path trees =
         |> List.map
             (\tree ->
                 case tree |> Tree.label of
-                    NodeNixOptionFiltered_Out n ->
+                    NodeNixOptionFiltered_Out seg ->
                         Tree.tree
-                            (NodeNixOptionFiltered_Out n)
-                            (tree |> Tree.children |> filterRecipeOptions route (path ++ [ n ]))
+                            (NodeNixOptionFiltered_Out seg)
+                            (tree |> Tree.children |> filterRecipeOptions route (path ++ [ seg ]))
 
-                    NodeNixOptionFiltered_In ( n, vs ) ->
+                    NodeNixOptionFiltered_In ( seg, option ) ->
                         let
                             optionPath =
-                                path ++ [ n ]
+                                path ++ [ seg ]
                         in
                         Tree.tree
-                            (if vs |> List.any (filterRecipeOption route optionPath) then
-                                NodeNixOptionFiltered_In ( n, vs )
+                            (if filterRecipeOption route optionPath option then
+                                NodeNixOptionFiltered_In ( seg, option )
 
                              else
-                                NodeNixOptionFiltered_Out n
+                                NodeNixOptionFiltered_Out seg
                             )
                             (tree |> Tree.children |> filterRecipeOptions route optionPath)
             )
@@ -210,9 +205,8 @@ listRecipeOptionsItems inh tree =
     List.concat
         [ if (synLeaves |> List.isEmpty) && (synBranches |> List.isEmpty) then
             case tree |> Tree.label of
-                NodeNixOptionFiltered_In ( _, opts ) ->
-                    opts
-                        |> List.map (\opt -> ( pathRecipeOption inh tree, opt ))
+                NodeNixOptionFiltered_In ( _, opt ) ->
+                    [ ( pathRecipeOption inh tree, opt ) ]
 
                 NodeNixOptionFiltered_Out _ ->
                     []

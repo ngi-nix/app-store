@@ -82,6 +82,17 @@ type alias NixModuleOption =
     }
 
 
+defaultNixModuleOption : NixModuleOption
+defaultNixModuleOption =
+    { nixModuleOption_declarations = []
+    , nixModuleOption_description = ""
+    , nixModuleOption_readOnly = False
+    , nixModuleOption_type = ""
+    , nixModuleOption_default = Nothing
+    , nixModuleOption_example = Nothing
+    }
+
+
 decodeNixModuleOption : Decoder NixModuleOption
 decodeNixModuleOption =
     Decode.map6 NixModuleOption
@@ -106,15 +117,29 @@ decodeLiteralExpression =
         (field "text" string)
 
 
-nixOptionsTrees : List.Assoc NixAttrId opt -> Trees ( NixAttrName, List opt )
-nixOptionsTrees opts =
-    opts
+nixModuleOptionsToTrees : Dict NixAttrId NixModuleOption -> Trees ( NixAttrName, NixModuleOption )
+nixModuleOptionsToTrees options =
+    options
+        |> Dict.toList
         |> List.map
-            (\( n, opt ) ->
+            (\( name, opt ) ->
                 let
                     path =
-                        n |> splitNixAttrId
+                        name |> splitNixAttrId
                 in
                 ( path, opt )
             )
         |> Tree.chartToTrees
+        |> List.map
+            (Tree.map
+                (\( seg, opts ) ->
+                    ( seg
+                    , case opts of
+                        [ opt ] ->
+                            opt
+
+                        _ ->
+                            defaultNixModuleOption
+                    )
+                )
+            )
