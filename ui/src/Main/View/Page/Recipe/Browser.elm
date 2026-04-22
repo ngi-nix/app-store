@@ -20,14 +20,13 @@ import Main.View.Page.App exposing (..)
 import Main.View.Pagination exposing (..)
 import Set
 import Tree exposing (Tree)
-import Tuple exposing (first)
 
 
 viewPageRecipeOptionsBrowser : Model -> PageRecipeOptions -> Html Update
 viewPageRecipeOptionsBrowser _ page =
     let
         initInh =
-            { inhRecipeOptionsBrowser_pathReversed = []
+            { inhRecipeOptionsBrowser_path = []
             , inhRecipeOptionsBrowser_unfolded = True
             , inhRecipeOptionsBrowser_children = []
             }
@@ -50,19 +49,22 @@ viewPageRecipeOptionsBrowserNodes page inh tree =
                 |> List.concatMap List.inits
                 |> Set.fromList
 
-        name =
-            tree |> Tree.label |> first
+        ( name, _ ) =
+            tree |> Tree.label
+
+        path =
+            inh.inhRecipeOptionsBrowser_path ++ [ name ]
 
         childrenInh =
             { inh
-                | inhRecipeOptionsBrowser_pathReversed =
-                    (if name == "" then
-                        []
+                | inhRecipeOptionsBrowser_path =
+                    inh.inhRecipeOptionsBrowser_path
+                        ++ (if name == "" then
+                                []
 
-                     else
-                        [ name ]
-                    )
-                        ++ inh.inhRecipeOptionsBrowser_pathReversed
+                            else
+                                [ name ]
+                           )
                 , inhRecipeOptionsBrowser_unfolded = unfolded
                 , inhRecipeOptionsBrowser_children = tree |> Tree.children
             }
@@ -73,9 +75,6 @@ viewPageRecipeOptionsBrowserNodes page inh tree =
         childrenHtml =
             [ nodeChildrenLeaves, nodeChildrenBranches ]
                 |> List.concatMap (List.map (viewPageRecipeOptionsBrowserNodes page childrenInh))
-
-        path =
-            pathPageRecipeOptionsBrowser inh tree
 
         shown =
             unfolded || inh.inhRecipeOptionsBrowser_unfolded
@@ -115,7 +114,12 @@ viewPageRecipeOptionsBrowserNodes page inh tree =
             ]
 
 
-viewPageRecipeOptionsBrowserNode : PageRecipeOptions -> InhRecipeOptionsBrowser -> Tree NodeNixOption -> NodeRecipeOptionsBrowser -> Html Update
+viewPageRecipeOptionsBrowserNode :
+    PageRecipeOptions
+    -> InhRecipeOptionsBrowser
+    -> Tree NodeNixOption
+    -> NodeRecipeOptionsBrowser
+    -> Html Update
 viewPageRecipeOptionsBrowserNode page inh tree node =
     div
         [ style "font-family" "monospace"
@@ -125,11 +129,19 @@ viewPageRecipeOptionsBrowserNode page inh tree node =
         ]
 
 
-viewPageRecipeOptionsBrowserNodeToggle : PageRecipeOptions -> InhRecipeOptionsBrowser -> Tree NodeNixOption -> NodeRecipeOptionsBrowser -> Html Update
+viewPageRecipeOptionsBrowserNodeToggle :
+    PageRecipeOptions
+    -> InhRecipeOptionsBrowser
+    -> Tree NodeNixOption
+    -> NodeRecipeOptionsBrowser
+    -> Html Update
 viewPageRecipeOptionsBrowserNodeToggle page inh tree node =
     let
+        ( name, _ ) =
+            tree |> Tree.label
+
         path =
-            pathPageRecipeOptionsBrowser inh tree
+            inh.inhRecipeOptionsBrowser_path ++ [ name ]
     in
     if node.nodeRecipeOptionsBrowser_foldable then
         span
@@ -155,14 +167,18 @@ viewPageRecipeOptionsBrowserNodeToggle page inh tree node =
         text ""
 
 
-viewPageRecipeOptionsBrowserNodeName : PageRecipeOptions -> InhRecipeOptionsBrowser -> Tree NodeNixOption -> NodeRecipeOptionsBrowser -> Html Update
-viewPageRecipeOptionsBrowserNodeName page inh tree node =
+viewPageRecipeOptionsBrowserNodeName :
+    PageRecipeOptions
+    -> InhRecipeOptionsBrowser
+    -> Tree NodeNixOption
+    -> Html Update
+viewPageRecipeOptionsBrowserNodeName page inh tree =
     let
-        name =
-            tree |> Tree.label |> first
+        ( name, _ ) =
+            tree |> Tree.label
 
         path =
-            pathPageRecipeOptionsBrowser inh tree
+            inh.inhRecipeOptionsBrowser_path ++ [ name ]
     in
     span []
         [ a
@@ -243,19 +259,10 @@ routePageRecipeOptionsBrowserNodeToggle page path =
 
 
 type alias InhRecipeOptionsBrowser =
-    { inhRecipeOptionsBrowser_pathReversed : NixAttrPath
+    { inhRecipeOptionsBrowser_path : NixAttrPath
     , inhRecipeOptionsBrowser_unfolded : Bool
     , inhRecipeOptionsBrowser_children : List (Tree NodeNixOption)
     }
-
-
-pathPageRecipeOptionsBrowser : InhRecipeOptionsBrowser -> Tree NodeNixOption -> NixAttrPath
-pathPageRecipeOptionsBrowser inh tree =
-    let
-        name =
-            tree |> Tree.label |> first
-    in
-    (name :: inh.inhRecipeOptionsBrowser_pathReversed) |> List.reverse
 
 
 type alias NodeRecipeOptionsBrowser =
