@@ -71,7 +71,7 @@ viewPageAppsApp _ _ app =
             , h5 [ class "mb-10" ] [ text app.app_displayName ]
             ]
         , p
-            [ class "mb-1"
+            [ class "mb-1 text-body-secondary"
             ]
             [ text app.app_description ]
         , p

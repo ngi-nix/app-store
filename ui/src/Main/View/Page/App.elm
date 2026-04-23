@@ -86,7 +86,7 @@ viewPageAppHeader _ pageApp =
 viewPageAppDescription : Model -> PageApp -> Html Update
 viewPageAppDescription model pageApp =
     div []
-        [ p [ class "lead" ] [ text pageApp.pageApp_app.app_description ]
+        [ p [ class "text-body-secondary" ] [ text pageApp.pageApp_app.app_description ]
         , viewPageAppUsage model pageApp
         ]
 
@@ -97,8 +97,10 @@ viewPageAppUsage _ pageApp =
         div [ id "usage", class "mt-4" ]
             [ hr [] []
             , h4 [ class "mb-3" ] [ text "Usage Instructions" ]
-            , pageApp.pageApp_app.app_usage
-                |> Markdown.render
+            , div [ class "text-body-secondary" ]
+                [ pageApp.pageApp_app.app_usage
+                    |> Markdown.render
+                ]
             ]
 
     else
