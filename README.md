@@ -1,6 +1,6 @@
 # NGI Forge
 
-**WARNING: this sofware is currently in alpha state of development.**
+This software is in active development. Expect backwards incompatible changes.
 
 ## Features
 
@@ -18,11 +18,15 @@
 
 ```mermaid
 graph TB
+    subgraph NixosCommunity["NixOS Community"]
+      NIXPKGS(Nixpkgs)
+      NIXOS(NixOS)
+    end
+
     subgraph Sources["Sources"]
         SW1[Git Repository]
         SW2[Tarball URL]
         SW3[Local Path]
-        NIXPKGS(Nixpkgs)
     end
 
     PKG[Package Recipe<br/>recipe.nix]
@@ -36,37 +40,23 @@ graph TB
     APP[Application Recipe<br/>recipe.nix]
 
     subgraph AppOutputs["Applications"]
-        AO1[Shell Environment<br/>for CLI and GUI components]
-        AO2[Container Images<br/>for Multi-component services]
-        AO3[NixOS VM<br/>for Multi-component services]
-    end
-
-    REG[Nix Forge Registry]
-
-    subgraph Deployment["Deployment"]
-        SHELL[Shell Environment<br/>for CLI and GUI components]
-        K8S[Kubernetes Cluster<br/>for Multi-component services]
-        NIXOS[NixOS System<br/>for Multi-component services]
+        AO1[Shell Runtime<br/>for CLI and GUI components]
+        AO2[Container Runtime<br/>for services]
+        AO3[NixOS Runtime<br/>for services]
     end
 
     SW1 & SW2 & SW3 & NIXPKGS--> PKG
     PKG --> PO1 & PO2 & PO4
 
-    PO4 & NIXPKGS --> APP
+    PO4 & NIXPKGS & NIXOS --> APP
     APP --> AO1
     APP --> AO2
     APP --> AO3
-
-    AO2 --> REG
-
-    AO1 --> SHELL
-    AO3 --> NIXOS
-    REG --> K8S
 ```
 
 ## Self hosting
 
-- Initiate new Nix Forge instance from template
+- Initiate new NGI Forge instance from template
 
 ```bash
 nix flake init --template github:ngi-nix/forge#provider
