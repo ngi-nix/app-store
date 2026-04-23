@@ -18,7 +18,10 @@ This software is in active development. Expect backwards incompatible changes.
 
 ```mermaid
 graph TB
-    NIXPKGS(Nixpkgs)
+    subgraph NixosCommunity["NixOS Community"]
+      NIXPKGS(Nixpkgs)
+      NIXOS(NixOS)
+    end
 
     subgraph Sources["Sources"]
         SW1[Git Repository]
@@ -38,14 +41,14 @@ graph TB
 
     subgraph AppOutputs["Applications"]
         AO1[Shell Runtime<br/>for CLI and GUI components]
-        AO2[Container Runtime<br/>for Multi-component services]
-        AO3[NixOS Runtime<br/>for Multi-component services]
+        AO2[Container Runtime<br/>for services]
+        AO3[NixOS Runtime<br/>for services]
     end
 
     SW1 & SW2 & SW3 & NIXPKGS--> PKG
     PKG --> PO1 & PO2 & PO4
 
-    PO4 & NIXPKGS --> APP
+    PO4 & NIXPKGS & NIXOS --> APP
     APP --> AO1
     APP --> AO2
     APP --> AO3
