@@ -174,7 +174,7 @@ viewPageRecipeOptionsNavNodeName page inh tree node =
                     [ style "font-weight" "bolder"
                     , class <|
                         if tree |> Tree.children |> (/=) [] then
-                            "text-primary-emphasis"
+                            "custom-text-primary-emphasis"
 
                         else
                             "text-secondary-emphasis"
@@ -183,7 +183,7 @@ viewPageRecipeOptionsNavNodeName page inh tree node =
                   else
                     [ class <|
                         if tree |> Tree.children |> (/=) [] then
-                            "text-primary"
+                            "custom-text-primary"
 
                         else
                             "text-secondary"
