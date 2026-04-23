@@ -1,0 +1,5 @@
+services:
+  qlever-ui-app:
+    image: localhost/qlever-ui-app:latest
+    ports:
+      - 8000:8000
