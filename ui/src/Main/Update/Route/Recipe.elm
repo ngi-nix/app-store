@@ -15,7 +15,7 @@ import Main.Model.Route exposing (..)
 import Main.Ports.SmoothScroll exposing (..)
 import Main.Update.Focus exposing (..)
 import Main.Update.Types exposing (..)
-import Set
+import Set exposing (Set)
 import String
 import Tree exposing (Tree)
 import Tuple exposing (first, mapSecond)
@@ -28,10 +28,12 @@ updateRouteRecipeOptions route =
             { model
                 | model_page =
                     let
+                        trees : Trees NodeNixOption
                         trees =
                             model.model_RecipeOptions.recipeOptions_available
                                 |> nixModuleOptionsToTrees
 
+                        unfolds : Set NixAttrPath
                         unfolds =
                             route.routeRecipeOptions_unfolds
                                 |> Set.insert route.routeRecipeOptions_scope
@@ -43,6 +45,7 @@ updateRouteRecipeOptions route =
                                             identity
                                    )
 
+                        unfoldsWithAncestors : Set NixAttrPath
                         unfoldsWithAncestors =
                             unfolds
                                 |> Set.toList

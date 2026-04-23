@@ -185,33 +185,29 @@ viewNodeName page inh tree =
         path =
             inh.inh_parentPath ++ [ name ]
     in
-    (if path == page.pageRecipeOptions_route.routeRecipeOptions_scope then
-        span
+    a
+        (List.concat
+            [ [ href (routeNodeName page tree path |> routeToString)
+              , onClick (Update_Route (routeNodeName page tree path))
+              ]
+            , if path == page.pageRecipeOptions_route.routeRecipeOptions_scope then
+                [ style "font-weight" "bolder"
+                , class <|
+                    if tree |> Tree.children |> (/=) [] then
+                        "text-primary-emphasis"
 
-     else
-        a
-            << (++)
-                [ href (routeNodeName page tree path |> routeToString)
-                , onClick (Update_Route (routeNodeName page tree path))
+                    else
+                        "text-secondary-emphasis"
                 ]
-    )
-        (if path == page.pageRecipeOptions_route.routeRecipeOptions_scope then
-            [ style "font-weight" "bolder"
-            , class <|
-                if tree |> Tree.children |> (/=) [] then
-                    "text-primary-emphasis"
 
-                else
-                    "text-secondary-emphasis"
-            ]
+              else
+                [ class <|
+                    if tree |> Tree.children |> (/=) [] then
+                        "text-primary"
 
-         else
-            [ class <|
-                if tree |> Tree.children |> (/=) [] then
-                    "text-primary"
-
-                else
-                    "text-secondary"
+                    else
+                        "text-secondary"
+                ]
             ]
         )
         [ text name
@@ -224,19 +220,34 @@ routeNodeName page tree path =
         route =
             page.pageRecipeOptions_route
     in
-    Route_RecipeOptions
-        { route
-            | routeRecipeOptions_scope = path
-            , routeRecipeOptions_unfolds =
-                route.routeRecipeOptions_unfolds
-                    |> (if tree |> Tree.children |> List.isEmpty then
-                            identity
+    Route_RecipeOptions <|
+        if path == route.routeRecipeOptions_scope then
+            -- Unscope and fold the node at `path`.
+            { route
+                | routeRecipeOptions_scope = []
+                , routeRecipeOptions_unfolds =
+                    -- Remove any unfold descendant-or-self of the folded node.
+                    route.routeRecipeOptions_unfolds
+                        |> Set.filter (List.isPrefixOf path >> not)
+                        |> Set.insert (path |> List.dropLast |> Maybe.withDefault [])
+                , routeRecipeOptions_focus = Nothing
+            }
 
-                        else
-                            Set.insert path
-                       )
-            , routeRecipeOptions_focus = Nothing
-        }
+        else
+            -- Scope the node at `path`.
+            { route
+                | routeRecipeOptions_scope = path
+                , routeRecipeOptions_unfolds =
+                    -- Unfold the scoped node, only when it has any.
+                    route.routeRecipeOptions_unfolds
+                        |> (if tree |> Tree.children |> List.isEmpty then
+                                identity
+
+                            else
+                                Set.insert path
+                           )
+                , routeRecipeOptions_focus = Nothing
+            }
 
 
 routeNodeToggle : PageRecipeOptions -> NixAttrPath -> Route
@@ -247,13 +258,16 @@ routeNodeToggle page path =
     in
     Route_RecipeOptions <|
         if page.pageRecipeOptions_unfolds |> Set.member path then
+            -- Fold the node at `path`.
             { route
                 | routeRecipeOptions_unfolds =
+                    -- Remove any unfold descendant-or-self of the folded node.
                     page.pageRecipeOptions_route.routeRecipeOptions_unfolds
                         |> Set.filter (List.isPrefixOf path >> not)
                         |> Set.insert (path |> List.dropLast |> Maybe.withDefault [])
                 , routeRecipeOptions_scope =
-                    if List.isPrefixOf path route.routeRecipeOptions_scope then
+                    -- Remove any scope descendant-or-self of the folded node.
+                    if route.routeRecipeOptions_scope |> List.isPrefixOf path then
                         []
 
                     else
@@ -262,6 +276,7 @@ routeNodeToggle page path =
             }
 
         else
+            -- Unfold the node at `path`.
             { route
                 | routeRecipeOptions_unfolds =
                     page.pageRecipeOptions_route.routeRecipeOptions_unfolds
