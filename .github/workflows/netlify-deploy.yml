@@ -58,9 +58,18 @@ jobs:
               target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
             });
 
-      - name: Install Netlify CLI
+      - name: Get cache month
+        id: month
+        run: echo "month=$(date +'%Y-%m')" >> "$GITHUB_OUTPUT"
+
+      - name: Cache npx
+        uses: actions/cache@v5
         if: env.PR_NUMBER != ''
-        run: npm install -g netlify-cli
+        with:
+          path: ~/.npm/_npx
+          key: ${{ runner.os }}-npx-netlify-${{ steps.month.outputs.month }}
+          restore-keys: |
+            ${{ runner.os }}-npx-netlify-
 
       - name: Deploy to Netlify
         if: env.PR_NUMBER != ''
@@ -68,7 +77,7 @@ jobs:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
         run: |
-          netlify deploy \
+          npx netlify-cli deploy \
             --dir=deploy_dist \
             --alias="pr-${{ env.PR_NUMBER }}" \
             --message="PR Preview for PR #${{ env.PR_NUMBER }}" \
