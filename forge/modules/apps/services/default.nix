@@ -40,6 +40,7 @@
                 [ command ] ++ service.argv;
               configData = service.configData;
               preStart = service.preStart;
+              readyCheck = service.readyCheck;
             };
           }
         ) self;
@@ -52,6 +53,48 @@
       };
       default = { };
       description = "Portable services runtimes.";
+    };
+
+    ordering = lib.mkOption {
+      description = ''
+        Service startup ordering constraints.
+
+        Each attribute names a service and declares which other services
+        it must wait for before starting. Services without ordering
+        constraints (or not mentioned here) start immediately.
+
+        This only controls startup order inside a single nimi instance.
+        It applies equally to containers, NixOS, Home Manager, and
+        local development runs.
+      '';
+      example = lib.literalExpression ''
+        {
+          backend.after  = [ "database" ];
+          frontend.after = [ "database" "backend" ];
+        }
+      '';
+      type = lib.types.attrsOf (
+        lib.types.submodule {
+          options.after = lib.mkOption {
+            description = ''
+              List of service names that must have started before this
+              service is spawned.
+            '';
+            type = lib.types.listOf lib.types.str;
+            default = [ ];
+          };
+          options.afterReady = lib.mkOption {
+            description = ''
+              List of service names that must be ready before this
+              service is spawned. Each target must declare a
+              readiness check.
+            '';
+            type = lib.types.listOf lib.types.str;
+            default = [ ];
+          };
+        }
+      );
+      default = { };
     };
   };
 }

@@ -126,6 +126,21 @@
 
         environment.variables = lib.concatMapAttrs (_: value: value.environment) app.services.components;
       }
+      # nimi service ordering
+      {
+        systemd.services = lib.mapAttrs' (
+          name: _:
+          let
+            order = app.services.ordering.${name} or null;
+          in
+          lib.nameValuePair name {
+            serviceConfig = lib.mkIf (order != null) {
+              After = order.after or [ ];
+              Requires = order.afterReady or [ ];
+            };
+          }
+        ) app.services.components;
+      }
       (lib.mkIf (config.setup != "") {
         systemd.services."${app.name}-setup" = {
           description = "Setup service for ${app.name}.";

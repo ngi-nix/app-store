@@ -34,7 +34,8 @@
     };
 
     nimi = {
-      url = "github:ngi-nix/nimi/ngi-patches";
+      # TODO: https://github.com/ngi-nix/nimi/pull/3
+      url = "github:eljamm/nimi/feat/service-ordering";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
