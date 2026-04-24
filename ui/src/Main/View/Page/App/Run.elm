@@ -345,6 +345,15 @@ viewPageAppRunNixOS model pageApp =
                         , ""
                         , "./result/bin/run-" ++ pageApp.pageApp_app.app_name ++ "-vm"
                         ]
+        , br [] []
+        , p [ style "margin-bottom" "0em" ] [ text "Add application module to NixOS configuration" ]
+        , br [] []
+        , codeBlock <|
+            String.join "\n"
+                [ "nixosConfigurations.myhost = nixpkgs.lib.nixosSystem {"
+                , "  modules = inputs.ngi-forge.packages.${system}." ++ pageApp.pageApp_app.app_name ++ ".nixos.modules;"
+                , "};"
+                ]
         ]
 
 
