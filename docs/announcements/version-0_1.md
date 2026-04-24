@@ -38,12 +38,12 @@ self-host using the
 
 ## Future plans
 
-* Add all kinds of documentation and learning materials
-* Add [NixOS deployment workflow](https://github.com/ngi-nix/forge/issues/176)
-* Add [support for more programming languages](https://github.com/ngi-nix/forge/issues/56)
-* Add support for [application configuration via portable NixOS modules](https://github.com/ngi-nix/forge/issues/294)
-* Provide [development environments for upstream projects](https://github.com/ngi-nix/forge/issues/312).
-* Migrate projects from Ngipkgs repository to NGI Forge and Nixpkgs
+- Add all kinds of documentation and learning materials
+- Add [NixOS deployment workflow](https://github.com/ngi-nix/forge/issues/176)
+- Add [support for more programming languages](https://github.com/ngi-nix/forge/issues/56)
+- Add support for [application configuration via portable NixOS modules](https://github.com/ngi-nix/forge/issues/294)
+- Provide [development environments for upstream projects](https://github.com/ngi-nix/forge/issues/312).
+- Migrate projects from Ngipkgs repository to NGI Forge and Nixpkgs
 
 Browse [the list of open user stories](https://github.com/orgs/ngi-nix/projects/8/views/27) to see more.
 
@@ -57,10 +57,9 @@ feedback or PRs are highly appreciated.
 
 ## Similar products
 
-* [Conda Forge](https://conda-forge.org/)
-* [Nix Software](https://nixsoftware.org/)
-* [NUR](https://nur.nix-community.org/)
-* [NLnet Dossiers](https://dossiers.ngi-0.eu/)
-
+- [Conda Forge](https://conda-forge.org/)
+- [Nix Software](https://nixsoftware.org/)
+- [NUR](https://nur.nix-community.org/)
+- [NLnet Dossiers](https://dossiers.ngi-0.eu/)
 
 [Nix@NGI team](https://nixos.org/community/teams/ngi/).
