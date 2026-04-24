@@ -13,7 +13,7 @@
   usage = ''
     This app provides both the _tau-tower_ server and the _tau-radio_ client.
 
-    #### tau-tower
+    #### Tau Tower
     Service for broadcasting audio to clients.
 
     Ports
@@ -22,7 +22,7 @@
 
     _Available in: container, nixos._
 
-    #### tau-radio
+    #### Tau Radio
     Client CLI for capturing audio from your device and streaming it to _tau-tower_.
 
     Usage:
