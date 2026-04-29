@@ -26,12 +26,11 @@
     chown mox /var/lib/mox/config/adminpasswd
     ```
 
-    Access the admin web interface at `http://localhost:8080/admin`.
+    #### URLs
 
-    List of available commands:
-    ```
-    mox --help
-    ```
+    * Admin web interface: `http://localhost:8080`
+    * Account web interface: `http://localhost:8081`
+    * Webmail interface: `http://localhost:8081`
 
     _Available in: container, nixos._
   '';
@@ -143,15 +142,19 @@
           };
         };
         vm.forwardPorts = [
-          "8080:80"
+          "8080:8080"
+          "8081:8081"
+          "8082:8082"
         ];
       };
     };
   };
 
   test.script = ''
-    curl="curl --retry 5 --retry-max-time 120 --retry-all-errors"
+    curl="curl --retry 20 --retry-max-time 120 --retry-all-errors"
 
-    $curl localhost | grep "Mox Account"
+    $curl --location localhost:8080 | grep "Mox Account"
+    $curl --location localhost:8081/admin | grep "Mox Admin"
+    $curl --location localhost:8082/webmail | grep "Mox Webmail"
   '';
 }
