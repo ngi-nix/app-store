@@ -99,6 +99,17 @@ body {
 
 .m-item-card {
   transition: background-color 0.15s ease-in-out;
+  display: flex;
+  flex-direction: column;
+}
+
+.m-item-card-description {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  height: 4.5em;
+  line-height: 1.5;
 }
 
 .m-item-card:hover {
