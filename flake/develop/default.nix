@@ -13,6 +13,7 @@
       devShell = pkgs.callPackage ./devshell.nix { inherit inputs formatter; };
 
       devPkgs = with pkgs; [
+        dive
         elmPackages.elm
         elmPackages.elm-language-server
         elmPackages.elm-review
@@ -22,13 +23,13 @@
         json-diff
         nixfmt
         nodejs
+        playwright-test
+        podman-compose
         python3
         self'.packages.elm-watch
         self'.packages.elm2nix
-        playwright-test
         systemd-manager-tui
         watchman
-        podman-compose
       ];
     in
 
