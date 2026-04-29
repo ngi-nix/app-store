@@ -10,10 +10,6 @@
   ...
 }:
 {
-  # imports = [
-  #   (inputs.nimi + "/nix/modules/nimi/ordering.nix")
-  # ];
-
   options = {
     # General configuration
     name = lib.mkOption {
