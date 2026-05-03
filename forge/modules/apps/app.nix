@@ -18,8 +18,6 @@
       default = name;
       readOnly = true;
       description = "Name of the application used as attribute name in `apps`.";
-      #readOnly = true;
-      description = "Name of the application used as attribute name in `apps`.";
     };
     displayName = lib.mkOption {
       type = lib.types.str;
