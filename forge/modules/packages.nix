@@ -13,12 +13,12 @@ in
   imports = [
     ./assertions-warnings.nix
     ./builders/shared.nix
-    ./builders/standard-builder.nix
-    ./builders/go-builder.nix
+    ./builders/standard-builder
+    ./builders/go-builder
     ./builders/npm-package-builder
     ./builders/pnpm-package-builder
-    ./builders/python-app-builder.nix
-    ./builders/python-package-builder.nix
+    ./builders/python-app-builder
+    ./builders/python-package-builder
     ./builders/rust-package-builder
   ];
 
@@ -29,18 +29,19 @@ in
         options = {
           forge = {
             packages = lib.mkOption {
-              default = [ ];
+              default = { };
               description = ''
                 List of packages to include in forge.
 
                 Each package uses one of the available builders.
                 Only one builder can be enabled per package by setting build.<builder>.enable = true.
               '';
-              type = lib.types.listOf (
+              type = lib.types.attrsOf (
                 lib.types.submoduleWith {
-                  # Extend pkgs with mypkgs containing all NGI Forge packages
-                  # This allows recipes to reference other packages via mypkgs
-                  specialArgs.pkgs = pkgs.extend (final: prev: { mypkgs = config.packages; });
+                  specialArgs = {
+                    configRoot = config;
+                    inherit pkgs;
+                  };
 
                   modules = [
                     {
@@ -267,7 +268,7 @@ in
         # Config section is now provided by builder modules
         config =
           let
-            cfg = config.forge.packages;
+            cfg = lib.attrValues config.forge.packages;
 
             # Process warnings: filter to get active warnings (condition = true), then show them
             activeWarnings = lib.filter (x: x.condition) config.warnings;

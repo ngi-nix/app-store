@@ -1,4 +1,5 @@
 {
+  configRoot,
   config,
   pkgs,
   lib,
@@ -6,7 +7,6 @@
 }:
 
 {
-  name = "tau-app";
   displayName = "Tau";
   description = "Web radio streaming system.";
 
@@ -45,7 +45,7 @@
 
   programs = {
     packages = [
-      pkgs.mypkgs.tau-radio
+      configRoot.packages.tau-radio
     ];
     runtimes.shell = {
       enable = true;
@@ -54,7 +54,7 @@
 
   services = {
     components.tau-tower = {
-      command = pkgs.mypkgs.tau-tower;
+      command = configRoot.packages.tau-tower;
       configData."tau/tower.toml" = {
         source = ./config.toml;
         path = "tau/tower.toml";
@@ -65,7 +65,7 @@
       container = {
         enable = true;
         packages = [
-          pkgs.mypkgs.tau-tower
+          configRoot.packages.tau-tower
         ];
         composeFile = ./compose.yaml;
       };
@@ -73,7 +73,7 @@
       nixos = {
         enable = true;
         packages = [
-          pkgs.mypkgs.tau-tower
+          configRoot.packages.tau-tower
         ];
         vm.forwardPorts = [
           "3001:3001"
