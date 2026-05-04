@@ -289,7 +289,7 @@ viewPageAppRunContainer model pageApp =
                 [ case model.model_preferences.preferences_install of
                     PreferencesInstall_NixFlakes ->
                         String.concat
-                            [ "nix build "
+                            [ "nix run "
                             , showForgeInputFlakes model
                             , "#"
                             , pageApp.pageApp_app.app_name
@@ -304,13 +304,10 @@ viewPageAppRunContainer model pageApp =
                             , "."
                             , pageApp.pageApp_app.app_name
                             , ".container"
-                            , "' "
+                            , "' \n"
+                            , "\n"
+                            , "./result/bin/run-container"
                             ]
-                , ""
-                , "./result/bin/build-oci-image"
-                , ""
-                , "podman load < " ++ pageApp.pageApp_app.app_name ++ ".tar"
-                , "podman-compose --file $(pwd)/result/" ++ pageApp.pageApp_app.app_name ++ "/compose.yaml up --force-recreate"
                 ]
         ]
 
