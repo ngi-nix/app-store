@@ -25,15 +25,5 @@
       default = { };
       description = "NixOS system configuration.";
     };
-
-    shell = lib.mkOption {
-      internal = true;
-      type = lib.types.submoduleWith {
-        inherit specialArgs;
-        modules = [ ./shell ];
-      };
-      default = { };
-      description = "Service shell configuration.";
-    };
   };
 }
