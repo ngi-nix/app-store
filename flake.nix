@@ -71,19 +71,5 @@
           ./flake/templates.nix
           ./forge/flake-module.nix
         ];
-
-        _module.args.rootPath = ./.;
-
-        perSystem =
-          { system, ... }:
-          {
-            forge = {
-              repositoryUrl = "github:ngi-nix/forge";
-              recipeDirs = {
-                packages = "recipes/packages";
-                apps = "recipes/apps";
-              };
-            };
-          };
       };
 }
