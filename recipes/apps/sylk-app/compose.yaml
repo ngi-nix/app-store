@@ -1,0 +1,6 @@
+services:
+  sylk:
+    image: localhost/sylk-app:latest
+    ports:
+      - "5060:5060"
+      - "10888:10888"
