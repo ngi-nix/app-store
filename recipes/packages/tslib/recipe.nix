@@ -5,7 +5,7 @@
   ...
 }:
 
-rec {
+{
   name = "tslib";
   version = "1.24";
   description = "Touchscreen access library";
@@ -14,7 +14,7 @@ rec {
   license = lib.licenses.lgpl21;
 
   source = {
-    git = "github:libts/tslib/${version}";
+    git = "github:libts/tslib/${config.version}";
     hash = "sha256-WrzOTZlceYnFXi5AI5vb+ZDSRoqUDk/yyCdBUWKn0sM=";
   };
 
