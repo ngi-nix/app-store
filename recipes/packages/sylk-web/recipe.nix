@@ -10,6 +10,7 @@
   version = "3.8.0";
   description = "Web client for SylkServer - multiparty videoconferencing";
   homePage = "https://sylkserver.com/";
+  mainProgram = "sylk-web";
   license = lib.licenses.agpl3Plus;
 
   source = {
@@ -20,9 +21,10 @@
   build.standardBuilder = {
     enable = true;
     packages.build = with pkgs; [
+      fixup-yarn-lock
+      makeWrapper
       nodejs
       yarn
-      fixup-yarn-lock
     ];
   };
 
@@ -57,9 +59,15 @@
       runHook preInstall
 
       mkdir -p $out/share/sylk-web
-      cp -r dist/* $out/share/sylk-web/
+      cp -R dist/* $out/share/sylk-web/
 
       runHook postInstall
+    '';
+
+    postFixup = ''
+      makeWrapper ${lib.getExe pkgs.serve} $out/bin/sylk-web \
+        --prefix PATH : ${lib.makeBinPath [ pkgs.xsel ]} \
+        --chdir $out/share/sylk-web
     '';
   };
 

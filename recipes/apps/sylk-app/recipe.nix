@@ -96,18 +96,28 @@
         RUN_SYLKSERVER=yes
         EOF
       '';
+
+      components.sylk-web = {
+        command = pkgs.mypkgs.sylk-web;
+      };
     };
 
     runtimes = {
       container = {
         enable = true;
-        packages = [ pkgs.sylkserver ];
+        packages = [
+          pkgs.sylkserver
+          pkgs.mypkgs.sylk-web
+        ];
         composeFile = ./compose.yaml;
       };
 
       nixos = {
         enable = true;
-        packages = [ pkgs.sylkserver ];
+        packages = [
+          pkgs.sylkserver
+          pkgs.mypkgs.sylk-web
+        ];
         extraConfig = {
           systemd.services.sylkserver = {
             serviceConfig = {
