@@ -1,0 +1,6 @@
+services:
+  qlever-app:
+    image: localhost/qlever-app:latest
+    ports:
+      - "8000:8000"
+      - "7019:7019"
