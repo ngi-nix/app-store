@@ -36,8 +36,8 @@
 
   links = {
     source = "https://github.com/AGProjects";
-    homepage = "https://sylkserver.com";
-    docs = "https://sylkserver.com/documentation/";
+    website = "https://sylkserver.com";
+    docs = "https://sylkserver.com/documentation";
   };
 
   ngi.grants = {
