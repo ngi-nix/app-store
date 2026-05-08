@@ -2,5 +2,9 @@ services:
   sylk:
     image: localhost/sylk-app:latest
     ports:
-      - "5060:5060"
+      # Web
       - "10888:10888"
+      # SIP
+      - "5060:5060"
+      - "5061:5061"
+
