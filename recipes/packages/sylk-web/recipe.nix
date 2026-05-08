@@ -1,0 +1,64 @@
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
+
+{
+  name = "sylk-web";
+  version = "3.8.0";
+  description = "Web client for SylkServer - multiparty videoconferencing";
+  homePage = "https://sylkserver.com/";
+  license = lib.licenses.agpl3Plus;
+
+  source = {
+    git = "github:AGProjects/sylk-webrtc/3.8.0";
+    hash = "sha256-AJbZDAEqGfVPuo+My8wxfFWVPelO6XK2pKsglmLyRTw=";
+  };
+
+  build.standardBuilder = {
+    enable = true;
+    packages.build = [
+      pkgs.nodejs
+      pkgs.yarn
+      pkgs.fixup-yarn-lock
+    ];
+  };
+
+  build.extraAttrs = {
+    yarnOfflineCache = pkgs.fetchYarnDeps {
+      yarnLock = pkgs.mypkgs.sylk-web.src + "/yarn.lock";
+      hash = "sha256-VY97NPnT1225l6SLyTI3qITBGF7rqE5xz6UVVucblcU=";
+    };
+
+    buildPhase = ''
+      runHook preBuild
+
+      export HOME=$TMPDIR
+      fixup-yarn-lock yarn.lock
+      yarn config --offline set yarn-offline-mirror "$yarnOfflineCache"
+      yarn install --offline --frozen-lockfile --ignore-engines --ignore-scripts
+      patchShebangs node_modules/
+
+      npm run build
+
+      runHook postBuild
+    '';
+
+    installPhase = ''
+      runHook preInstall
+
+      mkdir -p $out/share/sylk-web
+      cp -r dist/* $out/share/sylk-web/
+
+      runHook postInstall
+    '';
+  };
+
+  test.script = ''
+    ls -la $out/share/sylk-web/
+    test -f $out/share/sylk-web/index.html
+  '';
+}
+
