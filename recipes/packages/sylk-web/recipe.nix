@@ -19,14 +19,16 @@
 
   build.standardBuilder = {
     enable = true;
-    packages.build = [
-      pkgs.nodejs
-      pkgs.yarn
-      pkgs.fixup-yarn-lock
+    packages.build = with pkgs; [
+      nodejs
+      yarn
+      fixup-yarn-lock
     ];
   };
 
   build.extraAttrs = {
+    dontConfigure = true;
+
     yarnOfflineCache = pkgs.fetchYarnDeps {
       yarnLock = pkgs.mypkgs.sylk-web.src + "/yarn.lock";
       hash = "sha256-VY97NPnT1225l6SLyTI3qITBGF7rqE5xz6UVVucblcU=";
@@ -36,12 +38,17 @@
       runHook preBuild
 
       export HOME=$TMPDIR
+
       fixup-yarn-lock yarn.lock
       yarn config --offline set yarn-offline-mirror "$yarnOfflineCache"
       yarn install --offline --frozen-lockfile --ignore-engines --ignore-scripts
       patchShebangs node_modules/
 
-      npm run build
+      # set up posthtmlrc for non-electron build
+      cp .posthtmlrc_no_electron .posthtmlrc
+
+      # run parcel directly, bypassing prebuild lint
+      npx parcel build ./src/index.html --no-source-maps
 
       runHook postBuild
     '';
