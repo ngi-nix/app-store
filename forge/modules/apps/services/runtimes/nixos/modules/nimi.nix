@@ -18,8 +18,11 @@
     };
   }) app.services.components;
 
-  systemd.services = lib.mapAttrs (_: service: {
+  systemd.services = lib.mapAttrs (serviceName: service: {
     environment = service.environment;
-    serviceConfig.PassEnvironment = builtins.attrNames service.environment;
+    serviceConfig = {
+      PassEnvironment = builtins.attrNames service.environment;
+      StateDirectory = serviceName;
+    };
   }) app.services.components;
 }
