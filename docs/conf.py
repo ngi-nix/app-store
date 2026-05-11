@@ -62,6 +62,7 @@ html_theme_options = {
     "use_repository_button": True,
     "show_navbar_depth": 2,
     "max_navbar_depth": 100,
+    "show_toc_level": 2,
 }
 
 html_title = "NGI Forge"
