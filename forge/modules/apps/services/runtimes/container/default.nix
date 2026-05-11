@@ -100,11 +100,16 @@
           if config.composeFile != null then
             config.composeFile
           else
-            pkgs.writeText "${app.name}-compose.yaml" ''
-              services:
-                ${app.name}:
-                  image: localhost/${app.name}:latest
-            '';
+            pkgs.writeText "${app.name}-compose.yaml" (
+              lib.generators.toYAML { } {
+                services.${app.name} = {
+                  image = "localhost/${app.name}:latest";
+                }
+                // lib.optionalAttrs (app.services.ports != [ ]) {
+                  ports = app.services.ports;
+                };
+              }
+            );
         build-oci-image = pkgs.writeShellScriptBin "build-oci-image" ''
           ${config.result.recipe.copyTo}/bin/copy-to \
             oci-archive:${app.name}.tar:${app.name}:${config.tag}

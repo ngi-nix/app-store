@@ -92,7 +92,6 @@
           mypkgs.qlever-control
           unzip
         ];
-        composeFile = ./compose.yaml;
         extraConfig = {
           WorkingDir = "/var/lib/qlever";
         };
@@ -165,14 +164,13 @@
             };
           };
         };
-        vm = {
-          forwardPorts = [
-            "8080:8080"
-            "7019:7019"
-          ];
-        };
       };
     };
+
+    ports = [
+      "8080:8080"
+      "7019:7019"
+    ];
   };
 
   test = {

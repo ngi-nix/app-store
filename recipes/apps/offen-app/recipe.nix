@@ -65,7 +65,6 @@
           pkgs.coreutils # required for mkdir
           pkgs.mypkgs.offen # required for admin tasks
         ];
-        composeFile = ./compose.yaml;
       };
 
       nixos = {
@@ -73,11 +72,10 @@
         packages = [
           pkgs.mypkgs.offen # required for admin tasks
         ];
-        vm.forwardPorts = [
-          "3000:3000"
-        ];
       };
     };
+
+    ports = [ "3000:3000" ];
   };
 
   test.script = ''

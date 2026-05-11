@@ -109,7 +109,6 @@
           pkgs.mypkgs.mox # required for admin tasks
           pkgs.shadow # required for useradd
         ];
-        composeFile = ./compose.yaml;
       };
 
       nixos = {
@@ -141,13 +140,14 @@
             group = "mox";
           };
         };
-        vm.forwardPorts = [
-          "8080:8080"
-          "8081:8081"
-          "8082:8082"
-        ];
       };
     };
+
+    ports = [
+      "8080:8080"
+      "8081:8081"
+      "8082:8082"
+    ];
   };
 
   test.script = ''

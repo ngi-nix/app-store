@@ -56,8 +56,9 @@
     runtimes.nixos = {
       enable = true;
       packages = [ pkgs.mypkgs.ironcalc ];
-      vm.forwardPorts = [ "8000:8000" ];
     };
+
+    ports = [ "8000:8000" ];
   };
 
   test.packages = [ pkgs.curl ];

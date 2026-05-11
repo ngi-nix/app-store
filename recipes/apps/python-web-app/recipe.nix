@@ -79,11 +79,10 @@
             host all all ::0/0 trust
           '';
         };
-        vm.forwardPorts = [
-          "5000:5000"
-        ];
       };
     };
+
+    ports = [ "5000:5000" ];
   };
 
   test = {
