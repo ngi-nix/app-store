@@ -1,12 +1,12 @@
 {
-  config,
+apps.collabora-desktop =
+{
   lib,
   pkgs,
   ...
 }:
 
 {
-  name = "collabora-desktop-app";
   displayName = "Collabora Office";
   description = "Collaborative Office for desktop, based on LibreOffice technology.";
   usage = ''
@@ -40,4 +40,5 @@
     mainPackage = pkgs.collabora-desktop;
     runtimes.program.enable = true;
   };
+};
 }

@@ -1,4 +1,6 @@
 {
+packages.offen =
+{
   config,
   lib,
   pkgs,
@@ -6,7 +8,6 @@
 }:
 
 {
-  name = "offen";
   version = "0.0.0-unstable-2026-03-04";
   description = "Fair and privacy-focused web analytics.";
   homePage = "https://www.offen.dev";
@@ -34,13 +35,14 @@
     # Copy JS frontend assets into public/static before building.
     # Note: preBuild runs after configurePhase which cds into modRoot (server/).
     preBuild = ''
-      cp -rT --no-preserve=mode ${pkgs.mypkgs.offen-script} public/static
-      cp -rT --no-preserve=mode ${pkgs.mypkgs.offen-vault} public/static
-      cp -rT --no-preserve=mode ${pkgs.mypkgs.offen-auditorium} public/static
+      cp -rT --no-preserve=mode ${pkgs.offen-script} public/static
+      cp -rT --no-preserve=mode ${pkgs.offen-vault} public/static
+      cp -rT --no-preserve=mode ${pkgs.offen-auditorium} public/static
     '';
   };
 
   test.script = ''
     offen --help
   '';
+};
 }

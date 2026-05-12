@@ -42,7 +42,9 @@
   outputs =
     inputs@{ self, flake-parts, ... }:
 
-    flake-parts.lib.mkFlake { inherit inputs; } {
+    flake-parts.lib.mkFlake { inputs = inputs // {
+      ngi-forge = self;
+    }; } (flakeArgs: {
       # Uncomment this to enable flake-parts debug.
       # https://flake.parts/options/flake-parts.html?highlight=debug#opt-debug
       # debug = true;
@@ -55,24 +57,25 @@
       ];
 
       imports = [
-        (import ./forge/flake-module.nix { inherit inputs; })
+        ./forge/modules.nix
+        ./forge/packages.nix # Generates _forge-config, _forge-options, _forge-ui
         ./flake/develop
         ./flake/packages.nix
         ./flake/checks.nix
         ./flake/templates.nix
       ];
 
-      _module.args.rootPath = ./.;
-
-      # Export flake module for use in other projects
-      flake.flakeModules.provider = import ./forge/flake-module.nix { inherit inputs; };
-      flake.flakeModules.consumer = import ./forge/consumer-module.nix;
+      # Export the flake configuration to ease exploration in `nix repl .`.
+      #
+      # Remark(clarity): like all `unknown` flake outputs,
+      # this currently raise a warning in `nix flake check`:
+      # > warning: unknown flake output 'flakeConfig'
+      # Issue: https://github.com/NixOS/nix/issues/6381
+      flake.flakeConfig = flakeArgs.config;
 
       perSystem =
         { system, ... }:
         {
-          _module.args.nimi = inputs.nimi.packages.${system}.nimi;
-
           forge = {
             repositoryUrl = "github:ngi-nix/forge";
             recipeDirs = {
@@ -81,5 +84,5 @@
             };
           };
         };
-    };
+    });
 }

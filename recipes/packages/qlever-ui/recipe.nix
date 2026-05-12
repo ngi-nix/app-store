@@ -1,12 +1,13 @@
 {
-  config,
-  pkgs,
+packages.qlever-ui =
+{
   lib,
+  pkgs,
+  packages,
   ...
 }:
 
 {
-  name = "qlever-ui";
   version = "0-unstable-2026-04-16";
   description = "User interface for QLever";
   homePage = "https://github.com/qlever-dev/qlever-ui";
@@ -53,7 +54,7 @@
 
   build.extraAttrs = {
     preBuild = ''
-      cp -r ${pkgs.mypkgs.qlever-ui-frontend}/. ./backend/static/wasm/
+      cp -r ${pkgs.qlever-ui-frontend}/. ./backend/static/wasm/
     '';
 
     postInstall = ''
@@ -75,4 +76,5 @@
   test.script = ''
     python -c "import qlever; print(qlever.__name__)"
   '';
+};
 }

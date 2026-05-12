@@ -2,7 +2,6 @@
   lib,
   inputs,
 
-  app,
   config,
   system,
   ...

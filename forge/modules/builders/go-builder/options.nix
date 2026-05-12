@@ -3,6 +3,7 @@
   ...
 }:
 {
+  flake.modules.packages.default.imports = [{
   options.build.goPackageBuilder = {
     enable = lib.mkEnableOption ''
       Go module builder for applications and libraries.
@@ -105,4 +106,5 @@
       '';
     };
   };
+  }];
 }

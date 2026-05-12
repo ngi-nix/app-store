@@ -1,8 +1,9 @@
 {
+  inputs,
+  system,
   config,
   lib,
 
-  nimi,
   app,
   pkgs,
   ...
@@ -90,9 +91,13 @@
       services = import ./modules/services.nix args;
     };
 
-    result.eval = nimi.passthru.evalNimiModule { config = config.result.modules; };
+    result.eval = inputs.ngi-forge.inputs.nimi.packages.${system}.nimi.passthru.evalNimiModule {
+      config = config.result.modules;
+    };
 
-    result.recipe = nimi.mkContainerImage { config = config.result.modules; };
+    result.recipe = inputs.nimi.packages.${system}.nimi.mkContainerImage {
+      config = config.result.modules;
+    };
 
     result.build =
       let

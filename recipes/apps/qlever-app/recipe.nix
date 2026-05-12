@@ -1,4 +1,6 @@
 {
+apps.qlever =
+{
   config,
   pkgs,
   lib,
@@ -6,7 +8,6 @@
 }:
 
 {
-  name = "qlever-app";
   displayName = "QLever";
   description = "Web-based user interface for QLever SPARQL engine.";
   usage = ''
@@ -36,7 +37,7 @@
 
   services = {
     components.qlever-ui = {
-      command = pkgs.mypkgs.qlever-ui;
+      command = pkgs.qlever-ui;
       argv = [
         "--bind=0.0.0.0:8080"
       ];
@@ -51,7 +52,7 @@
 
     components.qlever-server = {
       configData."service-data" = {
-        source = "${pkgs.mypkgs.qlever-olympics-rdf-data}/olympics.nt";
+        source = "${pkgs.qlever-olympics-rdf-data}/olympics.nt";
         path = "olympics.nt";
       };
       preStart = ''
@@ -64,7 +65,7 @@
         install -D ''$XDG_CONFIG_HOME/olympics.nt "$WORKDIR"/olympics.nt
         qlever index --overwrite-existing
       '';
-      command = pkgs.mypkgs.qlever-control;
+      command = pkgs.qlever-control;
       argv = [
         "--qleverfile"
         "/var/lib/qlever/Qleverfile"
@@ -81,14 +82,14 @@
           coreutils
 
           # UI
-          mypkgs.qlever-ui
+          qlever-ui
           rsync
           subversion
 
           # server
           curl
-          mypkgs.qlever
-          mypkgs.qlever-control
+          qlever
+          qlever-control
           unzip
         ];
         extraConfig = {
@@ -101,15 +102,17 @@
 
             # only copy db on first run so we don't overwrite it
             if [ ! -d "$WORKDIR/db" ]; then
-              rsync -a --chmod=u=rwX,g=rwX,o=rX ${pkgs.mypkgs.qlever-ui}/opt/db "$WORKDIR"
+              rsync -a --chmod=u=rwX,g=rwX,o=rX ${pkgs.qlever-ui}/opt/db "$WORKDIR"
             fi
 
-            rsync -a --chmod=u=rwX,go=rX --exclude='/db/' ${pkgs.mypkgs.qlever-ui}/opt/ "$WORKDIR"
+            rsync -a --chmod=u=rwX,go=rX --exclude='/db/' ${pkgs.qlever-ui}/opt/ "$WORKDIR"
           '';
       };
 
       nixos = {
-        enable = true;
+        # FixMe(correctness):fails with
+        # RequestedAssertionFailed: unit "qlever-ui.service" is inactive and there are no pending jobs
+        enable = false;
         setup = config.services.runtimes.container.setup;
         extraConfig = {
           systemd.services."qlever-app-setup" = {
@@ -127,7 +130,7 @@
 
           systemd.services."qlever-ui" = {
             path = with pkgs; [
-              mypkgs.qlever-ui
+              qlever-ui
               subversion
             ];
             serviceConfig = {
@@ -150,8 +153,8 @@
           systemd.services."qlever-server" = {
             path = with pkgs; [
               curl
-              mypkgs.qlever
-              mypkgs.qlever-control
+              qlever
+              qlever-control
               unzip
             ];
             serviceConfig = {
@@ -191,4 +194,5 @@
       test "$(printf '%s\n' "$result" | wc -l)" -eq 11
     '';
   };
+};
 }

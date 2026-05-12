@@ -1,12 +1,5 @@
 {
-  config,
-  lib,
-  pkgs,
-  ...
-}:
-
-{
-  name = "mox";
+packages.mox = { lib, config, ... }: {
   version = "0.0.15";
   description = "Modern full-featured open source secure mail server for low-maintenance self-hosted email";
   homePage = "https://github.com/mjl-/mox";
@@ -35,4 +28,5 @@
   test.script = ''
     mox version | grep "${config.version}"
   '';
+};
 }

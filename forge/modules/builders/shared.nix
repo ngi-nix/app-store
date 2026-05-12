@@ -1,6 +1,5 @@
 {
   inputs,
-  config,
   lib,
   flake-parts-lib,
   ...
@@ -118,7 +117,7 @@ in
 
           pkgPassthru = pkg: finalPkg: {
             test = pkgs.testers.runCommand {
-              name = "${pkg.name}-test";
+              name = "${pkg.pname}-test";
               buildInputs = [ finalPkg ] ++ pkg.test.packages;
               script = pkg.test.script + "\ntouch $out";
             };
@@ -126,7 +125,7 @@ in
               dontBuild = true;
               phases = [ "installPhase" ];
               installPhase = "touch $out";
-              env.DEVENV_PACKAGE_NAME = "${pkg.name}";
+              env.DEVENV_PACKAGE_NAME = "${pkg.pname}";
               env.DEVENV_PACKAGE_SOURCE = "${finalPkg.src}";
               inputsFrom = [
                 finalPkg

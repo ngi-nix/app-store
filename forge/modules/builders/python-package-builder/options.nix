@@ -3,6 +3,7 @@
   ...
 }:
 {
+  flake.modules.packages.default.imports = [{
   options.build.pythonPackageBuilder = {
     enable = lib.mkEnableOption ''
       Python package builder for reusable Python libraries.
@@ -109,4 +110,5 @@
       ];
     };
   };
+  }];
 }

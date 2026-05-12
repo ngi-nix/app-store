@@ -42,13 +42,13 @@ This specification guides LLMs in generating NGI Forge recipes - declarative con
 
 ### Accessing NGI Forge Packages
 
-Other packages built by NGI Forge can be referenced in recipes using `pkgs.mypkgs`:
+Other packages built by NGI Forge can be referenced in recipes using `pkgs`:
 
 ```nix
 {
   # Reference another NGI Forge package
   packages.run = [
-    pkgs.mypkgs.gdal  # Access gdal from NGI Forge
+    pkgs.gdal  # Access gdal from NGI Forge
   ];
 }
 ```
@@ -422,7 +422,8 @@ build.extraAttrs = {
 
 ```nix
 {
-  name = "app-name";
+apps.app-name =
+{
   displayName = "Human Readable Name";  # Optional: defaults to name if not set
   description = "Application description.";
   usage = ''
@@ -440,6 +441,7 @@ build.extraAttrs = {
   programs = { ... };    # Shell bundle
   container = { ... };   # OCI container image
   nixos = { ... };       # NixOS VM
+};
 }
 ```
 
@@ -471,7 +473,8 @@ Apps can optionally specify a custom icon in SVG format. When creating app recip
 
 ```nix
 {
-  name = "my-app";
+apps.myapp =
+{
   displayName = "My Application";
   description = "My application";
   icon = ./logo.svg;  # Found in repository root
@@ -480,6 +483,7 @@ Apps can optionally specify a custom icon in SVG format. When creating app recip
     runtimes.shell.enable = true;
   };
   # ... rest of configuration
+};
 }
 ```
 
@@ -492,7 +496,7 @@ Services define processes that run within the application. They can be used acro
 ```nix
 services = {
   my-service = {
-    command = pkgs.mypkgs.my-package;  # Package or string
+    command = pkgs.my-package;  # Package or string
     argv = [ "--port" "8080" ];        # Additional arguments
     environment = {                     # Environment variables
       DATABASE_URL = "postgresql://localhost/db";
@@ -514,7 +518,7 @@ Creates a shell bundle with all required packages available in PATH:
 ```nix
 programs = {
   packages = [
-    pkgs.mypkgs.my-package  # Reference packages from forge
+    pkgs.my-package  # Reference packages from forge
     pkgs.curl
     pkgs.jq
   ];
@@ -542,7 +546,7 @@ container = {
   tag = "latest";  # Optional, defaults to "latest"
 
   packages = [
-    pkgs.mypkgs.my-package  # Packages to include in /bin
+    pkgs.my-package  # Packages to include in /bin
   ];
 
   # OCI image configuration
@@ -619,6 +623,8 @@ Each app output type can be independently enabled or disabled:
 
 ````nix
 {
+apps.python-web-app =
+{
   config,
   lib,
   pkgs,
@@ -626,7 +632,6 @@ Each app output type can be independently enabled or disabled:
 }:
 
 {
-  name = "python-web-app";
   displayName = "Python Web Example";
   description = "Simple web application with database backend.";
   usage = ''
@@ -646,7 +651,7 @@ Each app output type can be independently enabled or disabled:
 
   # Define the web service
   services.python-web = {
-    command = pkgs.mypkgs.python-web;
+    command = pkgs.python-web;
     argv = [ "--host" "0.0.0.0" ];
     environment = {
       FLASK_ENV = "production";
@@ -656,7 +661,7 @@ Each app output type can be independently enabled or disabled:
   # Shell bundle with additional tools
   programs = {
     packages = [
-      pkgs.mypkgs.python-web
+      pkgs.python-web
       pkgs.curl
       pkgs.postgresql
     ];
@@ -670,7 +675,7 @@ Each app output type can be independently enabled or disabled:
   container = {
     enable = true;
     tag = "latest";
-    packages = [ pkgs.mypkgs.python-web ];
+    packages = [ pkgs.python-web ];
     extraConfig = {
       Env = [ "PORT=5000" ];
       ExposedPorts = { "5000/tcp" = { }; };
@@ -689,6 +694,7 @@ Each app output type can be independently enabled or disabled:
     };
     vm.forwardPorts = [ "5000:5000" ];
   };
+};
 }
 ````
 
@@ -758,15 +764,16 @@ source.hash = "";  # Leave empty initially
 
 ```nix
 {
+packages.ripgrep =
+{
   config,
   lib,
   pkgs,
-  mypkgs,
+  packages,
   ...
 }:
 
 {
-  name = "ripgrep";
   version = "14.0.0";
   description = "Fast line-oriented search tool.";
   homePage = "https://github.com/BurntSushi/ripgrep";
@@ -789,6 +796,7 @@ source.hash = "";  # Leave empty initially
   test.script = ''
     rg --version | grep "14.0.0"
   '';
+};
 }
 ```
 
@@ -796,15 +804,16 @@ source.hash = "";  # Leave empty initially
 
 ```nix
 {
+packages.nginx =
+{
   config,
   lib,
   pkgs,
-  mypkgs,
+  packages,
   ...
 }:
 
 {
-  name = "nginx";
   version = "1.24.0";
   description = "HTTP and reverse proxy server.";
   homePage = "https://nginx.org";
@@ -830,6 +839,7 @@ source.hash = "";  # Leave empty initially
   test.script = ''
     nginx -v 2>&1 | grep "1.24.0"
   '';
+};
 }
 ```
 
@@ -837,15 +847,16 @@ source.hash = "";  # Leave empty initially
 
 ```nix
 {
+packages.mypy =
+{
   config,
   lib,
   pkgs,
-  mypkgs,
+  packages,
   ...
 }:
 
 {
-  name = "mypy";
   version = "1.7.0";
   description = "Static type checker for Python.";
   homePage = "https://mypy-lang.org";
@@ -870,6 +881,7 @@ source.hash = "";  # Leave empty initially
   test.script = ''
     mypy --version | grep "1.7.0"
   '';
+};
 }
 ```
 
@@ -877,15 +889,16 @@ source.hash = "";  # Leave empty initially
 
 ```nix
 {
+packages.requests =
+{
   config,
   lib,
   pkgs,
-  mypkgs,
+  packages,
   ...
 }:
 
 {
-  name = "requests";
   version = "2.31.0";
   description = "Python HTTP library for humans.";
   homePage = "https://requests.readthedocs.io";
@@ -912,6 +925,7 @@ source.hash = "";  # Leave empty initially
   test.script = ''
     python -c "import requests; print(requests.__version__)" | grep "2.31.0"
   '';
+};
 }
 ```
 
@@ -1435,10 +1449,11 @@ git add recipes/packages/<name>/recipe.nix
 This example demonstrates a complex CMake project with subdirectory structure:
 
 ```nix
-{ config, lib, pkgs, mypkgs, ... }:
+{
+packages.geodiff =
+{ config, lib, pkgs, packages, ... }:
 
 {
-  name = "geodiff";
   version = "2.0.4";
   description = "Library for handling diffs for geospatial data (GeoPackage and PostGIS).";
   homePage = "https://merginmaps.com";
@@ -1481,6 +1496,7 @@ This example demonstrates a complex CMake project with subdirectory structure:
     geodiff --help
     geodiff --version
   '';
+};
 }
 ```
 
@@ -1496,10 +1512,11 @@ This example demonstrates a complex CMake project with subdirectory structure:
 This example demonstrates a Python project with complex dependencies:
 
 ```nix
-{ config, lib, pkgs, mypkgs, ... }:
+{
+packages.fiona =
+{ config, lib, pkgs, packages, ... }:
 
 {
-  name = "fiona";
   version = "1.10.1";
   description = "Python library for reading and writing vector geospatial data files.";
   homePage = "https://fiona.readthedocs.io";
@@ -1545,6 +1562,7 @@ This example demonstrates a Python project with complex dependencies:
     python -c "import fiona; print(fiona.__version__)"
     fio --version
   '';
+};
 }
 ```
 

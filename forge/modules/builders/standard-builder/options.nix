@@ -1,9 +1,9 @@
 {
   lib,
-  pkgs,
   ...
 }:
 {
+  flake.modules.packages.default.imports = [ ({ nixpkgs-pkgs, ...}: {
   options.build.standardBuilder = {
     enable = lib.mkEnableOption ''
       Standard builder for autotools, CMake, or Makefile-based projects.
@@ -44,7 +44,7 @@
 
     stdenv = lib.mkOption {
       type = lib.types.package;
-      default = pkgs.stdenv;
+      default = nixpkgs-pkgs.stdenv;
       defaultText = lib.literalExpression "pkgs.stdenv";
       example = lib.literalExpression "pkgs.stdenvNoCC";
       description = ''
@@ -52,4 +52,5 @@
       '';
     };
   };
+  })];
 }

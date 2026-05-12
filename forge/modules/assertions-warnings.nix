@@ -1,18 +1,13 @@
 {
-  inputs,
-  config,
   lib,
   flake-parts-lib,
   ...
 }:
 
-let
-  inherit (flake-parts-lib) mkPerSystemOption;
-in
 {
   options = {
-    perSystem = mkPerSystemOption (
-      { config, pkgs, ... }:
+    perSystem = flake-parts-lib.mkPerSystemOption (
+      systemArgs:
       {
         options = {
           assertions = lib.mkOption {
@@ -83,8 +78,6 @@ in
             '';
           };
         };
-
-        config = { };
       }
     );
   };

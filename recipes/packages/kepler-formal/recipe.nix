@@ -1,12 +1,12 @@
 {
-  config,
+packages.kepler-formal =
+{
   lib,
   pkgs,
   ...
 }:
 
 {
-  name = "kepler-formal";
   version = "1.0.0-unstable-2026-04-13";
   description = "Formal Verification tool for Verilog and Naja interchange format.";
   homePage = "https://github.com/keplertech/kepler-formal";
@@ -53,4 +53,5 @@
   test.script = ''
     kepler-formal --help | grep "Usage: kepler-formal"
   '';
+};
 }

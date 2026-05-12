@@ -4,63 +4,41 @@
   ...
 }:
 
-let
-  inherit (flake-parts-lib)
-    mkPerSystemOption
-    ;
-in
 {
-  options.perSystem = mkPerSystemOption (
+  options.perSystem = flake-parts-lib.mkPerSystemOption (
     {
-      config,
       pkgs,
       sharedBuildAttrs,
       ...
-    }:
+    }@systemArgs:
     {
-      options.forge.packages = lib.mkOption {
-        type = lib.types.listOf (lib.types.submodule ./options.nix);
-      };
+      packages = lib.mapAttrs (
+        packageName: package:
+        lib.mkIf package.config.build.rustPackageBuilder.enable (
+          pkgs.rustPlatform.buildRustPackage (
+            finalAttrs:
+            {
+              inherit (package.config) pname version;
+              inherit (package.config.build.rustPackageBuilder)
+                cargoHash
+                cargoBuildFlags
+                ;
 
-      config.packages =
-        let
-          cfg = config.forge;
+              src = sharedBuildAttrs.pkgSource package.config;
+              patches = package.config.source.patches or [ ];
 
-          composePkg = pkg: {
-            name = pkg.name;
-            value = pkgs.callPackage (
-              # Derivation start
-              { }:
-              pkgs.rustPlatform.buildRustPackage (
-                finalAttrs:
-                {
-                  pname = pkg.name;
-                  version = pkg.version;
-                  src = sharedBuildAttrs.pkgSource pkg;
-                  patches = pkg.source.patches or [ ];
+              nativeBuildInputs = package.config.build.rustPackageBuilder.packages.build;
+              buildInputs = package.config.build.rustPackageBuilder.packages.run;
+              nativeCheckInputs = package.config.build.rustPackageBuilder.packages.check;
 
-                  nativeBuildInputs = pkg.build.rustPackageBuilder.packages.build;
-                  buildInputs = pkg.build.rustPackageBuilder.packages.run;
-                  nativeCheckInputs = pkg.build.rustPackageBuilder.packages.check;
-
-                  cargoHash = pkg.build.rustPackageBuilder.cargoHash;
-                  cargoBuildFlags = pkg.build.rustPackageBuilder.cargoBuildFlags;
-
-                  passthru = sharedBuildAttrs.pkgPassthru pkg finalAttrs.finalPackage;
-                  meta = sharedBuildAttrs.pkgMeta pkg;
-                }
-                // pkg.build.extraAttrs
-                // lib.optionalAttrs pkg.build.debug sharedBuildAttrs.debugShellHookAttr
-              )
-              # Derivation end
-            ) { };
-          };
-
-          enabledPkgs = lib.filter (p: p.build.rustPackageBuilder.enable) cfg.packages;
-
-          rustPackageBuilderPkgs = lib.listToAttrs (map composePkg enabledPkgs);
-        in
-        rustPackageBuilderPkgs;
+              passthru = sharedBuildAttrs.pkgPassthru package.config finalAttrs.finalPackage;
+              meta = sharedBuildAttrs.pkgMeta package.config;
+            }
+            // package.config.build.extraAttrs
+            // lib.optionalAttrs package.config.build.debug sharedBuildAttrs.debugShellHookAttr
+          )
+        )
+      ) systemArgs.config.evals.packages;
     }
   );
 }

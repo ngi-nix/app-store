@@ -3,6 +3,7 @@
   ...
 }:
 {
+  flake.modules.packages.default.imports = [{
   options.build.pythonAppBuilder = {
     enable = lib.mkEnableOption ''
       Python application builder for executable Python programs.
@@ -109,4 +110,5 @@
       ];
     };
   };
+  }];
 }

@@ -1,5 +1,6 @@
 {
-  config,
+packages.qlever =
+{
   pkgs,
   lib,
   ...
@@ -7,6 +8,7 @@
 }:
 
 let
+  # Warning(reusability): those dependencies are not overridable.
   deps = {
     fsst = pkgs.fetchFromGitHub {
       owner = "cwida";
@@ -73,7 +75,6 @@ let
 in
 
 {
-  name = "qlever";
   version = "0.5.46";
   description = "Graph database implementing the RDF and SPARQL standards";
   license = lib.licenses.asl20;
@@ -137,4 +138,5 @@ in
     qlever-server --help 2>&1 | grep "Options for qlever-server:"
     qlever-index --help 2>&1 | grep "Options for qlever-index:"
   '';
+};
 }

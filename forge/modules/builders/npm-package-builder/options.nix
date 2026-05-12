@@ -3,6 +3,7 @@
   ...
 }:
 {
+  flake.modules.packages.default.imports = [{
   options.build.npmPackageBuilder = {
     enable = lib.mkEnableOption ''
       NPM package builder for JavaScript/TypeScript packages.
@@ -63,4 +64,5 @@
       ];
     };
   };
+  }];
 }

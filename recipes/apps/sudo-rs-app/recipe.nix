@@ -1,4 +1,6 @@
 {
+apps.sudo-rs =
+{
   config,
   pkgs,
   lib,
@@ -6,7 +8,6 @@
 }:
 
 {
-  name = "sudo-rs-app";
   displayName = "sudo-rs";
   description = "Memory-safe implementation of sudo and su.";
   usage = ''
@@ -53,4 +54,5 @@
     runtimes.program.enable = true;
     runtimes.shell.enable = true;
   };
+};
 }

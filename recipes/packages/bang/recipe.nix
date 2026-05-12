@@ -1,4 +1,6 @@
 {
+packages.bang =
+{
   config,
   lib,
   pkgs,
@@ -15,7 +17,6 @@ let
 in
 
 {
-  name = "bang";
   version = "0-master-2026-04-14";
   description = "Binary Analysis Next Generation framework for recursive unpacking and analysis of binary files.";
   homePage = "https://github.com/armijnhemel/binaryanalysis-ng";
@@ -98,4 +99,5 @@ in
     echo "Test data" > test-file.txt
     bang scan -v -u bang-results ./test-file.txt
   '';
+};
 }

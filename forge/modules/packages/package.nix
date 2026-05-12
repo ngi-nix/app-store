@@ -1,15 +1,14 @@
 {
-  lib,
-  ...
-}:
-{
+  flake.modules.packages.default.imports = [ ({lib, name, ...}: {
   options = {
     # General configuration
-    name = lib.mkOption {
+    pname = lib.mkOption {
       type = lib.types.str;
-      default = "my-package";
+      default = name;
       description = "Package name.";
       example = "hello";
+      readOnly = true;
+      visible = false;
     };
     description = lib.mkOption {
       type = lib.types.str;
@@ -115,7 +114,7 @@
 
       # Common builder options (available to all builders)
       extraAttrs = lib.mkOption {
-        type = lib.types.attrsOf lib.types.anything;
+        type = lib.types.lazyAttrsOf lib.types.anything;
         default = { };
         description = ''
           Expert option.
@@ -215,4 +214,5 @@
       description = "Path to the recipe.nix file relative to the flake root. Set automatically by the recipe loader.";
     };
   };
+  })];
 }

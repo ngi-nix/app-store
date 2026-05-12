@@ -1,4 +1,6 @@
 {
+packages.tslib =
+{
   config,
   lib,
   pkgs,
@@ -6,7 +8,6 @@
 }:
 
 {
-  name = "tslib";
   version = "1.24";
   description = "Touchscreen access library";
   homePage = "http://www.tslib.org/";
@@ -24,4 +25,5 @@
       pkgs.cmake
     ];
   };
+};
 }

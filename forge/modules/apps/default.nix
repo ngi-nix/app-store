@@ -3,63 +3,50 @@
   inputs,
   flake-parts-lib,
   ...
-}:
-
-let
-  inherit (flake-parts-lib)
-    mkPerSystemOption
-    ;
-in
+}@flakeArgs:
 
 {
-  imports = [
-    ../assertions-warnings.nix
-  ];
+  config = {
+    # Expose `app.config.services.runtimes.nixos`
+    # as `flake.modules.nixos."${system}:${appName}"`
+    flake.modules.nixos = lib.concatMapAttrs (
+      system: systemConfig:
+      lib.concatMapAttrs (
+        appName: app:
+        lib.optionalAttrs app.config.services.runtimes.nixos.enable {
+          ${appName} = lib.mkMerge (lib.attrValues app.config.services.runtimes.nixos.result.modules);
+        }
+      ) systemConfig.evals.apps
+    ) flakeArgs.config.allSystems;
+    flake.nixosModules = flakeArgs.config.flake.modules.nixos;
+    # The evaluation goes to `nixosConfigurations."${system}:${appName}"`
+    # Eg. `nix run .#nixosConfigurations."x86_64-linux:mox".config.system.build.vm`
+    flake.nixosConfigurations = lib.concatMapAttrs (
+      system: systemConfig:
+      lib.concatMapAttrs (name: nixos: {
+        "${system}:${name}" = inputs.nixpkgs.lib.nixosSystem {
+          inherit system;
+          modules = [ nixos ];
+        };
+      }) flakeArgs.config.flake.modules.nixos
+    ) flakeArgs.config.allSystems;
+  };
 
   options = {
-    perSystem = mkPerSystemOption (
+    perSystem = flake-parts-lib.mkPerSystemOption (
       {
-        config,
         pkgs,
-        nimi,
         system,
         ...
-      }:
-      let
-        cfg = config.forge.apps;
-      in
+      }@systemArgs:
       {
-        options = {
-          forge = {
-            apps = lib.mkOption {
-              default = [ ];
-              description = "List of applications.";
-              type = lib.types.listOf (
-                lib.types.submoduleWith {
-                  specialArgs = {
-                    inherit
-                      inputs
-                      nimi
-                      system
-                      ;
-                    # Extend pkgs with mypkgs containing all NGI Forge packages
-                    # This allows recipes to reference other packages via mypkgs
-                    pkgs = pkgs.extend (final: prev: { mypkgs = config.packages; });
-                  };
-                  modules = [ ./app.nix ];
-                }
-              );
-            };
-          };
-        };
-
         config =
           let
             shellBundle =
               app:
               let
                 appDrv = pkgs.symlinkJoin {
-                  name = "${app.name}";
+                  inherit (app) name;
                   paths = app.programs.packages;
                 };
               in
@@ -86,7 +73,7 @@ in
                 # consumer forges can compose into proper applications.
                 #
                 # That's why we remove `result`, because it's tied to the
-                # providers' aleady generated applications, which can cause
+                # providers' already generated applications, which can cause
                 # conflicts.
                 extendRecipe =
                   module: lib.filterAttrsRecursive (name: _: name != "result") (self.extend module).config;
@@ -136,14 +123,13 @@ in
             # finalApp parameter is currently not used in this function
             appPassthru = app: finalApp: mkPassthru app;
 
-            allApps = lib.listToAttrs (
-              map (app: {
-                name = "${app.name}";
-                value = shellBundle app;
-              }) cfg
-            );
+            allApps = lib.mapAttrs' (appName: app: {
+              name = "${appName}-app";
+              value = shellBundle app.config;
+            }) systemArgs.config.evals.apps;
           in
           {
+            # Expose apps as packages with "-app" suffix
             packages = allApps;
           };
       }

@@ -1,4 +1,6 @@
 {
+apps.python-web =
+{
   config,
   lib,
   pkgs,
@@ -6,7 +8,6 @@
 }:
 
 {
-  name = "python-web-app";
   displayName = "Python Web Example";
   description = "Example web API with database backend.";
   usage = ''
@@ -34,9 +35,9 @@
   '';
 
   links = {
-    website = pkgs.mypkgs.python-web.meta.homepage;
-    docs = pkgs.mypkgs.python-web.meta.homepage;
-    source = pkgs.mypkgs.python-web.meta.homepage;
+    website = pkgs.python-web.meta.homepage;
+    docs = pkgs.python-web.meta.homepage;
+    source = pkgs.python-web.meta.homepage;
   };
 
   ngi.grants = {
@@ -53,14 +54,14 @@
   services = {
     components = {
       python-web = {
-        command = pkgs.mypkgs.python-web;
+        command = pkgs.python-web;
       };
     };
 
     runtimes = {
       container = {
         enable = true;
-        packages = [ pkgs.mypkgs.python-web ];
+        packages = [ pkgs.python-web ];
         # Alternatively, we can re-use attributes with `config`:
         #packages = [ config.services.python-web.command ];
         composeFile = ./compose.yaml;
@@ -100,4 +101,5 @@
     # test-container requires database image from Internet registry
     sandbox = false;
   };
+};
 }

@@ -6,6 +6,7 @@
   ...
 }:
 {
+  flake.modules.packages.default.imports = [{
   options.build.rustPackageBuilder = {
     enable = lib.mkEnableOption ''
       Rust package builder for reusable Rust crates.
@@ -69,4 +70,5 @@
       ];
     };
   };
+  }];
 }

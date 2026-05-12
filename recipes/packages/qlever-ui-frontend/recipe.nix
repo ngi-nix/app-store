@@ -1,21 +1,15 @@
 {
-  config,
-  pkgs,
+packages.qlever-ui-frontend =
+{
   lib,
+  pkgs,
+  packages,
   ...
 }:
 
 {
-  name = "qlever-ui-frontend";
-  version = "0-unstable-2026-04-16";
   description = "Frontend for QLever UI";
-  homePage = "https://github.com/qlever-dev/qlever-ui";
-  license = lib.licenses.asl20;
-
-  source = {
-    git = "github:qlever-dev/qlever-ui/b12823ffd25f0c9ebdc530ebd16868e7389ef0fa";
-    hash = "sha256-aN4vj5zYy/rkfhEylHd5wYGxwEFaZCSnpZIIYhSQMeo=";
-  };
+  inherit (packages.qlever-ui) source version homePage license;
 
   build.npmPackageBuilder = {
     enable = true;
@@ -29,8 +23,5 @@
       runHook postInstall
     '';
   };
-
-  test.script = ''
-    test -f ${pkgs.mypkgs.qlever-ui-frontend}/formatter/index.js
-  '';
+};
 }

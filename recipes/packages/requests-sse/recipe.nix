@@ -1,5 +1,6 @@
 {
-  config,
+packages.requests-sse =
+{
   pkgs,
   lib,
   ...
@@ -7,7 +8,6 @@
 }:
 
 {
-  name = "requests-sse";
   version = "0.5.3";
   description = "Server-sent events python client library based on requests";
   license = lib.licenses.asl20;
@@ -35,4 +35,5 @@
   test.script = ''
     python -c "import requests_sse; print(requests_sse.__version__)"
   '';
+};
 }

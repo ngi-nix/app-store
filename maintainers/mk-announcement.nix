@@ -4,9 +4,8 @@
   lib,
 }:
 
-lib.listToAttrs (
-  lib.map (
-    app:
+lib.mapAttrs (
+    appName: app:
 
     let
       info = {
@@ -100,9 +99,7 @@ lib.listToAttrs (
         Kind regards'';
     in
 
-    {
-      name = app.name;
-      value = pkgs.writeShellApplication {
+    pkgs.writeShellApplication {
         name = "announce-project";
         text = ''
           cat <<EOF
@@ -127,7 +124,5 @@ lib.listToAttrs (
           \`\`\`
           EOF
         '';
-      };
     }
   ) forgeApps
-)

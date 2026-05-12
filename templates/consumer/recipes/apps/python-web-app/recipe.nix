@@ -1,4 +1,6 @@
 {
+apps.python-web-app =
+{
   config,
   pkgs,
   lib,
@@ -6,7 +8,7 @@
 }:
 
 {
-  name = "python-web-app";
+  # FixMe(correctness): not yet taken into account.
   description = lib.mkForce "Example web API with database backend (extended).";
 
   services.runtimes.nixos.extraConfig = {
@@ -14,4 +16,5 @@
       pkgs.postgresql
     ];
   };
+};
 }

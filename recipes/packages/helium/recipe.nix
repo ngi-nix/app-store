@@ -1,12 +1,12 @@
 {
-  config,
+packages.helium =
+{
   lib,
   pkgs,
   ...
 }:
 
 {
-  name = "helium";
   version = "7.0.0";
   description = "Lighter browser automation based on Selenium.";
   homePage = "https://github.com/mherrmann/helium";
@@ -36,4 +36,5 @@
   test.script = ''
     python -c "import helium; print(helium.__doc__)"
   '';
+};
 }

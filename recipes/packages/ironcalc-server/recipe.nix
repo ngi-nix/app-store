@@ -1,12 +1,14 @@
 {
+packages.ironcalc-server =
+{
   config,
   lib,
   pkgs,
+  packages,
   ...
 }:
 
 {
-  name = "ironcalc-server";
   version = "0.7.1-unstable-2026-04-29";
   description = "IronCalc server package";
   homePage = "https://www.ironcalc.com";
@@ -15,10 +17,7 @@
     asl20
   ];
 
-  source = {
-    git = "github:ironcalc/ironcalc/8461ff71347ab19145cd7ad50ef829181ba765c2";
-    hash = "sha256-vjI3M+hS9bXK8QQlopAy6f4dCISfQHGMvN9sMNKp88Q=";
-  };
+  inherit (packages.ironcalc) source;
 
   build.rustPackageBuilder = {
     enable = true;
@@ -41,4 +40,5 @@
       install -Dm644 webapp/app.ironcalc.com/server/init_db.sql $out/share/ironcalc/init_db.sql
     '';
   };
+};
 }

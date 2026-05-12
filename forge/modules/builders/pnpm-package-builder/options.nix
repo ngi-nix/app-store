@@ -3,6 +3,7 @@
   ...
 }:
 {
+  flake.modules.packages.default.imports = [{
   options.build.pnpmPackageBuilder = {
     enable = lib.mkEnableOption ''
       PNPM package builder for JavaScript/TypeScript packages.
@@ -82,4 +83,5 @@
       example = "source/frontend";
     };
   };
+  }];
 }

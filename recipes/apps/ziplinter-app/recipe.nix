@@ -1,4 +1,6 @@
 {
+apps.ziplinter =
+{
   config,
   pkgs,
   lib,
@@ -6,7 +8,6 @@
 }:
 
 {
-  name = "ziplinter-app";
   displayName = "Ziplinter";
   description = "ZIP file analyzer that outputs detailed archive metadata as JSON.";
   usage = ''
@@ -36,11 +37,12 @@
 
   programs = {
     packages = [
-      pkgs.mypkgs.ziplinter
+      pkgs.ziplinter
     ];
 
     runtimes.shell = {
       enable = true;
     };
   };
+};
 }
