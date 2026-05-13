@@ -65,6 +65,9 @@
     Entrust = [
       "Garage"
     ];
+    Commons = [
+      "Garage-AdminUI"
+    ];
   };
 
   icon = ./icon.svg;
@@ -77,5 +80,43 @@
     runtimes.shell = {
       enable = true;
     };
+  };
+
+  services = {
+    components.garage = {
+      preStart = ''
+        mkdir -p /var/lib/garage/meta /var/lib/garage/data
+      '';
+      command = pkgs.garage_2;
+      argv = [
+        "-c"
+        "${./garage.toml}"
+        "server"
+      ];
+    };
+
+    runtimes = {
+      container = {
+        enable = true;
+        packages = [
+          pkgs.bash
+          pkgs.coreutils
+          pkgs.garage_2
+        ];
+      };
+
+      nixos = {
+        enable = true;
+        packages = [
+          pkgs.garage_2
+        ];
+      };
+    };
+
+    ports = [
+      "3900:3900"
+      "3901:3901"
+      "3902:3902"
+    ];
   };
 }
