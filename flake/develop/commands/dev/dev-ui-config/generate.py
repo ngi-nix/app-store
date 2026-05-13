@@ -190,7 +190,8 @@ def main():
         run_command(
             ["git", "commit", "-m", "gen mock recipes"],
             cwd=str(temp_path),
-            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
         )
 
         try:
