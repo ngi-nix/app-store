@@ -126,11 +126,11 @@ in
                     || throw "${app.name}'s programs.mainPackage is missing a meta.mainProgram attribute";
                   app.programs.mainPackage;
               }
-              // lib.optionalAttrs (app.services.runtimes.container.enable && app.test.script != null) {
-                test-container = app.test.result.containerBuild;
+              // lib.optionalAttrs (app.services.runtimes.container.enable && app.services.test.script != null) {
+                test-container = app.services.test.result.containerBuild;
               }
-              // lib.optionalAttrs (app.services.runtimes.nixos.enable && app.test.script != null) {
-                test = app.test.result.build;
+              // lib.optionalAttrs (app.services.runtimes.nixos.enable && app.services.test.script != null) {
+                test = app.services.test.result.build;
               };
 
             # finalApp parameter is currently not used in this function
