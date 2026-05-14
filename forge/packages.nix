@@ -37,6 +37,7 @@
             };
         };
 
+      forgeApps = config.forge.apps;
       forgeOptions = forgeOptionsDoc forgeModules;
 
       # Collect app icons into a derivation
@@ -46,7 +47,7 @@
           map (app: ''
             mkdir -p $out/${app.name}
             ${if app.icon or null != null then "cp ${app.icon} $out/${app.name}/icon.svg" else ""}
-          '') config.forge.apps
+          '') forgeApps
         )}
       '';
     in
@@ -68,6 +69,23 @@
         };
 
         _forge-docs = pkgs.callPackage ../flake/packages/forge-docs.nix { };
+
+        _forge-announcement = pkgs.writeShellApplication {
+          name = "announce-projects";
+          passthru = import ../maintainers/mk-announcement.nix { inherit forgeApps pkgs lib; };
+          text = ''
+            cat <<EOF
+            To generate project announcement, use:
+
+            \`\`\`
+            nix run .#_forge-announcement.<APP_NAME>
+            \`\`\`
+
+            Available apps:
+            ${lib.concatMapStringsSep "\n" (app: "- " + app.name) forgeApps}
+            EOF
+          '';
+        };
       };
     };
 }
