@@ -126,10 +126,10 @@ in
                     || throw "${app.name}'s programs.mainPackage is missing a meta.mainProgram attribute";
                   app.programs.mainPackage;
               }
-              // lib.optionalAttrs (app.services.runtimes.container.enable && app.test.script != "") {
+              // lib.optionalAttrs (app.services.runtimes.container.enable && app.test.script != null) {
                 test-container = app.test.result.containerBuild;
               }
-              // lib.optionalAttrs (app.services.runtimes.nixos.enable && app.test.script != "") {
+              // lib.optionalAttrs (app.services.runtimes.nixos.enable && app.test.script != null) {
                 test = app.test.result.build;
               };
 
@@ -145,6 +145,15 @@ in
           in
           {
             packages = allApps;
+
+            warnings = lib.flatten (
+              map (app: [
+                {
+                  condition = app.services.components != { } && app.services.test.script == null;
+                  message = "App '${app.name}' service test is missing. Use services.test.script option to add a test.";
+                }
+              ]) cfg
+            );
           };
       }
     );
