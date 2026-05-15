@@ -10,9 +10,10 @@
 
   inputs = {
     ngi-forge.url = "github:ngi-nix/forge";
+    import-tree.follows = "ngi-forge/import-tree";
+    nimi.follows = "ngi-forge/nimi";
     elm2nix.follows = "ngi-forge/elm2nix";
     flake-parts.follows = "ngi-forge/flake-parts";
-    nimi.follows = "ngi-forge/nimi";
     nix-utils.follows = "ngi-forge/nix-utils";
     nixpkgs.follows = "ngi-forge/nixpkgs";
   };
@@ -21,15 +22,16 @@
     inputs@{ flake-parts, ngi-forge, ... }:
     flake-parts.lib.mkFlake { inherit inputs; } {
       systems = [ "x86_64-linux" ];
-      imports = [ (ngi-forge.flakeModules.consumer { provider = ngi-forge; }) ];
+      imports = [
+        ngi-forge.flakeModules.default
+        (inputs.import-tree ./recipes)
+      ];
 
       debug = true;
 
       perSystem =
         { system, pkgs, ... }:
         {
-          _module.args.nimi = inputs.nimi.packages.${system}.nimi;
-
           # load packages and applications from other forges
           _module.args.pkgs = import inputs.nixpkgs {
             inherit system;

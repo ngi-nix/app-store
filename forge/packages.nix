@@ -1,4 +1,4 @@
-{ inputs, flake-parts-lib, ... }:
+{ inputs, flake-parts-lib, ... }@flakeArgs:
 
 {
   perSystem =
@@ -11,8 +11,18 @@
 
     let
       forgeModules = [
-        ./modules/apps
-        ./modules/packages.nix
+        {
+          options = lib.concatMapAttrs (
+            class: classModules:
+            lib.optionalAttrs (classModules ? default) {
+              ${class} = lib.mkOption {
+                default = { };
+                description = "Attrset to define ${class}.";
+                type = lib.types.attrsOf (lib.types.submodule classModules.default);
+              };
+            }
+          ) flakeArgs.config.flake.modules;
+        }
       ];
 
       evalForgeModules =
@@ -27,27 +37,21 @@
         pkgs.nixosOptionsDoc {
           warningsAreErrors = false;
           options = lib.removeAttrs (evalForgeModules modules).options [ "_module" ];
-          transformOptions =
-            opt:
-            opt
-            // {
-              name = lib.removePrefix "perSystem.forge." opt.name;
-              declarations = [ ];
-              visible = lib.match ("^perSystem\\.forge\\.(apps|packages)(\\..+)?") opt.name != null;
-            };
         };
 
-      forgeApps = config.forge.apps;
+      forgeApps = lib.mapAttrs (_: x: x.config) config.evals.apps;
       forgeOptions = forgeOptionsDoc forgeModules;
 
       # Collect app icons into a derivation
       appIcons = pkgs.runCommand "app-icons" { } ''
         mkdir -p $out
         ${lib.concatStringsSep "\n" (
-          map (app: ''
-            mkdir -p $out/${app.name}
-            ${if app.icon or null != null then "cp ${app.icon} $out/${app.name}/icon.svg" else ""}
-          '') forgeApps
+          lib.attrValues (
+            lib.mapAttrs (appName: app: ''
+              mkdir -p $out/${appName}
+              ${if app.icon or null != null then "cp ${app.icon} $out/${appName}/icon.svg" else ""}
+            '') forgeApps
+          )
         )}
       '';
     in
@@ -55,7 +59,17 @@
       packages = {
         _forge-config = pkgs.writeTextFile {
           name = "forge-config.json";
-          text = builtins.toJSON config.forge;
+          # FixMe(performance): this currently requires a lot of compiling
+          # due to `pkgs` being used in things like `pythonAppBuilder.packages.build`.
+          text = builtins.toJSON (
+            config.forge
+            // lib.concatMapAttrs (
+              class: classModules:
+              lib.optionalAttrs (classModules ? default) {
+                ${class} = lib.mapAttrs (_: x: x.config) config.evals.${class};
+              }
+            ) flakeArgs.config.flake.modules
+          );
         };
 
         _forge-options = pkgs.runCommand "options.json" { } ''
@@ -82,7 +96,7 @@
             \`\`\`
 
             Available apps:
-            ${lib.concatMapStringsSep "\n" (app: "- " + app.name) forgeApps}
+            ${lib.concatMapStringsSep "\n" (app: "- " + app.name) (lib.attrValues forgeApps)}
             EOF
           '';
         };

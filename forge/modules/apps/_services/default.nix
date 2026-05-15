@@ -31,10 +31,10 @@
       example = lib.literalExpression ''
         {
           service1 = {
-            command = pkgs.mypkgs.service1;
+            command = pkgs.service1;
           };
           service2 = {
-            command = pkgs.mypkgs.service2;
+            command = pkgs.service2;
           };
         }
       '';

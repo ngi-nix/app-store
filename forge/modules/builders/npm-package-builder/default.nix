@@ -4,62 +4,40 @@
   ...
 }:
 
-let
-  inherit (flake-parts-lib)
-    mkPerSystemOption
-    ;
-in
 {
-  options.perSystem = mkPerSystemOption (
-    {
-      config,
-      pkgs,
-      sharedBuildAttrs,
-      ...
-    }:
-    {
-      options.forge.packages = lib.mkOption {
-        type = lib.types.listOf (lib.types.submodule ./options.nix);
-      };
-
-      config.packages =
-        let
-          cfg = config.forge;
-
-          composePkg = pkg: {
-            name = pkg.name;
-            value = pkgs.callPackage (
-              # Derivation start
-              { }:
-              pkgs.buildNpmPackage (
-                finalAttrs:
-                {
-                  pname = pkg.name;
-                  version = pkg.version;
-                  src = sharedBuildAttrs.pkgSource pkg;
-                  patches = pkg.source.patches or [ ];
-
-                  nativeBuildInputs = [ pkgs.nodejs ] ++ pkg.build.npmPackageBuilder.packages.build;
-                  buildInputs = pkg.build.npmPackageBuilder.packages.run;
-                  nativeCheckInputs = pkg.build.npmPackageBuilder.packages.check;
-                  npmDepsHash = pkg.build.npmPackageBuilder.npmDepsHash;
-                  npmInstallFlags = pkg.build.npmPackageBuilder.npmInstallFlags;
-
-                  passthru = sharedBuildAttrs.pkgPassthru pkg finalAttrs.finalPackage;
-                  meta = sharedBuildAttrs.pkgMeta pkg;
-                }
-                // pkg.build.extraAttrs
-                // lib.optionalAttrs pkg.build.debug sharedBuildAttrs.debugShellHookAttr
-              )
-              # Derivation end
-            ) { };
-          };
-
-          enabledPkgs = lib.filter (p: p.build.npmPackageBuilder.enable) cfg.packages;
-
-          npmPackageBuilderPkgs = lib.listToAttrs (map composePkg enabledPkgs);
-        in
-        npmPackageBuilderPkgs;
-    }
-  );
+  options = {
+    perSystem = flake-parts-lib.mkPerSystemOption (
+      {
+        pkgs,
+        sharedBuildAttrs,
+        ...
+      }@systemArgs:
+      {
+        packages = lib.mapAttrs (
+          packageName: package:
+          lib.mkIf package.config.build.npmPackageBuilder.enable (
+            pkgs.buildNpmPackage (
+              finalAttrs:
+              {
+                inherit (package.config) pname version;
+                inherit (package.config.build.npmPackageBuilder)
+                  npmDepsHash
+                  npmInstallFlags
+                  ;
+                src = sharedBuildAttrs.pkgSource package.config;
+                patches = package.config.source.patches or [ ];
+                nativeBuildInputs = [ pkgs.nodejs ] ++ package.config.build.npmPackageBuilder.packages.build;
+                buildInputs = package.config.build.npmPackageBuilder.packages.run;
+                nativeCheckInputs = package.config.build.npmPackageBuilder.packages.check;
+                passthru = sharedBuildAttrs.pkgPassthru package.config finalAttrs.finalPackage;
+                meta = sharedBuildAttrs.pkgMeta package.config;
+              }
+              // package.config.build.extraAttrs
+              // lib.optionalAttrs package.config.build.debug sharedBuildAttrs.debugShellHookAttr
+            )
+          )
+        ) systemArgs.config.evals.packages;
+      }
+    );
+  };
 }

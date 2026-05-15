@@ -8,7 +8,7 @@
     packages = lib.mkOption {
       type = lib.types.listOf lib.types.package;
       default = [ ];
-      description = "Packages to include in the shell enviornment.";
+      description = "Packages to include in the shell environment.";
       example = lib.literalExpression "[ pkgs.curl pkgs.jq ]";
     };
 

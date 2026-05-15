@@ -4,97 +4,72 @@
   ...
 }:
 
-let
-  inherit (flake-parts-lib)
-    mkPerSystemOption
-    ;
-in
 {
-  options.perSystem = mkPerSystemOption (
+  options.perSystem = flake-parts-lib.mkPerSystemOption (
     {
-      config,
       pkgs,
       sharedBuildAttrs,
       ...
-    }:
+    }@systemArgs:
     {
-      options.forge.packages = lib.mkOption {
-        type = lib.types.listOf (lib.types.submodule ./options.nix);
-      };
+      packages = lib.mapAttrs (
+        packageName: package:
+        lib.mkIf package.config.build.pnpmPackageBuilder.enable (
+          let
+            builderCfg = package.config.build.pnpmPackageBuilder;
+            src = sharedBuildAttrs.pkgSource package.config;
 
-      config.packages =
-        let
-          cfg = config.forge;
+            pnpmDeps = pkgs.fetchPnpmDeps (
+              {
+                inherit (package.config) pname version;
+                inherit src;
+                inherit (builderCfg) fetcherVersion;
+                hash = builderCfg.pnpmDepsHash;
+              }
+              // lib.optionalAttrs (builderCfg.sourceRoot != null) {
+                inherit (builderCfg) sourceRoot;
+              }
+            );
+          in
+          pkgs.stdenvNoCC.mkDerivation (
+            finalAttrs:
+            {
+              inherit (package.config) pname version;
+              inherit src pnpmDeps;
+              patches = package.config.source.patches or [ ];
 
-          composePkg = pkg: {
-            name = pkg.name;
-            value = pkgs.callPackage (
-              # Derivation start
-              { }:
-              let
-                builderCfg = pkg.build.pnpmPackageBuilder;
-                src = sharedBuildAttrs.pkgSource pkg;
+              nativeBuildInputs = [
+                pkgs.pnpmConfigHook
+                pkgs.pnpm
+                pkgs.nodejs
+              ]
+              ++ builderCfg.packages.build;
+              buildInputs = builderCfg.packages.run;
+              nativeCheckInputs = builderCfg.packages.check;
 
-                pnpmDeps = pkgs.fetchPnpmDeps (
-                  {
-                    pname = pkg.name;
-                    version = pkg.version;
-                    inherit src;
-                    fetcherVersion = builderCfg.fetcherVersion;
-                    hash = builderCfg.pnpmDepsHash;
-                  }
-                  // lib.optionalAttrs (builderCfg.sourceRoot != null) {
-                    inherit (builderCfg) sourceRoot;
-                  }
-                );
-              in
-              pkgs.stdenvNoCC.mkDerivation (
-                finalAttrs:
-                {
-                  pname = pkg.name;
-                  version = pkg.version;
-                  inherit src pnpmDeps;
-                  patches = pkg.source.patches or [ ];
+              buildPhase = ''
+                runHook preBuild
+                pnpm run ${builderCfg.buildScript}
+                runHook postBuild
+              '';
 
-                  nativeBuildInputs = [
-                    pkgs.pnpmConfigHook
-                    pkgs.pnpm
-                    pkgs.nodejs
-                  ]
-                  ++ builderCfg.packages.build;
-                  buildInputs = builderCfg.packages.run;
-                  nativeCheckInputs = builderCfg.packages.check;
+              installPhase = ''
+                runHook preInstall
+                cp -r ${builderCfg.installDir} $out
+                runHook postInstall
+              '';
 
-                  buildPhase = ''
-                    runHook preBuild
-                    pnpm run ${builderCfg.buildScript}
-                    runHook postBuild
-                  '';
-
-                  installPhase = ''
-                    runHook preInstall
-                    cp -r ${builderCfg.installDir} $out
-                    runHook postInstall
-                  '';
-
-                  passthru = sharedBuildAttrs.pkgPassthru pkg finalAttrs.finalPackage;
-                  meta = sharedBuildAttrs.pkgMeta pkg;
-                }
-                // lib.optionalAttrs (builderCfg.sourceRoot != null) {
-                  inherit (builderCfg) sourceRoot;
-                }
-                // pkg.build.extraAttrs
-                // lib.optionalAttrs pkg.build.debug sharedBuildAttrs.debugShellHookAttr
-              )
-              # Derivation end
-            ) { };
-          };
-
-          enabledPkgs = lib.filter (p: p.build.pnpmPackageBuilder.enable) cfg.packages;
-
-          pnpmPackageBuilderPkgs = lib.listToAttrs (map composePkg enabledPkgs);
-        in
-        pnpmPackageBuilderPkgs;
+              passthru = sharedBuildAttrs.pkgPassthru package.config finalAttrs.finalPackage;
+              meta = sharedBuildAttrs.pkgMeta package.config;
+            }
+            // lib.optionalAttrs (builderCfg.sourceRoot != null) {
+              inherit (builderCfg) sourceRoot;
+            }
+            // package.config.build.extraAttrs
+            // lib.optionalAttrs package.config.build.debug sharedBuildAttrs.debugShellHookAttr
+          )
+        )
+      ) systemArgs.config.evals.packages;
     }
   );
 }

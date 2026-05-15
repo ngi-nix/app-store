@@ -1,62 +1,42 @@
 {
-  inputs,
-  config,
   lib,
   flake-parts-lib,
   ...
 }:
 
-let
-  inherit (flake-parts-lib) mkPerSystemOption;
-in
 {
   options = {
-    perSystem = mkPerSystemOption (
+    perSystem = flake-parts-lib.mkPerSystemOption (
       {
-        config,
         pkgs,
         sharedBuildAttrs,
         ...
-      }:
+      }@systemArgs:
       {
-        options.forge.packages = lib.mkOption {
-          type = lib.types.listOf (lib.types.submodule ./options.nix);
-        };
-
-        config = {
-          packages =
-            let
-              cfg = config.forge.packages;
-
-              standardBuilderPkgs = lib.listToAttrs (
-                map (pkg: {
-                  name = pkg.name;
-                  value = pkgs.callPackage (
-                    # Derivation start
-                    { }:
-                    pkg.build.standardBuilder.stdenv.mkDerivation (
-                      finalAttrs:
-                      {
-                        pname = pkg.name;
-                        version = pkg.version;
-                        src = sharedBuildAttrs.pkgSource pkg;
-                        patches = pkg.source.patches;
-                        nativeBuildInputs = pkg.build.standardBuilder.packages.build;
-                        buildInputs = pkg.build.standardBuilder.packages.run;
-                        nativeCheckInputs = pkg.build.standardBuilder.packages.check;
-                        passthru = sharedBuildAttrs.pkgPassthru pkg finalAttrs.finalPackage;
-                        meta = sharedBuildAttrs.pkgMeta pkg;
-                      }
-                      // pkg.build.extraAttrs
-                      // lib.optionalAttrs pkg.build.debug sharedBuildAttrs.debugShellHookAttr
-                    )
-                    # Derivation end
-                  ) { };
-                }) (lib.filter (p: p.build.standardBuilder.enable == true) cfg)
-              );
-            in
-            standardBuilderPkgs;
-        };
+        packages = lib.mapAttrs (
+          packageName: package:
+          # Note that `packages` is a `lazyAttrsOf`,
+          # hence `lib.mkIf false` does not remove the attribute key.
+          # This does not matter because at least one builder has to be enabled,
+          # hence the value always has a definition.
+          lib.mkIf package.config.build.standardBuilder.enable (
+            package.config.build.standardBuilder.stdenv.mkDerivation (
+              finalAttrs:
+              {
+                inherit (package.config) pname version;
+                src = sharedBuildAttrs.pkgSource package.config;
+                patches = package.config.source.patches;
+                nativeBuildInputs = package.config.build.standardBuilder.packages.build;
+                buildInputs = package.config.build.standardBuilder.packages.run;
+                nativeCheckInputs = package.config.build.standardBuilder.packages.check;
+                passthru = sharedBuildAttrs.pkgPassthru package.config finalAttrs.finalPackage;
+                meta = sharedBuildAttrs.pkgMeta package.config;
+              }
+              // package.config.build.extraAttrs
+              // lib.optionalAttrs package.config.build.debug sharedBuildAttrs.debugShellHookAttr
+            )
+          )
+        ) systemArgs.config.evals.packages;
       }
     );
   };
