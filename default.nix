@@ -28,7 +28,30 @@ let
     nimi = def.nimi-def.nimi;
     nimiLib = def.nimi.passthru;
 
-    apps = flake.outputs.apps.${system};
+    # requires debug to be enabled in flake
+    debug = flake.outputs.allSystems.${system};
+
+    # recipes
+    forge = {
+      apps = lib.listToAttrs (
+        map (v: {
+          name = v.name;
+          value = v;
+        }) default.debug.forge.apps
+      );
+
+      packages = lib.listToAttrs (
+        map (v: {
+          name = v.name;
+          value = v;
+        }) default.debug.forge.packages
+      );
+    };
+
+    # derivations
+    forgeApps = lib.filterAttrs (
+      name: value: lib.hasSuffix "-app" name
+    ) flake.outputs.packages.${system};
     forgePkgs = flake.outputs.packages.${system};
     shells = flake.outputs.devShells.${system};
   });
