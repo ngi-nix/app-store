@@ -82,41 +82,46 @@
     runtimes = {
       container = {
         enable = true;
-        packages = with pkgs; [
-          bash
-          coreutils
+        components.qlever-ui = {
+          packages = with pkgs; [
+            mypkgs.qlever-ui
+            rsync
+            subversion
+          ];
+          extraConfig = {
+            WorkingDir = "/var/lib/qlever";
+          };
+          setup =
+            # bash
+            ''
+              WORKDIR=/var/lib/qlever
 
-          # UI
-          mypkgs.qlever-ui
-          rsync
-          subversion
+              # only copy db on first run so we don't overwrite it
+              if [ ! -d "$WORKDIR/db" ]; then
+                rsync -a --chmod=u=rwX,g=rwX,o=rX ${pkgs.mypkgs.qlever-ui}/opt/db "$WORKDIR"
+              fi
 
-          # server
-          curl
-          mypkgs.qlever
-          mypkgs.qlever-control
-          unzip
-        ];
-        extraConfig = {
-          WorkingDir = "/var/lib/qlever";
+              rsync -a --chmod=u=rwX,go=rX --exclude='/db/' ${pkgs.mypkgs.qlever-ui}/opt/ "$WORKDIR"
+            '';
         };
-        setup =
-          # bash
-          ''
-            WORKDIR=/var/lib/qlever
-
-            # only copy db on first run so we don't overwrite it
-            if [ ! -d "$WORKDIR/db" ]; then
-              rsync -a --chmod=u=rwX,g=rwX,o=rX ${pkgs.mypkgs.qlever-ui}/opt/db "$WORKDIR"
-            fi
-
-            rsync -a --chmod=u=rwX,go=rX --exclude='/db/' ${pkgs.mypkgs.qlever-ui}/opt/ "$WORKDIR"
-          '';
+        components.qlever-server = {
+          packages = with pkgs; [
+            bash
+            coreutils
+            curl
+            mypkgs.qlever
+            mypkgs.qlever-control
+            unzip
+          ];
+          extraConfig = {
+            WorkingDir = "/var/lib/qlever";
+          };
+        };
       };
 
       nixos = {
         enable = true;
-        setup = config.services.runtimes.container.setup;
+        setup = config.services.runtimes.container.components.qlever-ui.setup;
         extraConfig = {
           systemd.services."qlever-app-setup" = {
             path = with pkgs; [
