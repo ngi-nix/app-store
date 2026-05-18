@@ -54,6 +54,7 @@
     components = {
       python-web = {
         command = pkgs.mypkgs.python-web;
+        ports = [ "5000:5000" ];
       };
     };
 
@@ -80,8 +81,6 @@
         };
       };
     };
-
-    ports = [ "5000:5000" ];
   };
 
   test = {
