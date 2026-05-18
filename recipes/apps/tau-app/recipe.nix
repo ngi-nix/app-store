@@ -66,7 +66,7 @@
     runtimes = {
       container = {
         enable = true;
-        packages = [
+        components.tau-tower.packages = [
           pkgs.mypkgs.tau-tower
         ];
       };

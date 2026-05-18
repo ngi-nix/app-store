@@ -49,8 +49,8 @@
 
     runtimes.container = {
       enable = true;
-      packages = [ pkgs.mypkgs.ironcalc ];
       composeFile = ./compose.yaml;
+      components.ironcalc.packages = [ pkgs.mypkgs.ironcalc ];
     };
 
     runtimes.nixos = {
