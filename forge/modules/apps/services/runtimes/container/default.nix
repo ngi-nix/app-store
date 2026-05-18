@@ -102,7 +102,7 @@
               lib.generators.toYAML { } {
                 services = lib.mapAttrs (name: service: {
                   image = "localhost/${name}:latest";
-                  ports = app.services.ports ++ service.ports;
+                  ports = service.ports;
                 }) app.services.components;
               }
             );
